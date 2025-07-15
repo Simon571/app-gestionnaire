@@ -1,0 +1,442 @@
+
+{
+  "Navigation": {
+    "dashboard": "Tableau de bord",
+    "publishers": "Proclamateurs",
+    "reports": "Rapports",
+    "ai_logger": "Assistant IA",
+    "settings": "Paramètres",
+    "assembly_manager": "Gestionnaire d'Assemblée",
+    "assembly_group_title": "Assemblée",
+    "personne_group_title": "Personnes",
+    "assembly_info": "Information de l’assemblée",
+    "assembly_sharing": "Partage de l’assemblée",
+    "bulletin_board": "Tableau d’affichage",
+    "assembly_events": "Evénements de l’assemblée",
+    "preaching_activity": "Activité de prédication (S-1)",
+    "groups": "Groupe",
+    "families": "Famille",
+    "groups_families": "Groupes et familles",
+    "circuits_speakers": "Circonscriptions & Orateurs",
+    "meeting_attendance": "Assistance aux réunions",
+    "responsibilities": "Responsabilités",
+    "add_person": "Ajouter une personne",
+    "programme": "Programme",
+    "reunion-vie-ministere": "Réunion Vie et ministère",
+    "besoins-assemblee": "Besoins de l’assemblée",
+    "discours-publics-local": "Discours publics - Local",
+    "discours-publics-exterieur": "Discours publics - Extérieur",
+    "predication": "Prédication",
+    "temoignage-public": "Témoignage public",
+    "services": "Services",
+    "nettoyage": "Nettoyage",
+    "entretien-espaces-verts": "Entretien des espaces verts",
+    "maintenance": "Maintenance",
+    "visite-responsable-circonscription": "Visite du responsable de circonscription",
+    "publisherApp": "Publisher App",
+    "send_data": "Envoyer les données",
+    "receive_data": "Recevoir les données",
+    "users": "Utilisateurs",
+    "devices": "Appareils",
+    "app_settings": "Paramètres de l'application",
+    "logs": "Journaux",
+    "moi": "Moi",
+    "tasks": "Tâches",
+    "subscription": "Abonnement",
+    "alerts": "Voir les alertes",
+    "my_settings": "Paramètres",
+    "updates": "Mises à jour"
+  },
+  "UserProfile": {
+    "admin_user": "Utilisateur Admin"
+  },
+  "DashboardPage": {
+    "title": "Tableau de bord",
+    "active_publishers": "Proclamateurs Actifs",
+    "since_last_month": "+{count} depuis le mois dernier",
+    "average_attendance": "Assistance Moyenne",
+    "midweek_meetings": "Réunions de semaine",
+    "territories_assigned": "Territoires Attribués",
+    "of_total": "{percent}% du total",
+    "reports_received": "Rapports Reçus",
+    "for_current_month": "Pour le mois en cours"
+  },
+  "PublishersPage": {
+    "title": "Annuaire des proclamateurs",
+    "description": "Gérez les informations des proclamateurs de l'assemblée.",
+    "add_publisher": "Ajouter un proclamateur",
+    "name": "Nom",
+    "status": "Statut",
+    "group": "Groupe",
+    "baptism_date": "Date de baptême",
+    "actions": "Actions",
+    "view": "Voir",
+    "status_active": "Actif",
+    "status_inactive": "Inactif",
+    "status_irregular": "Irrégulier"
+  },
+  "ReportsPage": {
+    "title": "Assistance aux réunions",
+    "description": "Saisissez l'assistance hebdomadaire pour les réunions de semaine et de week-end.",
+    "toolbar": {
+      "year": "Année",
+      "month": "Mois",
+      "show_meeting_dates": "Afficher les dates de réunion",
+      "show_online_attendance": "Afficher la participation en ligne",
+      "show_custom_attendance": "Afficher la participation personnalisée",
+      "print": "Imprimer",
+      "help": "Aide"
+    },
+    "table": {
+      "week": "Semaine {number}",
+      "total": "Total",
+      "average": "Moyenne",
+      "midweek_meeting": "Réunion de semaine",
+      "weekend_meeting": "Réunion de week-end",
+      "in_person": "En présentiel",
+      "online": "En ligne",
+      "total_label": "Total"
+    },
+    "warning_empty_cells": "Avertissement: Une réunion a eu lieu, mais certaines cellules sont vides. Veuille saisir la présence (ou 0) pour toutes les semaines pendant lesquelles une réunion a eu lieu.",
+    "months_full": {
+      "january": "Janvier",
+      "february": "Février",
+      "march": "Mars",
+      "april": "Avril",
+      "may": "Mai",
+      "june": "Juin",
+      "july": "Juillet",
+      "august": "Août",
+      "september": "Septembre",
+      "october": "Octobre",
+      "november": "Novembre",
+      "december": "Décembre"
+    }
+  },
+  "SettingsPage": {
+    "title": "Paramètres",
+    "assembly_info_title": "Informations de l'assemblée",
+    "assembly_info_desc": "Gérez les détails de votre assemblée locale.",
+    "assembly_name": "Nom de l'assemblée",
+    "assembly_id": "ID de l'assemblée",
+    "kh_address": "Adresse de la Salle du Royaume",
+    "meeting_times": "Jours et heures des réunions",
+    "zoom_link": "Lien Zoom",
+    "save_changes": "Sauvegarder les modifications",
+    "data_management_title": "Gestion des données",
+    "data_management_desc": "Importez, exportez ou sauvegardez les données de votre application.",
+    "import_button": "Importer (CSV/Excel)",
+    "export_button": "Exporter (CSV/Excel)",
+    "backup_button": "Sauvegarde SQL",
+    "country": "Pays",
+    "year": "Année de service",
+    "circuit_info_title": "Informations de la circonscription",
+    "circuit_info_desc": "Gérez les détails de votre circonscription.",
+    "circuit_name": "Nom de la circonscription",
+    "co_name": "Nom du responsable de circonscription",
+    "co_wife_name": "Nom de son épouse",
+    "co_phone": "Numéro de téléphone"
+  },
+  "LoggerPage": {
+    "title": "Assistant IA",
+    "description": "Posez des questions sur l'application et obtenez de l'aide pour utiliser les fonctionnalités."
+  },
+  "LanguageSwitcher": {
+    "change_language": "Changer de langue",
+    "label": "Langue"
+  },
+  "SharingPage": {
+    "connection_info_title": "Données de connexion",
+    "connection_info_desc": "Gérez les identifiants de connexion pour le partage.",
+    "assembly_id": "ID de l’assemblée",
+    "connection_password": "Mot de passe de connexion",
+    "sharing_region": "Région de partage",
+    "sharing_users_title": "Utilisateurs de partage",
+    "sharing_users_desc": "Gérez qui est autorisé à accéder aux données partagées.",
+    "add_user": "Ajouter un utilisateur",
+    "user_name": "Nom",
+    "user_permission": "Permission",
+    "user_actions": "Actions",
+    "permission_admin": "Admin",
+    "permission_editor": "Éditeur",
+    "permission_viewer": "Lecteur",
+    "select_continent_placeholder": "Sélectionner un continent"
+  },
+  "Continents": {
+    "africa": "Afrique",
+    "antarctica": "Antarctique",
+    "asia": "Asie",
+    "europe": "Europe",
+    "north_america": "Amérique du Nord",
+    "oceania": "Océanie",
+    "south_america": "Amérique du Sud"
+  },
+  "PermissionsPage": {
+    "title": "Permission de l'utilisateur",
+    "description": "Gérer les autorisations d'accès pour l'utilisateur sélectionné.",
+    "save": "Sauvegarder",
+    "reset": "Réinitialiser",
+    "categories": {
+      "assembly": "Assemblée",
+      "schedule": "Programme",
+      "people": "Personnes",
+      "territory": "Territoire",
+      "me": "Moi"
+    },
+    "items": {
+      "assembly_admin": "Administration de l'assemblée",
+      "bulletin_board": "Tableau d'affichage",
+      "events": "Évènements de l'assemblée",
+      "preaching_activity": "Activité de prédication",
+      "other_groups": "Autres groupes",
+      "meeting_attendance": "Assistance aux réunions",
+      "publications": "Publications",
+      "life_and_ministry_meeting": "Réunion Vie et ministère",
+      "congregation_needs": "Besoins de l'assemblée",
+      "public_talks": "Discours publics",
+      "preaching_and_witnessing": "Prédication et Témoignage",
+      "services": "Services",
+      "maintenance": "Maintenance",
+      "cleaning": "Nettoyage et Entretien",
+      "personal_info": "Informations sur la personne",
+      "spiritual_person": "Personne Spirituel",
+      "assign_person": "Personne Attribuer",
+      "publisher_reports": "Rapports du proclamateur",
+      "territories": "Territoires",
+      "tasks": "Tâches"
+    }
+  },
+  "LoginPage": {
+    "title": "Connexion Super Admin",
+    "description": "Entrez vos identifiants pour accéder au tableau de bord.",
+    "email_label": "Email",
+    "password_label": "Mot de passe",
+    "login_button": "Connexion"
+  },
+   "BulletinBoardPage": {
+    "title": "Tableau d'affichage",
+    "description": "Retrouvez ici les communications de l'assemblée, les lettres et autres informations.",
+    "published_on": "Publié le {date}",
+    "categories": {
+      "assembly_communication": "Communication de l'assemblée",
+      "governing_body_letter": "Courrier du Collège Central",
+      "local_needs": "Besoins locaux"
+    },
+    "announcements": {
+      "announcement_1_title": "Rappel : Nettoyage annuel de la Salle du Royaume",
+      "announcement_1_content": "Un nettoyage général de la Salle du Royaume est prévu le samedi 3 août. Tous sont invités à y participer.",
+      "announcement_2_title": "Courrier pour toutes les assemblées - Juillet 2024",
+      "announcement_2_content": "Un nouveau courrier du Collège Central a été reçu. Il sera lu lors de la prochaine réunion de semaine.",
+      "announcement_3_title": "Aide pour nos aînés",
+      "announcement_3_content": "Nous recherchons des volontaires pour aider nos frères et sœurs âgés dans leurs courses et déplacements."
+    }
+  },
+  "EventsPage": {
+    "title": "Événements",
+    "description": "Informations sur les prochaines assemblées de circonscription et régionales.",
+    "add_event": "Ajouter un événement",
+    "add_event_title": "Ajouter un nouvel événement",
+    "add_event_desc": "Remplissez les détails du nouvel événement pour le publier.",
+    "edit_event_title": "Modifier l'événement",
+    "edit_event_desc": "Mettez à jour les détails de l'événement.",
+    "with_co": "Avec le responsable de circonscription",
+    "with_bethel_rep": "Avec le représentant du Béthel",
+    "types": {
+      "circuit_assembly_co": "Assemblée de circonscription",
+      "circuit_assembly_br": "Assemblée de circonscription",
+      "regional_convention": "Assemblée régionale"
+    },
+    "events": {
+      "event_1_theme": "'Réjouissons-nous dans l'espérance' !",
+      "event_2_theme": "'Annoncez la bonne nouvelle' !",
+      "event_3_theme": "'Entrez dans le repos de Dieu' !"
+    },
+    "form": {
+      "type": "Type",
+      "select_type": "Sélectionner un type",
+      "theme": "Thème",
+      "date": "Date",
+      "location": "Lieu",
+      "save": "Sauvegarder"
+    }
+  },
+  "PreachingActivityPage": {
+    "title": "Activité de prédication de l'assemblée",
+    "tabs": {
+        "assembly": "Assemblée",
+        "jw_org": "JW.ORG (S-1)",
+        "publishers": "Proclamateurs"
+    },
+    "table": {
+      "type": "Type",
+      "reports": "Nombre de rap",
+      "studies": "Cours bibliques",
+      "hours": "Heures",
+      "total": "Total"
+    },
+    "types": {
+      "publishers": "Proclamateurs",
+      "auxiliary_pioneers": "Pionniers auxiliaires",
+      "permanent_pioneers": "Pionniers permanents",
+      "special_pioneers": "Pionniers spéciaux",
+      "missionaries": "Missionnaires affectés dans le territoire",
+      "direct_reports": "Rapports envoyés directement à la filiale"
+    },
+    "summary": {
+      "active_publishers": "Proclamateurs actifs",
+      "irregular_publishers": "Proclamateurs irréguliers",
+      "inactive_publishers": "Proclamateurs inactifs",
+      "new_inactive": "Nouveaux proclamateurs inactifs",
+      "reactivated_publishers": "Proclamateurs réactivés"
+    },
+    "status": {
+      "not_sent": "Non envoyé",
+      "sent": "Envoyé",
+      "send_to_branch": "Envoyé à la filiale"
+    },
+    "jw_org": {
+      "active_publishers_title": "Proclamateurs actifs",
+      "active_publishers_desc": "Compte de tous les membres de l'assemblée ayant remis un rapport au moins une fois au cours des 6 derniers mois.",
+      "weekend_meeting_attendance": "Assistance moyenne aux réunions le week-end",
+      "cancel_submission": "Annuler l'envoi"
+    },
+    "publishers_tab": {
+        "title": "Rapports des proclamateurs",
+        "all_groups": "Tous les groupes",
+        "all": "Tous",
+        "include_inactives": "Inclure les inactifs",
+        "table": {
+            "family_name": "Nom de famille",
+            "first_name": "Prénom",
+            "participated": "A participé",
+            "studies": "Cours bibl.",
+            "auxiliary": "Pion. aux.",
+            "hours": "Heures",
+            "credit": "Crédit",
+            "late": "En retard",
+            "remarks": "Remarques"
+        }
+    }
+  },
+  "GroupsFamiliesPage": {
+    "title": "Groupes et Familles",
+    "tabs": {
+      "preaching_groups": "Groupe",
+      "families": "Famille"
+    },
+    "groups_per_page": "Groupes par page",
+    "unassigned": "Non assignés",
+    "families_placeholder": "La vue des familles sera bientôt disponible.",
+    "table": {
+      "name": "Nom de la famille/proclamateur",
+      "firstname": "Prénom",
+      "status": "Statut"
+    }
+  },
+  "CircuitsSpeakersPage": {
+    "title": "Circonscriptions & Orateurs",
+    "all_circuits": "Toutes les circonscriptions",
+    "no_circuits_found": "Aucune circonscription trouvée",
+    "table": {
+      "circuit": "Circonscr.",
+      "name": "Nom",
+      "actions": "Actions"
+    },
+    "speakers": {
+      "title": "Orateurs",
+      "description": "Sélectionnez une circonscription pour voir les orateurs.",
+      "description_selected": "Orateurs pour la circonscription {circuitName}",
+      "placeholder": "Aucune circonscription sélectionnée",
+      "placeholder_selected": "Aucun orateur pour cette circonscription.",
+      "add_speaker": "Ajouter un orateur",
+      "table": {
+        "name": "Nom",
+        "congregation": "Assemblée",
+        "phone": "Téléphone",
+        "actions": "Actions"
+      },
+      "form": {
+        "add_title": "Ajouter un nouvel orateur",
+        "edit_title": "Modifier l'orateur",
+        "name": "Nom",
+        "congregation": "Assemblée",
+        "phone": "Téléphone",
+        "save": "Sauvegarder",
+        "cancel": "Annuler"
+      }
+    },
+    "form": {
+      "add_title": "Ajouter une nouvelle circonscription",
+      "edit_title": "Modifier la circonscription",
+      "circuit_id": "ID de la circonscription",
+      "circuit_name": "Nom de la circonscription",
+      "save": "Sauvegarder",
+      "cancel": "Annuler"
+    }
+  },
+  "ResponsibilitiesPage": {
+    "title": "Responsabilités dans l'assemblée",
+    "page_description": "Gérez les paramètres et les attributions pour cette responsabilité.",
+    "items": {
+      "coordinator": "Coordinateur du collège des anciens",
+      "secretary": "Secrétaire",
+      "preaching_overseer": "Responsable de la prédication",
+      "meetings": "Réunions",
+      "kingdom_hall": "Salle du Royaume",
+      "custom": "Personnalisé"
+    }
+  },
+  "PeoplePage": {
+    "title": "Ajouter une personne",
+    "description": "Créez une nouvelle fiche pour une personne de l'assemblée.",
+    "save_button": "Sauvegarder la personne",
+    "personal_info": {
+      "title": "Informations personnelles",
+      "last_name": "Nom de famille",
+      "first_name": "Prénom",
+      "birth_date": "Date de naissance",
+      "gender": "Sexe",
+      "gender_placeholder": "Sélectionner le sexe",
+      "male": "Homme",
+      "female": "Femme"
+    },
+    "contact_info": {
+      "title": "Coordonnées",
+      "phone": "Téléphone",
+      "mobile": "Portable",
+      "email": "Email",
+      "address": "Adresse"
+    },
+    "spiritual_info": {
+      "title": "Informations spirituelles",
+      "baptism_date": "Date de baptême",
+      "hope": "Espérance",
+      "hope_placeholder": "Sélectionner l'espérance",
+      "anointed": "Oint",
+      "other_sheep": "Autre brebis",
+      "elder": "Ancien",
+      "ministerial_servant": "Assistant ministériel",
+      "pioneer_status": "Statut de pionnier",
+      "pioneer_placeholder": "Sélectionner le statut",
+      "none": "Aucun",
+      "auxiliary": "Pionnier auxiliaire",
+      "regular": "Pionnier permanent"
+    },
+    "family_info": {
+      "title": "Famille",
+      "is_head": "Chef de famille",
+      "family_head": "Chef de famille",
+      "select_family_head": "Sélectionner le chef de famille"
+    },
+    "emergency_contact": {
+      "title": "Contact d'urgence",
+      "name": "Nom",
+      "phone": "Téléphone",
+      "relation": "Lien de parenté"
+    },
+    "notes": {
+      "title": "Notes",
+      "placeholder": "Ajoutez des notes pertinentes ici..."
+    }
+  }
+}
