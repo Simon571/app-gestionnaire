@@ -1,0 +1,50 @@
+
+# Nom du workflow qui apparaîtra dans l'onglet "Actions" de GitHub
+name: Mise à jour mensuelle du cahier VCM
+
+on:
+  # Permet de lancer ce workflow manuellement depuis l'interface GitHub
+  workflow_dispatch:
+
+  # Définit le déclenchement automatique
+  schedule:
+    # S'exécute à 5h00 du matin, le 2 de chaque mois.
+    # Le format est "Minute Heure Jour Mois JourDeLaSemaine"
+    - cron: '0 5 2 * *'
+
+jobs:
+  # Nom du "travail" à exécuter
+  scrape-and-update:
+    # Utilise la dernière version d'Ubuntu comme environnement d'exécution
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Récupère le code de votre dépôt
+      - name: Récupération du code
+        uses: actions/checkout@v4
+
+      # 2. Met en place l'environnement Node.js
+      - name: Mise en place de Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Assurez-vous que cela correspond à la version de votre projet
+          cache: 'npm' # Met en cache les dépendances pour accélérer les exécutions futures
+
+      # 3. Installe les dépendances du projet
+      - name: Installation des dépendances NPM
+        run: npm install
+
+      # 4. Installe les navigateurs pour Playwright
+      - name: Installation des navigateurs Playwright
+        run: npx playwright install --with-deps
+
+      # 5. Exécute le script de scraping
+      - name: Lancement du script de mise à jour
+        env:
+          # L'URL de votre application déployée (ex: https://mon-app.vercel.app)
+          API_URL: ${{ secrets.PROD_APP_URL }}
+          # La clé secrète pour authentifier le script auprès de votre API
+          AUTOMATION_API_KEY: ${{ secrets.AUTOMATION_API_KEY }}
+        run: |
+          # Utilise ts-node pour exécuter directement le script TypeScript
+          npx ts-node scripts/scrape-vcm.ts

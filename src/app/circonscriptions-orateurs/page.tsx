@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -39,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 type Circuit = {
     id: string;
@@ -158,6 +158,7 @@ export default function CircuitsSpeakersPage() {
 
   const [isSpeakerFormOpen, setIsSpeakerFormOpen] = React.useState(false);
   const [editingSpeaker, setEditingSpeaker] = React.useState<Speaker | null>(null);
+  const { toast } = useToast();
 
   const handleAddCircuit = () => {
     setEditingCircuit(null);
@@ -171,19 +172,23 @@ export default function CircuitsSpeakersPage() {
 
   const handleDeleteCircuit = () => {
     if(selectedCircuitId) {
+        const circuitToDelete = circuits.find(c => c.id === selectedCircuitId);
         setCircuits(circuits.filter(c => c.id !== selectedCircuitId));
         setSpeakers(speakers.filter(s => s.circuitId !== selectedCircuitId));
         setSelectedCircuitId(null);
+        toast({ title: `Circonscription "${circuitToDelete?.name}" supprimée.`, variant: "destructive" });
     }
   }
 
   const handleSaveCircuit = (circuit: Circuit) => {
     if (editingCircuit) {
         setCircuits(circuits.map(c => c.id === editingCircuit.id ? circuit : c));
+        toast({ title: `Circonscription "${circuit.name}" mise à jour.` });
     } else {
         const newCircuit = { ...circuit, id: circuit.id || `circ-${Date.now()}`};
         setCircuits([...circuits, newCircuit]);
         setSelectedCircuitId(newCircuit.id);
+        toast({ title: `Circonscription "${newCircuit.name}" ajoutée.` });
     }
     setIsCircuitFormOpen(false);
     setEditingCircuit(null);
@@ -200,14 +205,18 @@ export default function CircuitsSpeakersPage() {
   };
 
   const handleDeleteSpeaker = (speakerId: string) => {
+    const speakerToDelete = speakers.find(s => s.id === speakerId);
     setSpeakers(speakers.filter(s => s.id !== speakerId));
+    toast({ title: `Orateur "${speakerToDelete?.name}" supprimé.`, variant: "destructive" });
   };
   
   const handleSaveSpeaker = (speakerData: Omit<Speaker, 'id' | 'circuitId'>) => {
       if (editingSpeaker) {
           setSpeakers(speakers.map(s => s.id === editingSpeaker.id ? { ...editingSpeaker, ...speakerData } : s));
+          toast({ title: `Orateur "${speakerData.name}" mis à jour.` });
       } else if (selectedCircuitId) {
           setSpeakers([...speakers, { ...speakerData, id: `spk-${Date.now()}`, circuitId: selectedCircuitId }]);
+          toast({ title: `Orateur "${speakerData.name}" ajouté.` });
       }
       setIsSpeakerFormOpen(false);
       setEditingSpeaker(null);

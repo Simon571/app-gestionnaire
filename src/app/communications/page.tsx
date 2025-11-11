@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -24,14 +23,17 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Plus, Trash2, ChevronUp, ChevronDown, Upload, Loader2, Volume2, PlayCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Trash2, ChevronUp, ChevronDown, Upload, Loader2, Volume2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { textToSpeech } from '@/ai/flows/tts-flow';
+import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 type Communication = {
   id: string;
   title: string;
+  type: 'communication' | 'document' | 'lettre';
   displayAfter: Date;
   displayAfterTime: string;
   expirationDate: Date;
@@ -72,6 +74,7 @@ export default function BulletinBoardPage() {
   const [communications, setCommunications] = React.useState<Communication[]>([]);
   const [selectedCommunicationId, setSelectedCommunicationId] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const [audioState, setAudioState] = React.useState<{ [key: string]: { loading: boolean; data: string | null } }>({});
 
@@ -79,6 +82,7 @@ export default function BulletinBoardPage() {
     const newComm: Communication = {
       id: `comm-${Date.now()}`,
       title: '<Communication>',
+      type: 'communication',
       displayAfter: new Date(),
       displayAfterTime: '09:30',
       expirationDate: new Date(),
@@ -89,12 +93,15 @@ export default function BulletinBoardPage() {
     };
     setCommunications(prev => [...prev, newComm]);
     setSelectedCommunicationId(newComm.id);
+    toast({ title: "Nouvelle communication créée." });
   };
 
   const handleDelete = () => {
     if (selectedCommunicationId) {
+      const commToDelete = communications.find(c => c.id === selectedCommunicationId);
       setCommunications(prev => prev.filter(c => c.id !== selectedCommunicationId));
       setSelectedCommunicationId(null);
+      toast({ title: `Communication "${commToDelete?.title}" supprimée.`, variant: "destructive" });
     }
   };
 
@@ -121,6 +128,7 @@ export default function BulletinBoardPage() {
     const file = event.target.files?.[0];
     if (file) {
       updateSelectedCommunication('attachment', file.name);
+      toast({ title: `Pièce jointe "${file.name}" ajoutée.` });
     }
   };
   
@@ -142,6 +150,7 @@ export default function BulletinBoardPage() {
       newComms.forEach((c, i) => c.order = i + 1);
 
       setCommunications(newComms);
+      toast({ description: `Communication déplacée.` });
   }
 
   const handleListen = async (comm: Communication) => {
@@ -151,10 +160,12 @@ export default function BulletinBoardPage() {
         const result = await textToSpeech(comm.content);
         if (result?.media) {
             setAudioState(prev => ({...prev, [comm.id]: { loading: false, data: result.media }}));
+            toast({ title: "Audio généré", description: "La lecture audio est prête." });
         }
     } catch (error) {
         console.error("Error generating speech:", error);
         setAudioState(prev => ({...prev, [comm.id]: { loading: false, data: null }}));
+        toast({ title: "Erreur audio", description: "Impossible de générer l'audio.", variant: "destructive" });
     }
   }
 
@@ -180,6 +191,19 @@ export default function BulletinBoardPage() {
                     <div className="grid grid-cols-[120px_1fr] items-center gap-4">
                         <Label htmlFor="title">Titre</Label>
                         <Input id="title" value={selectedCommunication?.title || ''} onChange={(e) => updateSelectedCommunication('title', e.target.value)} disabled={!selectedCommunication} />
+                    </div>
+                    <div className="grid grid-cols-[120px_1fr] items-center gap-4">
+                        <Label>Type</Label>
+                        <Select value={selectedCommunication?.type} onValueChange={(v) => updateSelectedCommunication('type', v)} disabled={!selectedCommunication}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Sélectionner un type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="communication">Communication</SelectItem>
+                                <SelectItem value="document">Document</SelectItem>
+                                <SelectItem value="lettre">Lettre</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
                         <Label>Afficher après</Label>
@@ -228,7 +252,7 @@ export default function BulletinBoardPage() {
                          <Table>
                             <TableHeader className="sticky top-0 bg-muted">
                                 <TableRow>
-                                    <TableHead>Communication</TableHead>
+                                    <TableHead>Titre</TableHead>
                                     <TableHead>Date d'expiration</TableHead>
                                     <TableHead className="text-right">Actions</TableHead>
                                 </TableRow>
@@ -241,7 +265,10 @@ export default function BulletinBoardPage() {
                                     className={cn("cursor-pointer", selectedCommunicationId === comm.id && "bg-accent text-accent-foreground")}
                                 >
                                     <TableCell>
-                                        <p>{comm.title}</p>
+                                        <div className="flex items-center gap-2">
+                                          <p>{comm.title}</p>
+                                          <Badge variant="outline">{comm.type}</Badge>
+                                        </div>
                                         {audioState[comm.id]?.data && (
                                             <audio controls autoPlay className="mt-2 h-8 w-full">
                                                 <source src={audioState[comm.id]?.data as string} type="audio/wav" />

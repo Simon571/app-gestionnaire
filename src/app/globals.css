@@ -22,15 +22,16 @@
     --muted: 210 20% 94%;
     --muted-foreground: 222 84% 45%;
     
-    --accent: 210 20% 88%;
+    /* MODIFICATION: Remplacement des couleurs d'accentuation par le JAUNE */
+    --accent: 45 93% 50%; /* amber-500 */
     --accent-foreground: 222 84% 5%;
+    --ring: 45 93% 50%; /* amber-500 pour le ring par défaut */
     
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     
     --border: 210 20% 85%;
     --input: 210 20% 92%;
-    --ring: 198 93% 50%;
     
     --radius: 0.5rem;
 
@@ -69,15 +70,16 @@
     --muted: 217 33% 17%;
     --muted-foreground: 215 20% 65%;
 
-    --accent: 217 33% 17%;
+    /* MODIFICATION: Remplacement des couleurs d'accentuation par le JAUNE */
+    --accent: 45 93% 50%; /* amber-500 */
     --accent-foreground: 210 40% 98%;
+    --ring: 45 93% 50%; /* amber-500 pour le ring par défaut */
 
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217 33% 17%;
     --input: 217 33% 17%;
-    --ring: 198 93% 60%;
 
     --chart-1: 198 93% 60%;
     --chart-2: 168 83% 53%;
@@ -103,4 +105,61 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* AJOUT: Classes utilitaires pour les états actifs/focus */
+@layer utilities{
+  .ui-active{
+    @apply ring-1 ring-yellow-400 bg-yellow-400/15;
+  }
+  .ui-focus{
+    @apply focus-visible:ring-2 focus-visible:ring-yellow-400;
+  }
+}
+
+/* CORRECTION: Amélioration de la compatibilité avec Tauri */
+@layer base {
+  /* Correction pour Tauri WebView */
+  html, body {
+    overflow-x: hidden;
+    height: 100%;
+  }
+  
+  /* S'assurer que les layouts flex fonctionnent correctement dans Tauri */
+  .flex-1 {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+  
+  /* Améliorer le rendu des grilles dans Tauri */
+  .grid {
+    display: grid;
+  }
+}
+
+/* CORRECTION: Espacement entre les icônes de la sidebar comme demandé */
+@layer components {
+  .app-shell-nav .flex.flex-col.items-center.gap-4 > button {
+    margin-bottom: 0.75rem;
+  }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .print-only, .print-only.hidden { display: block !important; }
+  body { background: white; }
+  .shadow, .shadow-sm, .shadow-md { box-shadow: none !important; }
+  .rounded-xl, .rounded-lg { border-radius: 0 !important; }
+  .sticky { position: static !important; }
+  /* resserrer la grille pour sortir sur 1–2 pages */
+  .print-tight .grid { gap: 8px !important; }
+  /* Empêcher les sauts de page intempestifs */
+  * { page-break-inside: avoid; }
+  /* Forcer des marges compactes et un format A4 */
+  @page { size: A4; margin: 10mm; }
+  html, body { height: auto !important; min-height: 0 !important; overflow: visible !important; }
+  /* Les conteneurs pleine hauteur doivent pouvoir se contracter en print */
+  .min-h-screen { min-height: auto !important; }
+  .h-screen { height: auto !important; }
+  .overflow-hidden { overflow: visible !important; }
 }

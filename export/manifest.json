@@ -1,0 +1,141 @@
+{
+	"name": "mwb_F_202511.jwpub",
+	"hash": "1f0e0dc5ad2ea1da95b587c3c3cb8d9d5712092ece725324d96939ced3491b4f",
+	"timestamp": "2025-05-19T09:58:37Z",
+	"version": 1,
+	"expandedSize": 4425364,
+	"contentFormat": "z-a",
+	"htmlValidated": false,
+	"mepsPlatformVersion": 2.100000,
+	"mepsBuildNumber": 13445,
+	"publication": { 
+		"fileName": "mwb_F_202511.db",
+		"type": 3,
+		"title": "Cahier pour la réunion Vie chrétienne et ministère  (2025)",
+		"shortTitle": "Cahier Vie et ministère  (2025)",
+		"displayTitle": "Cahier Vie et ministère  (2025)",
+		"referenceTitle": "Cahier Vie et ministère  (2025)",
+		"undatedReferenceTitle": "Cahier Vie et ministère",
+		"titleRich": "Cahier pour la réunion Vie chrétienne et ministère  (2025)",
+		"displayTitleRich": "Cahier Vie et ministère  (2025)",
+		"referenceTitleRich": "Cahier Vie et ministère  (2025)",
+		"undatedReferenceTitleRich": "Cahier Vie et ministère",
+		"symbol": "mwb25",
+		"uniqueEnglishSymbol": "mwb25",
+		"uniqueSymbol": "mwb25",
+		"undatedSymbol": "mwb",
+		"englishSymbol": "mwb25",
+		"language": 3,
+		"hash": "20fa8e81b79a653ab4407677293b2dc3988222a0",
+		"timestamp": "2025-05-19T09:58:37Z",
+		"minPlatformVersion": 1,
+		"schemaVersion": 8,
+		"year": 2025,
+		"issueId": 20251100,
+		"issueNumber": 11,
+		"variation": "",
+		"publicationType": "Meeting Workbook",
+		"rootSymbol": "mwb25",
+		"rootYear": 2025,
+		"rootLanguage": 0,
+		"images": [ 
+			{
+				"signature": "b55dbe075ad6396f3498dbef988536341b939726:600:771",
+				"fileName": "mwb_F_202511.jpg",
+				"type": "c",
+				"attribute": "r",
+				"width": 600,
+				"height": 771
+			},
+			{
+				"signature": "2903be6359a35fa5a6ebd5b3a45626d06e1d55fc:120:120",
+				"fileName": "202025400_univ_sqr-120x120.jpg",
+				"type": "t",
+				"attribute": "r",
+				"width": 120,
+				"height": 120
+			},
+			{
+				"signature": "2903be6359a35fa5a6ebd5b3a45626d06e1d55fc:270:270",
+				"fileName": "202025400_univ_sqr-270x270.jpg",
+				"type": "t",
+				"attribute": "r",
+				"width": 270,
+				"height": 270
+			},
+			{
+				"signature": "2903be6359a35fa5a6ebd5b3a45626d06e1d55fc:600:600",
+				"fileName": "202025400_univ_sqr-600x600.jpg",
+				"type": "t",
+				"attribute": "r",
+				"width": 600,
+				"height": 600
+			},
+			{
+				"signature": "8a230612427371c05f4ef0e7ac0af5ba69f22817:240:120",
+				"fileName": "202025400_univ_lsr-240x120.jpg",
+				"type": "lsr",
+				"attribute": "r",
+				"width": 240,
+				"height": 120
+			},
+			{
+				"signature": "8a230612427371c05f4ef0e7ac0af5ba69f22817:560:280",
+				"fileName": "202025400_univ_lsr-560x280.jpg",
+				"type": "lsr",
+				"attribute": "r",
+				"width": 560,
+				"height": 280
+			},
+			{
+				"signature": "8a230612427371c05f4ef0e7ac0af5ba69f22817:1200:600",
+				"fileName": "202025400_univ_lsr-1200x600.jpg",
+				"type": "lsr",
+				"attribute": "r",
+				"width": 1200,
+				"height": 600
+			},
+			{
+				"signature": "8a4946462e0f4dfb862a1896340016b99e6ce669:360:120",
+				"fileName": "202025400_univ_pnr-360x120.jpg",
+				"type": "pnr",
+				"attribute": "r",
+				"width": 360,
+				"height": 120
+			},
+			{
+				"signature": "8a4946462e0f4dfb862a1896340016b99e6ce669:810:270",
+				"fileName": "202025400_univ_pnr-810x270.jpg",
+				"type": "pnr",
+				"attribute": "r",
+				"width": 810,
+				"height": 270
+			},
+			{
+				"signature": "8a4946462e0f4dfb862a1896340016b99e6ce669:1800:600",
+				"fileName": "202025400_univ_pnr-1800x600.jpg",
+				"type": "pnr",
+				"attribute": "r",
+				"width": 1800,
+				"height": 600
+			}
+		],
+		"categories": [ 
+				"mwb"
+		],
+		"attributes": [ 
+		],
+		"issueAttributes": [ 
+		],
+		"issueProperties": { 
+				"title": "Cahier Vie et ministère, novembre-décembre 2025",
+				"undatedTitle": "Cahier Vie et ministère",
+				"coverTitle": "Réunions du 3 novembre 2025 au 4 janvier 2026",
+				"titleRich": "Cahier Vie et ministère, novembre-décembre 2025",
+				"undatedTitleRich": "Cahier Vie et ministère",
+				"coverTitleRich": "Réunions du 3 novembre 2025 au 4 janvier 2026",
+				"symbol": "mwb25.11",
+				"undatedSymbol": "mwb"
+		}
+	}
+}

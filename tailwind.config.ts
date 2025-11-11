@@ -7,6 +7,16 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    "ring-yellow-400",
+    "bg-yellow-400/20",
+    "bg-yellow-400/15",
+    "text-yellow-600",
+    "text-yellow-700",
+    "focus:ring-yellow-400",
+    "accent-yellow-500",
+    "accent-amber-500"
+  ],
   theme: {
     extend: {
       fontFamily: {

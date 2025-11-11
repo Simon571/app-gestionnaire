@@ -1,0 +1,396 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "dynamicRoutes": [
+    {
+      "page": "/api/vcm/[weekStartIso]",
+      "regex": "^/api/vcm/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPweekStartIso": "nxtPweekStartIso"
+      },
+      "namedRegex": "^/api/vcm/(?<nxtPweekStartIso>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/api/vcm/[weekStartIso]/assign",
+      "regex": "^/api/vcm/([^/]+?)/assign(?:/)?$",
+      "routeKeys": {
+        "nxtPweekStartIso": "nxtPweekStartIso"
+      },
+      "namedRegex": "^/api/vcm/(?<nxtPweekStartIso>[^/]+?)/assign(?:/)?$"
+    },
+    {
+      "page": "/api/vcm/[weekStartIso]/assign/bulk",
+      "regex": "^/api/vcm/([^/]+?)/assign/bulk(?:/)?$",
+      "routeKeys": {
+        "nxtPweekStartIso": "nxtPweekStartIso"
+      },
+      "namedRegex": "^/api/vcm/(?<nxtPweekStartIso>[^/]+?)/assign/bulk(?:/)?$"
+    },
+    {
+      "page": "/api/vcm/[weekStartIso]/assign/clear",
+      "regex": "^/api/vcm/([^/]+?)/assign/clear(?:/)?$",
+      "routeKeys": {
+        "nxtPweekStartIso": "nxtPweekStartIso"
+      },
+      "namedRegex": "^/api/vcm/(?<nxtPweekStartIso>[^/]+?)/assign/clear(?:/)?$"
+    },
+    {
+      "page": "/[locale]",
+      "regex": "^/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPlocale": "nxtPlocale"
+      },
+      "namedRegex": "^/(?<nxtPlocale>[^/]+?)(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/activite-predication",
+      "regex": "^/activite\\-predication(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/activite\\-predication(?:/)?$"
+    },
+    {
+      "page": "/assembly",
+      "regex": "^/assembly(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/assembly(?:/)?$"
+    },
+    {
+      "page": "/circonscriptions-orateurs",
+      "regex": "^/circonscriptions\\-orateurs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/circonscriptions\\-orateurs(?:/)?$"
+    },
+    {
+      "page": "/communications",
+      "regex": "^/communications(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/communications(?:/)?$"
+    },
+    {
+      "page": "/connexion",
+      "regex": "^/connexion(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/connexion(?:/)?$"
+    },
+    {
+      "page": "/evenements",
+      "regex": "^/evenements(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/evenements(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/groupes-familles",
+      "regex": "^/groupes\\-familles(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/groupes\\-familles(?:/)?$"
+    },
+    {
+      "page": "/logger",
+      "regex": "^/logger(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/logger(?:/)?$"
+    },
+    {
+      "page": "/moi",
+      "regex": "^/moi(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi(?:/)?$"
+    },
+    {
+      "page": "/moi/abonnement",
+      "regex": "^/moi/abonnement(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/abonnement(?:/)?$"
+    },
+    {
+      "page": "/moi/alertes",
+      "regex": "^/moi/alertes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/alertes(?:/)?$"
+    },
+    {
+      "page": "/moi/confidentialite-securite",
+      "regex": "^/moi/confidentialite\\-securite(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/confidentialite\\-securite(?:/)?$"
+    },
+    {
+      "page": "/moi/mises-a-jour",
+      "regex": "^/moi/mises\\-a\\-jour(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/mises\\-a\\-jour(?:/)?$"
+    },
+    {
+      "page": "/moi/parametres",
+      "regex": "^/moi/parametres(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/parametres(?:/)?$"
+    },
+    {
+      "page": "/moi/taches",
+      "regex": "^/moi/taches(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/moi/taches(?:/)?$"
+    },
+    {
+      "page": "/parametres",
+      "regex": "^/parametres(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/parametres(?:/)?$"
+    },
+    {
+      "page": "/partage",
+      "regex": "^/partage(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/partage(?:/)?$"
+    },
+    {
+      "page": "/partage/permissions",
+      "regex": "^/partage/permissions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/partage/permissions(?:/)?$"
+    },
+    {
+      "page": "/personnes",
+      "regex": "^/personnes(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/personnes(?:/)?$"
+    },
+    {
+      "page": "/programme",
+      "regex": "^/programme(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme(?:/)?$"
+    },
+    {
+      "page": "/programme/besoins-assemblee",
+      "regex": "^/programme/besoins\\-assemblee(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/besoins\\-assemblee(?:/)?$"
+    },
+    {
+      "page": "/programme/discours-publics-exterieur",
+      "regex": "^/programme/discours\\-publics\\-exterieur(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/discours\\-publics\\-exterieur(?:/)?$"
+    },
+    {
+      "page": "/programme/discours-publics-local",
+      "regex": "^/programme/discours\\-publics\\-local(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/discours\\-publics\\-local(?:/)?$"
+    },
+    {
+      "page": "/programme/entretien-espaces-verts",
+      "regex": "^/programme/entretien\\-espaces\\-verts(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/entretien\\-espaces\\-verts(?:/)?$"
+    },
+    {
+      "page": "/programme/maintenance",
+      "regex": "^/programme/maintenance(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/maintenance(?:/)?$"
+    },
+    {
+      "page": "/programme/nettoyage",
+      "regex": "^/programme/nettoyage(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/nettoyage(?:/)?$"
+    },
+    {
+      "page": "/programme/predication",
+      "regex": "^/programme/predication(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/predication(?:/)?$"
+    },
+    {
+      "page": "/programme/reunion-vie-ministere",
+      "regex": "^/programme/reunion\\-vie\\-ministere(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/reunion\\-vie\\-ministere(?:/)?$"
+    },
+    {
+      "page": "/programme/services",
+      "regex": "^/programme/services(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/services(?:/)?$"
+    },
+    {
+      "page": "/programme/temoignage-public",
+      "regex": "^/programme/temoignage\\-public(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/temoignage\\-public(?:/)?$"
+    },
+    {
+      "page": "/programme/visite-responsable-circonscription",
+      "regex": "^/programme/visite\\-responsable\\-circonscription(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/programme/visite\\-responsable\\-circonscription(?:/)?$"
+    },
+    {
+      "page": "/publisher-app",
+      "regex": "^/publisher\\-app(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/devices",
+      "regex": "^/publisher\\-app/devices(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/devices(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/logs",
+      "regex": "^/publisher\\-app/logs(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/logs(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/receive-data",
+      "regex": "^/publisher\\-app/receive\\-data(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/receive\\-data(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/send-data",
+      "regex": "^/publisher\\-app/send\\-data(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/send\\-data(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/settings",
+      "regex": "^/publisher\\-app/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/settings(?:/)?$"
+    },
+    {
+      "page": "/publisher-app/users",
+      "regex": "^/publisher\\-app/users(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publisher\\-app/users(?:/)?$"
+    },
+    {
+      "page": "/publishers",
+      "regex": "^/publishers(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/publishers(?:/)?$"
+    },
+    {
+      "page": "/reports",
+      "regex": "^/reports(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reports(?:/)?$"
+    },
+    {
+      "page": "/reports/entry",
+      "regex": "^/reports/entry(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reports/entry(?:/)?$"
+    },
+    {
+      "page": "/reports/view",
+      "regex": "^/reports/view(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reports/view(?:/)?$"
+    },
+    {
+      "page": "/responsabilites",
+      "regex": "^/responsabilites(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/coordinateur",
+      "regex": "^/responsabilites/coordinateur(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/coordinateur(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/personnalise",
+      "regex": "^/responsabilites/personnalise(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/personnalise(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/responsable-predication",
+      "regex": "^/responsabilites/responsable\\-predication(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/responsable\\-predication(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/reunions",
+      "regex": "^/responsabilites/reunions(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/reunions(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/salle-du-royaume",
+      "regex": "^/responsabilites/salle\\-du\\-royaume(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/salle\\-du\\-royaume(?:/)?$"
+    },
+    {
+      "page": "/responsabilites/secretaire",
+      "regex": "^/responsabilites/secretaire(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/responsabilites/secretaire(?:/)?$"
+    },
+    {
+      "page": "/settings",
+      "regex": "^/settings(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/settings(?:/)?$"
+    },
+    {
+      "page": "/territories",
+      "regex": "^/territories(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/territories(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}

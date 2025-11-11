@@ -1,17 +1,34 @@
+'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { ArrowLeft } from "lucide-react";
+import * as React from 'react';
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { navItems } from '@/lib/nav-data';
 
-export default function PublisherAppPage() {
-  return (
-    <Card className="flex items-center justify-center h-96">
-      <CardHeader className="text-center">
-        <ArrowLeft className="h-12 w-12 mx-auto text-muted-foreground" />
-        <CardTitle className="mt-4">Publisher App</CardTitle>
-        <CardDescription>
-          Veuillez sélectionner une section dans le menu de gauche.
-        </CardDescription>
-      </CardHeader>
-    </Card>
-  );
-}
+const PublisherAppPage = () => {
+    const nav = navItems.find(item => item.id === 'publisherApp');
+    const subItems = nav?.subItems || [];
+
+    return (
+        <div>
+            <h1 className="text-3xl font-bold">Publisher App</h1>
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {subItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                    <Link href={item.href || '#'} key={item.id} className="group">
+                        <Card className="h-full hover:bg-accent hover:text-accent-foreground transition-colors duration-200">
+                            <CardHeader className="flex flex-col items-center justify-center text-center p-6">
+                                <Icon className="h-10 w-10 mb-4 text-primary group-hover:text-accent-foreground" />
+                                <CardTitle className="text-lg">{item.label}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+                );
+            })}
+            </div>
+        </div>
+    );
+};
+
+export default PublisherAppPage;

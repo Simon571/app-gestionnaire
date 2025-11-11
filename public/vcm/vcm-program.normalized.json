@@ -1,0 +1,2907 @@
+{
+  "weeks": [
+    {
+      "weekTitle": "27 octobre - 2 novembre 2025",
+      "weekTitleLocale": "27 OCTOBRE – 2 NOVEMBRE",
+      "startDate": "2025-10-27",
+      "endDate": "2025-11-02",
+      "issue": "202509",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202509.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Pour une vie saine et heureuse",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Ec 12:1-14 (th leçon 12).",
+              "duration": 4,
+              "scriptures": "ECCLÉSIASTE 11-12",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON (lmd leçon 8 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE INFORMEL. Lors d’une précédente conversation, ton interlocuteur t’a dit qu’il avait récemment perdu un être cher (lmd leçon 9 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "lmd appendice A idée 13. Thème : Dieu souhaite nous apporter son aide (th leçon 20).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 30-31. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 155",
+              "songNumber": 155
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 111",
+              "songNumber": 111
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 8",
+              "songNumber": 8
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "3-9 novembre 2025",
+      "weekTitleLocale": "3-9 NOVEMBRE",
+      "startDate": "2025-11-03",
+      "endDate": "2025-11-09",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "L’histoire d’un amour indéfectible",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Ct 2:1-17 (th leçon 12).",
+              "duration": 4,
+              "scriptures": "CHANT DE SALOMON 1-2",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 1 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Communique une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 9 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "lff leçon 18 introduction et idées principales 1-3 (th leçon 8).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "« La personne généreuse sera bénie »",
+              "theme": "« La personne généreuse sera bénie » (15 min)",
+              "duration": 15,
+              "notes": [
+                "Par un ancien. Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 32-33. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 132",
+              "songNumber": 132
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 46",
+              "songNumber": 46
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 137",
+              "songNumber": 137
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "10-16 novembre 2025",
+      "weekTitleLocale": "10-16 NOVEMBRE",
+      "startDate": "2025-11-10",
+      "endDate": "2025-11-16",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "L’importance de la beauté intérieure",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Ct 4:1-16 (th leçon 2).",
+              "duration": 4,
+              "scriptures": "CHANT DE SALOMON 3-5",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 6 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Montre à ton interlocuteur comment trouver sur jw.org des contenus dans sa langue (lmd leçon 4 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "ijwbq article 131. Thème : Que dit la Bible au sujet du maquillage et des bijoux ? (th leçon 1).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Le mariage : seulement avec un disciple du Seigneur (Gen. 28:2)",
+              "theme": "Le mariage : seulement avec un disciple du Seigneur (Gen. 28:2) (8 min)",
+              "duration": 8,
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "Serais-tu un bon conjoint ?",
+              "theme": "Serais-tu un bon conjoint ? (7 min)",
+              "duration": 7,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 34-35. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 31",
+              "songNumber": 31
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 36",
+              "songNumber": 36
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 44",
+              "songNumber": 44
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "17-23 novembre 2025",
+      "weekTitleLocale": "17-23 NOVEMBRE",
+      "startDate": "2025-11-17",
+      "endDate": "2025-11-23",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Sois une muraille, pas une porte",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Ct 7:1-13 (th leçon 12).",
+              "duration": 4,
+              "scriptures": "CHANT DE SALOMON 6-8",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Engage la conversation à l’aide de la carte de visite jw.org (lmd leçon 4 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE PUBLIC. Dans un territoire de commerces et de bureaux, engage la conversation à l’aide d’un tract (lmd leçon 1 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Engage une conversation amicale. Celle-ci se termine avant que tu aies pu donner un témoignage (lmd leçon 2 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Explique tes croyances",
+              "theme": "Démonstration. ijwfq article 43. Thème : Les Témoins de Jéhovah suivent-ils des règles en matière de relations amoureuses ? (th leçon 7).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Fuis toute conduite sexuelle immorale",
+              "theme": "Fuis toute conduite sexuelle immorale (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 36-37. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 34",
+              "songNumber": 34
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 121",
+              "songNumber": 121
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 51",
+              "songNumber": 51
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "24-30 novembre 2025",
+      "weekTitleLocale": "24-30 NOVEMBRE",
+      "startDate": "2025-11-24",
+      "endDate": "2025-11-30",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "De l’espoir pour les humains « chargés de fautes »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 2:1-11 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 1-2",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une vérité listée dans l’appendice A de la brochure Aime les gens (lmd leçon 3 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. La personne manifeste de l’intérêt pour un sujet différent de celui que tu as préparé pour donner suite à ta précédente visite (lmd leçon 7 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "ijwbq article 96. Thème : Qu’est-ce que le péché ? (th leçon 20).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Deviens l’ami de Jéhovah : Jéhovah pardonne",
+              "theme": "Deviens l’ami de Jéhovah : Jéhovah pardonne (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb leçon 38, introduction à la partie 7 et histoire 39. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 44",
+              "songNumber": 44
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 38",
+              "songNumber": 38
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 89",
+              "songNumber": 89
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "1-7 décembre 2025",
+      "weekTitleLocale": "1er-7 DÉCEMBRE",
+      "startDate": "2025-12-01",
+      "endDate": "2025-12-07",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Jéhovah avait le droit d’en attendre davantage",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 5:1-12 (th leçon 5).",
+              "duration": 4,
+              "scriptures": "ISAÏE 3-5",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Présente à la personne une vidéo de la panoplie d’enseignant, puis discutes-en avec elle (lmd leçon 1 idée 5).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE INFORMEL. Présente à la personne l’application JW Library et aide-la à la télécharger sur son smartphone (lmd leçon 9 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "Apporte de l’aide à un étudiant de la Bible qui rencontre de l’opposition familiale (lmd leçon 12 idée 4).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 40-41. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 135",
+              "songNumber": 135
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 65",
+              "songNumber": 65
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 4",
+              "songNumber": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "8-14 décembre 2025",
+      "weekTitleLocale": "8-14 DÉCEMBRE",
+      "startDate": "2025-12-08",
+      "endDate": "2025-12-14",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« Me voici ! Envoie-moi ! »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 8:1-13 (th leçon 5).",
+              "duration": 4,
+              "scriptures": "ISAÏE 6-8",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une des vérités listées dans l’appendice A de la brochure Aime les gens (lmd leçon 4 idée 5).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 9 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Montre à la personne comment se passe un cours biblique (lmd leçon 9 idée 5).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "La prédication de maison en maison : Notre marque de fabrique",
+              "theme": "La prédication de maison en maison : Notre marque de fabrique (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 42-43. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 75",
+              "songNumber": 75
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 83",
+              "songNumber": 83
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 123",
+              "songNumber": 123
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "15-21 décembre 2025",
+      "weekTitleLocale": "15-21 DÉCEMBRE",
+      "startDate": "2025-12-15",
+      "endDate": "2025-12-21",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Les prophéties annonçaient une « grande lumière »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 10:1-14 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 9-10",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. La personne appartient à une religion non chrétienne (lmd leçon 1 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Poursuis l’examen du tract laissé lors de ta précédente visite (lmd leçon 9 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Explique tes croyances",
+              "theme": "Démonstration. ijwfq article 35. Thème : Les Témoins de Jéhovah ont-ils modifié la Bible pour qu’elle s’accorde avec leurs croyances ? (th leçon 12).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "L’éclat de la lumière ne cesse d’augmenter",
+              "theme": "L’éclat de la lumière ne cesse d’augmenter (5 min)",
+              "duration": 5,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "L’organisation de Dieu à l’œuvre",
+              "theme": "L’organisation de Dieu à l’œuvre (10 min)",
+              "duration": 10,
+              "notes": [
+                "Montrer la VIDÉO prévue pour décembre."
+              ],
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb introduction à la partie 8 et histoires 44-45. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 77",
+              "songNumber": 77
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 95",
+              "songNumber": 95
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 92",
+              "songNumber": 92
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "22-28 décembre 2025",
+      "weekTitleLocale": "22-28 DÉCEMBRE",
+      "startDate": "2025-12-22",
+      "endDate": "2025-12-28",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Quel genre de personne le Messie serait-il ?",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 11:1-12 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 11-13",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON (lmd leçon 2 idée 5).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE PUBLIC. Sers-toi du site jw.org pour répondre à une question que pose la personne (lmd leçon 8 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "Aide ton étudiant à se préparer pour prêcher avec toi de maison en maison (lmd leçon 11 idée 4).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Juges-tu « d’un jugement juste ? »",
+              "theme": "Juges-tu « d’un jugement juste ? » (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 46-47. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 14",
+              "songNumber": 14
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 57",
+              "songNumber": 57
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 12",
+              "songNumber": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "29 décembre - 4 janvier 2026",
+      "weekTitleLocale": "29 DÉCEMBRE 2025 – 4 JANVIER 2026",
+      "startDate": "2025-12-29",
+      "endDate": "2026-01-04",
+      "issue": "202511",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202511.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Les ennemis du peuple de Dieu n’échappent pas à la punition",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 16:1-14 (th leçon 10).",
+              "duration": 4,
+              "scriptures": "ISAÏE 14-16",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON (lmd leçon 2 idée 5).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE PUBLIC (lmd leçon 9 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "ijwbq article 108. Thème : Qu’est-ce qu’une prophétie ? (th leçon 14).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 48-49. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 63",
+              "songNumber": 63
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 2",
+              "songNumber": 2
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 21",
+              "songNumber": 21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "5-11 janvier 2026",
+      "weekTitleLocale": "5-11 JANVIER",
+      "startDate": "2026-01-05",
+      "endDate": "2026-01-11",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« La part de ceux qui nous saccagent »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 19:1-12 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 17-20",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique à une personne mariée une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 2 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 8 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "lmd appendice A idée 14. Thème : Dieu est attentif à nos prières (th leçon 8).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "« Souviens-toi du Rocher de ta forteresse »",
+              "theme": "« Souviens-toi du Rocher de ta forteresse » (10 min)",
+              "duration": 10,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "Prends tous les jours le temps d’apprendre avec les amis de Jéhovah",
+              "theme": "Prends tous les jours le temps d’apprendre avec les amis de Jéhovah (5 min)",
+              "duration": 5,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoire 50, introduction à la partie 9 et histoire 51. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 153",
+              "songNumber": 153
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 148",
+              "songNumber": 148
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 73",
+              "songNumber": 73
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "12-18 janvier 2026",
+      "weekTitleLocale": "12-18 JANVIER",
+      "startDate": "2026-01-12",
+      "endDate": "2026-01-18",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Ce que la chute de Shebna nous enseigne",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 23:1-14 (th leçon 5).",
+              "duration": 4,
+              "scriptures": "ISAÏE 21-23",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Sans mentionner de vérité biblique en particulier, trouve un moyen naturel de faire comprendre à la personne que tu es Témoin de Jéhovah (lmd leçon 2 idée 4).",
+              "duration": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 1 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. La personne est occupée (lmd leçon 7 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "ijwyp article 71. Thème : Comment choisir de bons modèles ? Voir illustration (th leçon 9).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 52-53. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 120",
+              "songNumber": 120
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 124",
+              "songNumber": 124
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 3",
+              "songNumber": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "19-25 janvier 2026",
+      "weekTitleLocale": "19-25 JANVIER",
+      "startDate": "2026-01-19",
+      "endDate": "2026-01-25",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« C’est notre Dieu ! »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 25:1-9 (th leçon 10).",
+              "duration": 4,
+              "scriptures": "ISAÏE 24-27",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE PUBLIC. Cherche à discerner quel sujet intéresse la personne. Fais-lui découvrir notre site Internet, jw.org (lmd leçon 1 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Communique une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 9 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Explique tes croyances",
+              "theme": "Démonstration. ijwbq article 160. Thème : Pourquoi Jésus est-il appelé le Fils de Dieu ? (th leçon 3).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Appuie-toi complètement sur Jéhovah quand tu te prépares à un éventuel traitement médical ou à une chirurgie",
+              "theme": "Appuie-toi complètement sur Jéhovah quand tu te prépares à un éventuel traitement médical ou à une chirurgie (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 54-55. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 159",
+              "songNumber": 159
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 144",
+              "songNumber": 144
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 53",
+              "songNumber": 53
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "26 janvier - 1 février 2026",
+      "weekTitleLocale": "26 JANVIER – 1er FÉVRIER",
+      "startDate": "2026-01-26",
+      "endDate": "2026-02-01",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "N’honorons pas Jéhovah que des lèvres",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 29:13-24 (th leçon 2).",
+              "duration": 4,
+              "scriptures": "ISAÏE 28-29",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Cherche à discerner quel sujet intéresse la personne. Prends des dispositions pour la revoir (lmd leçon 1 idée 5).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Réponds à une question posée par la personne lors d’une précédente conversation (lmd leçon 9 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 10 idée 3).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "lff leçon 18 idées principales 6-7 (lmd leçon 11 idée 3).",
+              "duration": 4
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "« Je fais toujours les choses qui lui plaisent »",
+              "theme": "« Je fais toujours les choses qui lui plaisent » (8 min)",
+              "duration": 8,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (7 min)",
+              "duration": 7,
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoire 56, introduction à la partie 10 et histoire 57. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 28",
+              "songNumber": 28
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 89",
+              "songNumber": 89
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 55",
+              "songNumber": 55
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "2-8 février 2026",
+      "weekTitleLocale": "2-8 FÉVRIER",
+      "startDate": "2026-02-02",
+      "endDate": "2026-02-08",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Trouvons refuge sous les ailes de Jéhovah",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 31:1-9 (th leçon 10).",
+              "duration": 4,
+              "scriptures": "ISAÏE 30-32",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. La personne exprime de l’inquiétude au sujet d’un fait d’actualité (lmd leçon 2 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON (lmd leçon 5 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 7 idée 3).",
+              "duration": 4
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "« La vraie justice produira la paix » (extrait)",
+              "theme": "« La vraie justice produira la paix » (extrait) (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 58-59. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 8",
+              "songNumber": 8
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 157",
+              "songNumber": 157
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 133",
+              "songNumber": 133
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "9-15 février 2026",
+      "weekTitleLocale": "9-15 FÉVRIER",
+      "startDate": "2026-02-09",
+      "endDate": "2026-02-15",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« Il assure la stabilité de nos jours »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 35:1-10 (th leçon 12).",
+              "duration": 4,
+              "scriptures": "ISAÏE 33-35",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE PUBLIC. Invite la personne à une réunion (lmd leçon 3 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Présente à la personne une vidéo de la panoplie d’enseignant, puis discutes-en avec elle (lmd leçon 9 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "lmd appendice A idée 15. Thème : La Bible nous explique comment prier (th leçon 14).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 60-61. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 3",
+              "songNumber": 3
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 41",
+              "songNumber": 41
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 23",
+              "songNumber": 23
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "16-22 février 2026",
+      "weekTitleLocale": "16-22 FÉVRIER",
+      "startDate": "2026-02-16",
+      "endDate": "2026-02-22",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« N’aie pas peur à cause des paroles que tu as entendues »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 37:14-23 (th leçon 2).",
+              "duration": 4,
+              "scriptures": "ISAÏE 36-37",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une vérité tirée de l’appendice A de la brochure Aime les gens (lmd leçon 1 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL (lmd leçon 3 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Explique tes croyances",
+              "theme": "Démonstration. ijwbq article 110 § 1-4. Thème : Qu’est-ce que le baptême ? (th leçon 17).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "« Sur quoi repose ta confiance ? »",
+              "theme": "« Sur quoi repose ta confiance ? » (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 62-63. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 150",
+              "songNumber": 150
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 118",
+              "songNumber": 118
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 9",
+              "songNumber": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "23 février - 1 mars 2026",
+      "weekTitleLocale": "23 FÉVRIER – 1er MARS",
+      "startDate": "2026-02-23",
+      "endDate": "2026-03-01",
+      "issue": "202601",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202601.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« Comme un berger, il prendra soin de son troupeau »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 40:21-31 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 38-40",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Crée une occasion de parler à la personne d’une chose que tu as apprise lors d’une récente réunion (lmd leçon 4 idée 3).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Crée une occasion de parler à la personne de ton activité d’enseignant de la Bible (lmd leçon 4 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON (lmd leçon 7 idée 5).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "lff leçon 18 « En bref », « Révision » et « Mon objectif ». Sers-toi de la rubrique « À découvrir aussi » pour aider ton étudiant à mieux mesurer l’amour qui règne parmi les Témoins de Jéhovah (lmd leçon 11 idée 3).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Rapport de service annuel",
+              "theme": "Rapport de service annuel (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 64-65. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 4",
+              "songNumber": 4
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 160",
+              "songNumber": 160
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 161",
+              "songNumber": 161
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "2-8 mars 2026",
+      "weekTitleLocale": "2-8 MARS",
+      "startDate": "2026-03-02",
+      "endDate": "2026-03-08",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« N’aie pas peur »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 42:1-13 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 41-42",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. La personne accepte l’invitation au Mémorial et se montre intéressée (lmd leçon 6 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Invite au Mémorial un membre de ta famille et cherche sur jw.org une célébration qui aura lieu près de chez lui (lmd leçon 3 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "discours",
+              "title": "Explique tes croyances",
+              "theme": "Discours. ijwbq article 60. Thème : La peur de la mort : comment la vaincre ? (th leçon 1).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Coup d’envoi de la campagne d’invitation au Mémorial : samedi 7 mars",
+              "theme": "Coup d’envoi de la campagne d’invitation au Mémorial : samedi 7 mars (5 min)",
+              "duration": 5,
+              "notes": [
+                "Discours par le responsable de la prédication. Mentionner les dispositions prises pour la campagne, le discours spécial et le Mémorial. Encourager tous les proclamateurs à augmenter leur participation au ministère en mars et en avril. Il sera possible d’être pionnier auxiliaire avec un objectif de 15 heures."
+              ],
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "L’organisation de Dieu à l’œuvre",
+              "theme": "L’organisation de Dieu à l’œuvre (10 min)",
+              "duration": 10,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 66-67. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 8",
+              "songNumber": 8
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 19",
+              "songNumber": 19
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 110",
+              "songNumber": 110
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "9-15 mars 2026",
+      "weekTitleLocale": "9-15 MARS",
+      "startDate": "2026-03-09",
+      "endDate": "2026-03-15",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Une prophétie écrite deux siècles à l’avance",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 44:9-20 (th leçon 10).",
+              "duration": 4,
+              "scriptures": "ISAÏE 43-44",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Propose l’invitation au Mémorial (lmd leçon 4 idée 3).",
+              "duration": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Invite une de tes connaissances au Mémorial (lmd leçon 3 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Demande à ton employeur un congé pour assister au Mémorial (lmd leçon 6 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique à une personne qui a accepté l’invitation au Mémorial lors de ta précédente visite (lmd leçon 7 idée 4).",
+              "duration": 4
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb introduction à la partie 11 et histoires 68-69. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 63",
+              "songNumber": 63
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 69",
+              "songNumber": 69
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 137",
+              "songNumber": 137
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "16-22 mars 2026",
+      "weekTitleLocale": "16-22 MARS",
+      "startDate": "2026-03-16",
+      "endDate": "2026-03-22",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "« Je suis Dieu, et il n’y a personne comme moi »",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 45:1-11 (th leçon 5).",
+              "duration": 4,
+              "scriptures": "ISAÏE 45-47",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE PUBLIC. Explique à une personne non chrétienne ce qu’est le Mémorial (lmd leçon 5 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique à une personne qui a accepté l’invitation au Mémorial lors de ta précédente visite (lmd leçon 9 idée 5).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "lff leçon 19 introduction et idées principales 1-3 (lmd leçon 11 idée 3).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "La seule Source d’aide absolument fiable",
+              "theme": "La seule Source d’aide absolument fiable (7 min)",
+              "duration": 7,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "discours",
+              "title": "Rapport 2026 sur les activités du service local de développement-construction",
+              "theme": "Rapport 2026 sur les activités du service local de développement-construction (8 min)",
+              "duration": 8,
+              "notes": [
+                "Discours."
+              ],
+              "number": 8
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 70-71. (30 min)",
+              "duration": 30,
+              "number": 9
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 2",
+              "songNumber": 2
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 38",
+              "songNumber": 38
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 148",
+              "songNumber": 148
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "23-29 mars 2026",
+      "weekTitleLocale": "23-29 MARS",
+      "startDate": "2026-03-23",
+      "endDate": "2026-03-29",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Écouter Jéhovah : de grands bienfaits à la clé",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 48:9-20 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 48-49",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Invite un membre de ta famille inactif au discours spécial et au Mémorial (lmd leçon 5 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE INFORMEL. La personne envisageant d’assister au Mémorial, explique-lui comment celui-ci se déroule (lmd leçon 9 idée 3).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE INFORMEL. Une fois le Mémorial terminé, réponds aux questions d’un invité (lmd leçon 8 idée 3).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Tire profit du jour le plus important de l’année",
+              "theme": "Tire profit du jour le plus important de l’année (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 72-73. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 89",
+              "songNumber": 89
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 107",
+              "songNumber": 107
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 134",
+              "songNumber": 134
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "6-12 avril 2026",
+      "weekTitleLocale": "6-12 AVRIL",
+      "startDate": "2026-04-06",
+      "endDate": "2026-04-12",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Écoutons Celui que Dieu a enseigné",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 50:1-11 (th leçon 2).",
+              "duration": 4,
+              "scriptures": "ISAÏE 50-51",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Parle du Mémorial à un collègue de travail (lmd leçon 2 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. La personne a assisté au Mémorial. Invite-la à la prochaine réunion de l’assemblée (lmd leçon 9 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Explique tes croyances",
+              "theme": "Démonstration. ijwbq article 140 § 4. Thème : Suffit-il de croire en Jésus pour être sauvé ? (lmd leçon 11 idée 5).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Besoins de l’assemblée",
+              "theme": "Besoins de l’assemblée (15 min)",
+              "duration": 15,
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb introduction à la partie 12 et histoires 74-75. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 88",
+              "songNumber": 88
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 99",
+              "songNumber": 99
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 13",
+              "songNumber": 13
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "13-19 avril 2026",
+      "weekTitleLocale": "13-19 AVRIL",
+      "startDate": "2026-04-13",
+      "endDate": "2026-04-19",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Quel immense amour Jésus a manifesté !",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 53:3-12 (th leçon 10).",
+              "duration": 4,
+              "scriptures": "ISAÏE 52-53",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique (lmd leçon 4 idée 4).",
+              "duration": 4
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une des vérités listées dans l’appendice A de la brochure Aime les gens (lmd leçon 3 idée 3).",
+              "duration": 3
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "DE MAISON EN MAISON. Propose un cours biblique à une personne qui a assisté au Mémorial (lmd leçon 8 idée 3).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Deviens l’ami de Jéhovah : Le plus bel acte d’amour",
+              "theme": "Deviens l’ami de Jéhovah : Le plus bel acte d’amour (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 76-77. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 18",
+              "songNumber": 18
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 20",
+              "songNumber": 20
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 57",
+              "songNumber": 57
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "20-26 avril 2026",
+      "weekTitleLocale": "20-26 AVRIL",
+      "startDate": "2026-04-20",
+      "endDate": "2026-04-26",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Combien sommes-nous prêts à payer ?",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 54:1-10 (th leçon 11).",
+              "duration": 4,
+              "scriptures": "ISAÏE 54-55",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "DE MAISON EN MAISON. Communique une des vérités listées dans l’appendice A de la brochure Aime les gens (lmd leçon 1 idée 4).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE PUBLIC. Communique une des vérités listées dans l’appendice A de la brochure Aime les gens (lmd leçon 2 idée 3).",
+              "duration": 2
+            },
+            {
+              "type": "demonstration",
+              "title": "Entretiens l’intérêt",
+              "theme": "TÉMOIGNAGE PUBLIC. Donne à la personne une carte de visite jw.org (lmd leçon 9 idée 3).",
+              "duration": 2
+            },
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "be 28 § 3 – 31 § 2. Thème : Comment étudier (th leçon 14).",
+              "duration": 5
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Surmonte les obstacles qui t’empêchent d’étudier individuellement",
+              "theme": "Surmonte les obstacles qui t’empêchent d’étudier individuellement (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 78-79. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 86",
+              "songNumber": 86
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 97",
+              "songNumber": 97
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 70",
+              "songNumber": 70
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "weekTitle": "27 avril - 3 mai 2026",
+      "weekTitleLocale": "27 AVRIL – 3 MAI",
+      "startDate": "2026-04-27",
+      "endDate": "2026-05-03",
+      "issue": "202603",
+      "sourceUrl": "C:\\Users\\Public\\Documents\\app-gestionnaire\\export\\mwb_F_202603.jwpub",
+      "sections": [
+        {
+          "key": "joyaux",
+          "title": "Joyaux de la Parole de Dieu",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Discours",
+              "theme": "Nous sommes heureux d’avoir pour Dieu Jéhovah",
+              "duration": 10,
+              "number": 1
+            },
+            {
+              "type": "demonstration",
+              "title": "Perles spirituelles",
+              "theme": "Perles spirituelles",
+              "duration": 10,
+              "number": 2
+            },
+            {
+              "type": "lecture",
+              "title": "Lecture de la Bible",
+              "theme": "Is 56:4-12 (th leçon 5).",
+              "duration": 4,
+              "scriptures": "ISAÏE 56-57",
+              "number": 3
+            }
+          ]
+        },
+        {
+          "key": "ministere",
+          "title": "Applique-toi au ministère",
+          "items": [
+            {
+              "type": "demonstration",
+              "title": "Engage la conversation",
+              "theme": "TÉMOIGNAGE INFORMEL. Parle à la personne d’une chose que tu as apprise lors d’une réunion récente (lmd leçon 2 idée 4).",
+              "duration": 3
+            },
+            {
+              "type": "discours",
+              "title": "Explique tes croyances",
+              "theme": "Discours. ijwbq article 90. Thème : Est-il nécessaire d’appartenir à une religion organisée ? (th leçon 16).",
+              "duration": 5
+            },
+            {
+              "type": "demonstration",
+              "title": "Fais des disciples",
+              "theme": "lff leçon 19 idée principale 4 (lmd leçon 11 idée 3).",
+              "duration": 4
+            }
+          ]
+        },
+        {
+          "key": "vie_chretienne",
+          "title": "Vie chrétienne",
+          "items": [
+            {
+              "type": "discours",
+              "title": "Ne t’arrête jamais de parler de Jéhovah",
+              "theme": "Ne t’arrête jamais de parler de Jéhovah (15 min)",
+              "duration": 15,
+              "notes": [
+                "Discussion."
+              ],
+              "number": 7
+            },
+            {
+              "type": "study",
+              "title": "Étude biblique de l’assemblée",
+              "theme": "lfb histoires 80-81. (30 min)",
+              "duration": 30,
+              "number": 8
+            }
+          ]
+        },
+        {
+          "key": "cantiques",
+          "title": "Cantiques",
+          "items": [
+            {
+              "type": "cantique",
+              "title": "Cantique d'ouverture",
+              "theme": "Cantique d'ouverture 12",
+              "songNumber": 12
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique intermédiaire",
+              "theme": "Cantique intermédiaire 58",
+              "songNumber": 58
+            },
+            {
+              "type": "cantique",
+              "title": "Cantique de conclusion",
+              "theme": "Cantique de conclusion 28",
+              "songNumber": 28
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import * as React from 'react';
@@ -24,8 +23,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Calendar as CalendarIcon, Users, Building, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { useToast } from '@/hooks/use-toast';
 
-type EventType = 'circuit_assembly_co' | 'circuit_assembly_br' | 'regional_convention';
+type EventType = 'circuit_assembly_co' | 'circuit_assembly_br' | 'regional_convention' | 'co_visit' | 'memorial' | 'meeting_day_change' | 'no_meeting' | 'co_preaching_visit' | 'other';
 
 type Event = {
     id: number;
@@ -41,6 +41,12 @@ const eventTypeTranslations: Record<EventType, string> = {
     circuit_assembly_co: 'Assemblée de circonscription',
     circuit_assembly_br: 'Assemblée de circonscription',
     regional_convention: 'Assemblée régionale',
+    co_visit: 'Visite du responsable de circonscription',
+    memorial: 'Mémorial',
+    meeting_day_change: 'Changement de jour de réunion',
+    no_meeting: 'Pas de réunion',
+    co_preaching_visit: 'Visite du responsable de la prédication',
+    other: 'Autre',
 };
 
 const EventForm = ({ event, onSave, onCancel }: { event?: Event | null, onSave: (event: any) => void, onCancel: () => void }) => {
@@ -73,6 +79,12 @@ const EventForm = ({ event, onSave, onCancel }: { event?: Event | null, onSave: 
                         <SelectItem value="circuit_assembly_co">Assemblée de circonscription</SelectItem>
                         <SelectItem value="circuit_assembly_br">Assemblée de circonscription (Rep. Béthel)</SelectItem>
                         <SelectItem value="regional_convention">Assemblée régionale</SelectItem>
+                        <SelectItem value="co_visit">Responsable de circonscription</SelectItem>
+                        <SelectItem value="memorial">Mémorial</SelectItem>
+                        <SelectItem value="meeting_day_change">Changement de jour de réunion</SelectItem>
+                        <SelectItem value="no_meeting">Pas de réunion</SelectItem>
+                        <SelectItem value="co_preaching_visit">Visite du responsable de la prédication</SelectItem>
+                        <SelectItem value="other">Autre</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -123,30 +135,43 @@ const EventDialog = ({ children, event, onSave }: { children: React.ReactNode, e
 
 export default function EventsPage() {
     const [events, setEvents] = React.useState(initialEvents);
+    const { toast } = useToast();
 
     const getEventTypeTranslation = (type: Event['type']) => {
         return eventTypeTranslations[type] || type;
     };
 
     const handleSave = (eventData: Event) => {
+        const isUpdating = events.some(e => e.id === eventData.id);
         setEvents(prev => {
-            const existing = prev.find(e => e.id === eventData.id);
-            if (existing) {
+            if (isUpdating) {
                 return prev.map(e => e.id === eventData.id ? { ...e, ...eventData } : e);
             }
             return [...prev, {...eventData, id: Date.now()}];
         });
+        toast({
+            title: isUpdating ? "Événement mis à jour" : "Événement ajouté",
+            description: `L'événement "${eventData.theme}" a été sauvegardé.`,
+        });
     };
     
     const handleDelete = (id: number) => {
+        const eventToDelete = events.find(e => e.id === id);
         setEvents(prev => prev.filter(e => e.id !== id));
+        if (eventToDelete) {
+            toast({
+                title: "Événement supprimé",
+                description: `L'événement "${eventToDelete.theme}" a été supprimé.`,
+                variant: "destructive",
+            });
+        }
     }
     
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold tracking-tight">Événements</h2>
+                    <h1 className="text-3xl font-bold">Événements</h1>
                     <p className="text-muted-foreground">Informations sur les prochaines assemblées de circonscription et régionales.</p>
                 </div>
                 <EventDialog onSave={handleSave}>

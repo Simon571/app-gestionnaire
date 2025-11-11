@@ -1,315 +1,111 @@
-
 'use client';
 
 import * as React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarTrigger,
-  SidebarInset,
-} from '@/components/ui/sidebar';
-import {
-  Home,
-  Users,
-  Map,
-  BarChart3,
-  Settings,
-  Church,
-  Info,
-  Share2,
-  Calendar,
-  BookUser,
-  UsersRound,
-  ChevronRight,
-  FilePlus2,
-  ClipboardList,
-  FileText,
-  UserPlus,
-  CalendarDays,
-  MessageSquare,
-  House,
-  Mic,
-  PersonStanding,
-  DoorOpen,
-  Waves,
-  Wrench,
-  Sparkles,
-  Wind,
-  Briefcase,
-  UserCheck,
-  Smartphone,
-  Upload,
-  Download,
-  CheckSquare,
-  BarChart2,
-  User,
-  ListChecks,
-  Handshake,
-  BellRing,
-  Settings2,
-  CloudDownload,
-} from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useRouter, usePathname } from 'next/navigation';
+import { useTransition } from 'react';
+import { Loader2, Home, Building2, Users, CalendarDays, Map, Smartphone, User, FileText, Settings, CircleHelp } from 'lucide-react';
+import { navItems as appNavItems } from '@/lib/nav-data';
 import { cn } from '@/lib/utils';
 
+const ICON_SIZE = 30;
+const ICON_STROKE = 2.8;
 
-type NavItem = {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  href?: string;
-  isCollapsible?: boolean;
-  subItems?: NavItem[];
-  isMainItem?: boolean;
-};
+// MODIFICATION: Le bouton utilise maintenant useTransition pour un retour visuel immédiat
+function IconBtn({
+  href, label, active, children,
+}: {
+  href: string; label: string; active?: boolean; children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
+  return (
+    <button
+      onClick={() => startTransition(() => router.push(href))}
+      aria-label={label}
+      title={label}
+      aria-busy={isPending}
+      disabled={isPending}
+      className={cn(
+        "relative inline-grid place-items-center w-14 h-14 rounded-xl transition outline-offset-2",
+        active
+          ? "ring-1 ring-yellow-400 bg-yellow-400/20 text-white"
+          : "text-white/90 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-yellow-400",
+        "disabled:cursor-progress disabled:opacity-80"
+      )}
+    >
+      <span className={cn(isPending && 'opacity-0')}>
+        {React.isValidElement(children) ? React.cloneElement(children, { size: ICON_SIZE, strokeWidth: ICON_STROKE } as React.Attributes) : children}
+      </span>
+      {isPending && (
+        <Loader2 className="absolute animate-spin text-yellow-400" size={22} strokeWidth={2.8}/>
+      )}
+    </button>
+  );
+}
+
+function Divider() {
+  return <div className="my-2 h-px w-10 rounded-full bg-white/25" />;
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isPathActive = (path: string) => {
+    if (path === '/') return pathname === path;
+    const cleanPathname = pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+    return cleanPathname.startsWith(path);
+  };
+
+  const mainGroupHrefs = ['/', '/assembly', '/personnes', '/programme', '/territories', '/publisher-app'];
+  const navItems = appNavItems.map(item => ({ ...item, href: item.href || '' }));
+  const mainGroup = navItems.filter(item => mainGroupHrefs.includes(item.href));
+  const reportsItem = navItems.find(item => item.href === '/reports');
   
-  const [openSections, setOpenSections] = React.useState({
-    assembly: false,
-    personnes: false,
-    programme: false,
-    publisherApp: false,
-    moi: false,
-  });
-
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections(prev => ({...prev, [section]: !prev[section]}));
-  }
-
-  const navItems: NavItem[] = [
-    { id: 'dashboard', label: 'Tableau de bord', icon: Home, href: '/', isMainItem: true },
-    {
-      id: 'assembly',
-      label: 'Assemblée',
-      icon: Church,
-      isCollapsible: true,
-      isMainItem: true,
-      subItems: [
-        { id: 'assembly-info', label: 'Information de l’assemblée', icon: Info, href: '/parametres' },
-        { id: 'assembly-sharing', label: 'Partage de l’assemblée', icon: Share2, href: '/partage' },
-        { id: 'bulletin', label: 'Tableau d’affichage', icon: ClipboardList, href: '/communications' },
-        { id: 'events', label: 'Evénements de l’assemblée', icon: Calendar, href: '/evenements' },
-        { id: 'preaching-activity', label: 'Activité de prédication (S-1)', icon: FileText, href: '/activite-predication' },
-        { id: 'groups-families', label: 'Groupes et familles', icon: Users, href: '/groupes-familles' },
-        { id: 'circuits-speakers', label: 'Circonscriptions & Orateurs', icon: BookUser, href: '/circonscriptions-orateurs' },
-        { id: 'meeting-attendance', label: 'Assistance aux réunions', icon: BarChart3, href: '/rapports' },
-        { id: 'responsibilities', label: 'Responsabilités', icon: UsersRound, href: '/responsabilites' },
-      ]
-    },
-    {
-        id: 'personnes',
-        label: "Personnes",
-        icon: Users,
-        isCollapsible: true,
-        isMainItem: true,
-        href: '/personnes',
-        subItems: [
-          { id: 'add-person', label: "Ajouter une personne", icon: UserPlus, href: '/personnes' },
-        ]
-    },
-    {
-      id: 'programme',
-      label: 'Programme',
-      icon: CalendarDays,
-      isCollapsible: true,
-      isMainItem: true,
-      href: '/programme',
-      subItems: [
-        { id: 'reunion-vie-ministere', label: 'Réunion Vie et ministère', icon: MessageSquare, href: '/programme/reunion-vie-ministere' },
-        { id: 'besoins-assemblee', label: 'Besoins de l’assemblée', icon: House, href: '/programme/besoins-assemblee' },
-        { id: 'discours-publics-local', label: 'Discours publics - Local', icon: Mic, href: '/programme/discours-publics-local' },
-        { id: 'discours-publics-exterieur', label: 'Discours publics - Extérieur', icon: PersonStanding, href: '/programme/discours-publics-exterieur' },
-        { id: 'predication', label: 'Prédication', icon: DoorOpen, href: '/programme/predication' },
-        { id: 'temoignage-public', label: 'Témoignage public', icon: Waves, href: '/programme/temoignage-public' },
-        { id: 'services', label: 'Services', icon: Wrench, href: '/programme/services' },
-        { id: 'nettoyage', label: 'Nettoyage', icon: Sparkles, href: '/programme/nettoyage' },
-        { id: 'entretien-espaces-verts', label: 'Entretien des espaces verts', icon: Wind, href: '/programme/entretien-espaces-verts' },
-        { id: 'maintenance', label: 'Maintenance', icon: Briefcase, href: '/programme/maintenance' },
-        { id: 'visite-responsable-circonscription', label: 'Visite du responsable de circonscription', icon: UserCheck, href: '/programme/visite-responsable-circonscription' },
-      ]
-    },
-     {
-      id: 'publisherApp',
-      label: 'Publisher App',
-      icon: Smartphone,
-      isCollapsible: true,
-      isMainItem: true,
-      href: '/publisher-app',
-      subItems: [
-        { id: 'send-data', label: 'Envoyer les données', icon: Upload, href: '/publisher-app/send-data' },
-        { id: 'receive-data', label: 'Recevoir les données', icon: Download, href: '/publisher-app/receive-data' },
-        { id: 'users', label: 'Utilisateurs', icon: Users, href: '/publisher-app/users' },
-        { id: 'devices', label: 'Appareils', icon: Smartphone, href: '/publisher-app/devices' },
-        { id: 'app-settings', label: "Paramètres de l'application", icon: CheckSquare, href: '/publisher-app/settings' },
-        { id: 'logs', label: 'Journaux', icon: BarChart2, href: '/publisher-app/logs' },
-      ]
-    },
-    {
-      id: 'moi',
-      label: 'Moi',
-      icon: User,
-      isCollapsible: true,
-      isMainItem: true,
-      href: '/moi',
-      subItems: [
-        { id: 'tasks', label: 'Tâches', icon: ListChecks, href: '/moi/taches' },
-        { id: 'subscription', label: 'Abonnement', icon: Handshake, href: '/moi/abonnement' },
-        { id: 'alerts', label: 'Voir les alertes', icon: BellRing, href: '/moi/alertes' },
-        { id: 'my-settings', label: 'Paramètres', icon: Settings2, href: '/moi/parametres' },
-        { id: 'updates', label: 'Mises à jour', icon: CloudDownload, href: '/moi/mises-a-jour' },
-      ]
-    },
-    { id: 'logger', label: 'Assistant IA', icon: FilePlus2, href: '/logger' },
-  ];
-
-  const settingsNav = [{ href: '/parametres', label: 'Paramètres', icon: Settings }];
-  
-  const getPageTitle = () => {
-    const allItems: NavItem[] = navItems.flatMap(item => item.isCollapsible ? (item.subItems ? [item, ...item.subItems] : [item]) : [item]);
-    
-    if (pathname === '/') {
-        return 'Tableau de bord';
-    }
-
-    const currentItem = allItems.slice().reverse().find((item) => item.href && item.href !== '/' && pathname.startsWith(item.href));
-    
-    if (currentItem) return currentItem.label;
-
-    const currentGroup = allItems.find(item => item.isCollapsible && pathname.startsWith(item.href || ''));
-    if(currentGroup) return currentGroup.label;
-
-    return 'Tableau de bord';
-  }
-
+  const secondaryGroup = [
+    { href: '/moi', label: 'Moi', icon: User },
+    reportsItem,
+    { href: '/parametres', label: 'Paramètres', icon: Settings }
+  ].filter(Boolean) as { href: string; label: string; icon: React.ElementType; }[];
 
   return (
-    <SidebarProvider>
-      <Sidebar className="bg-sidebar border-r">
-        <SidebarHeader className="border-b">
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="shrink-0">
-              <Church className="size-5 text-primary" />
-            </Button>
-            <h1 className="text-lg font-semibold tracking-tight">
-              Gestionnaire d'Assemblée
-            </h1>
+    <>
+  <aside className="fixed left-0 top-0 z-40 h-[100dvh] w-16 border-r border-white/10 bg-gradient-to-b from-cyan-400 via-sky-500 to-sky-700 text-white backdrop-blur no-print">
+        <nav className="app-shell-nav flex h-full flex-col items-center py-5">
+          <div className="flex flex-col items-center gap-6 pt-1">
+            {mainGroup.map(item => (
+              <IconBtn key={item.id} href={item.href} label={item.label} active={isPathActive(item.href)}>
+                <item.icon />
+              </IconBtn>
+            ))}
           </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            {navItems.map((item) => (
-              item.isCollapsible ? (
-                <Collapsible key={item.id} open={openSections[item.id as keyof typeof openSections]} onOpenChange={() => toggleSection(item.id as keyof typeof openSections)} className="w-full">
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                       <SidebarMenuButton className={cn(
-                          "w-full",
-                          item.isMainItem && "text-lg font-semibold h-12 [&_svg]:size-6"
-                       )}
-                       isActive={item.href && pathname.startsWith(item.href) && (!item.subItems || item.subItems.every(sub => !pathname.startsWith(sub.href || '#')))}>
-                          <item.icon />
-                          <span>{item.label}</span>
-                          <ChevronRight className={cn(
-                              "ml-auto h-4 w-4 transition-transform duration-200",
-                              openSections[item.id as keyof typeof openSections] && "rotate-90"
-                          )} />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                  </SidebarMenuItem>
-                  <CollapsibleContent>
-                    <SidebarMenu className="ml-[18px] mt-2 space-y-1 border-l-2 border-sidebar-border/50 py-2 pl-4">
-                      {item.subItems?.map((subItem) => (
-                        <SidebarMenuItem key={subItem.href}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={subItem.href !== '/' && subItem.href && pathname.startsWith(subItem.href)}
-                            tooltip={subItem.label}
-                          >
-                            <Link href={subItem.href as any}>
-                              <subItem.icon />
-                              <span>{subItem.label}</span>
-                            </Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </CollapsibleContent>
-                </Collapsible>
-              ) : (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.label}
-                     className={cn(
-                        item.isMainItem && "text-lg font-semibold h-12 [&_svg]:size-6"
-                     )}
-                  >
-                    <Link href={item.href as any}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
+          <Divider />
+          <div className="flex flex-col items-center gap-6">
+            {secondaryGroup.map(item => (
+              <IconBtn key={item.href} href={item.href} label={item.label} active={isPathActive(item.href)}>
+                <item.icon />
+              </IconBtn>
             ))}
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter className="border-t">
-          <SidebarMenu>
-            {settingsNav.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
-                >
-                  <Link href={item.href}>
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-            <SidebarMenuItem>
-                <div className="flex items-center gap-3 p-2">
-                    <Avatar className="h-9 w-9">
-                        <AvatarImage src="https://placehold.co/40x40.png" alt="Admin" data-ai-hint="person avatar"/>
-                        <AvatarFallback>AD</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col text-sm">
-                        <span className="font-semibold text-sidebar-foreground">Utilisateur Admin</span>
-                        <span className="text-muted-foreground text-xs">admin@example.com</span>
-                    </div>
-                </div>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/95 px-4 backdrop-blur sm:h-16 sm:px-6">
-          <SidebarTrigger className="md:hidden" />
-          <div className="flex-1">
-            <h2 className="text-xl font-semibold">
-              {getPageTitle()}
-            </h2>
+          </div>
+          <div className="mt-auto" />
+          <Divider />
+          <div className="pb-4">
+            <IconBtn href="/help" label="Aide">
+              <CircleHelp />
+            </IconBtn>
+          </div>
+        </nav>
+      </aside>
+
+      <div className="ml-16">
+  <header className="sticky top-0 z-30 flex h-14 items-center border-b border-white/10 bg-gradient-to-r from-cyan-400 via-sky-500 to-sky-700 text-white shadow-md no-print">
+          <div className="w-full px-4 sm:px-6">
+            <h1 className="text-xl font-semibold tracking-wide">
+              Gestionnaire d’Assemblée
+            </h1>
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </>
   );
 }

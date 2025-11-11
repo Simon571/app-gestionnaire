@@ -1,0 +1,260 @@
+{
+  "2025-10-27": {
+    "ministryParts": [
+      {
+        "type": "first-contact",
+        "studentId": "1",
+        "assistantId": "2"
+      },
+      {
+        "type": "return-visit",
+        "studentId": "3",
+        "assistantId": "4"
+      },
+      {
+        "type": "bible-study",
+        "studentId": "5",
+        "assistantId": "1"
+      },
+      {
+        "type": "talk",
+        "studentId": "2",
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "Comment améliorer notre enseignement",
+        "participantId": "1",
+        "duration": 15
+      },
+      {
+        "theme": "Besoins de l'assemblée",
+        "participantId": "2",
+        "duration": 10
+      },
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 0
+      }
+    ]
+  },
+  "2025-09-08": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-09-29": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-10-06": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-10-20": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-09-22": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-09-01": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  },
+  "2025-09-15": {
+    "ministryParts": [
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      },
+      {
+        "type": "none",
+        "studentId": null,
+        "assistantId": null
+      }
+    ],
+    "christianLifeParts": [
+      {
+        "theme": "",
+        "participantId": null,
+        "duration": 15
+      }
+    ]
+  }
+}

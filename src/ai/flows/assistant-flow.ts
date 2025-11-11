@@ -27,7 +27,7 @@ const HistoryItemSchema = z.object({
   text: z.string(),
 });
 
-const askAssistantFlow = ai.defineFlow(
+const askAssistantFlow = ai?.defineFlow(
   {
     name: 'askAssistantFlow',
     inputSchema: z.object({
@@ -37,13 +37,17 @@ const askAssistantFlow = ai.defineFlow(
     outputSchema: z.string(),
   },
   async ({ query, history }) => {
+    if (!ai) {
+      throw new Error('AI non disponible dans cet environnement.');
+    }
     
-    const promptHistory = history?.map(item => ({
+    const promptHistory = history?.map((item: z.infer<typeof HistoryItemSchema>) => ({
         role: item.role === 'user' ? 'user' : 'model',
         parts: [{text: item.text}]
     })) || [];
     
-    const { output } = await ai.generate({
+    // genkit types vary by version; cast to any to call with the desired options
+  const { output } = await (ai as any).generate({
       model: 'googleai/gemini-2.0-flash',
       system: systemPrompt,
       prompt: query,
@@ -55,5 +59,8 @@ const askAssistantFlow = ai.defineFlow(
 );
 
 export async function askAssistant(query: string, history: z.infer<typeof HistoryItemSchema>[]): Promise<string> {
+  if (!ai || !askAssistantFlow) {
+    throw new Error('AI non disponible dans cet environnement. Activez NEXT_PUBLIC_ENABLE_AI pour utiliser cette fonctionnalité.');
+  }
   return askAssistantFlow({ query, history });
 }

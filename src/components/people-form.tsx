@@ -203,7 +203,8 @@ const InfoTab = ({ personData, setPersonData }: { personData: any, setPersonData
         handleChange('familyId', newFamily.id);
     };
 
-    return (
+    
+                return (
         <div className="space-y-4 p-1">
              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Input placeholder="Prénom" value={personData.firstName} onChange={(e) => handleChange('firstName', e.target.value)} />
@@ -263,10 +264,12 @@ const InfoTab = ({ personData, setPersonData }: { personData: any, setPersonData
                             <SelectValue placeholder="Aucune famille" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="no-family">Aucune famille</SelectItem>
-                            {families.map(f => (
-                                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
-                            ))}
+                            <ScrollArea className="h-[40vh]">
+                                <SelectItem value="no-family">Aucune famille</SelectItem>
+                                {families.map(f => (
+                                    <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                                ))}
+                            </ScrollArea>
                         </SelectContent>
                     </Select>
                      <Dialog open={isFamilyManagerOpen} onOpenChange={setIsFamilyManagerOpen}>
@@ -317,7 +320,7 @@ const InfoTab = ({ personData, setPersonData }: { personData: any, setPersonData
                             <Label htmlFor="aveugle">Aveugle</Label>
                         </div>
                          <div className="flex items-center space-x-2">
-                            <Checkbox id="incarcere" checked={personData.incarcerated} onCheckedChange={(c) => handleChange('incarcerated', Boolean(c))} />
+                            <Checkbox id="incarcere" checked={personData.incarcerated} onCheckedChange={(c) => handleChange('incarcere', Boolean(c))} />
                             <Label htmlFor="incarcere">Incarcéré</Label>
                         </div>
                     </div>
@@ -355,7 +358,6 @@ const InfoTab = ({ personData, setPersonData }: { personData: any, setPersonData
         </div>
     );
 };
-
 const GroupForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCancel: () => void }) => {
     const [name, setName] = React.useState('');
     
@@ -363,6 +365,7 @@ const GroupForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCan
         e.preventDefault();
         if (name) {
             onSave(name);
+            setName(''); // Reset after save
         }
     };
     
@@ -389,11 +392,79 @@ const GroupForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCan
     );
 };
 
+const PreachingGroupManager = ({ groups, onAddGroup, onDeleteGroup, onCancel }: { groups: {id: string, name: string}[], onAddGroup: (name: string) => void, onDeleteGroup: (id: string) => void, onCancel: () => void }) => {
+    const [newGroupName, setNewGroupName] = React.useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newGroupName.trim()) {
+            onAddGroup(newGroupName.trim());
+            setNewGroupName('');
+        }
+    };
+
+    return (
+        <div>
+            <div className="max-h-60 overflow-y-auto border rounded-md mb-4">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Nom du groupe</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {groups.map(group => (
+                            <TableRow key={group.id}>
+                                <TableCell>{group.name}</TableCell>
+                                <TableCell className="text-right">
+                                    <Button variant="ghost" size="icon" onClick={() => onDeleteGroup(group.id)}>
+                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                         {groups.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={2} className="text-center text-muted-foreground">Aucun groupe ajouté.</TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+            <form onSubmit={handleSubmit} className="flex gap-2">
+                <Input 
+                    placeholder="Nom du nouveau groupe"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                />
+                <Button type="submit">Ajouter</Button>
+            </form>
+             <DialogFooter className="mt-4">
+                <Button variant="ghost" onClick={onCancel}>Fermer</Button>
+            </DialogFooter>
+        </div>
+    );
+};
+
+
 
 const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any, setSpiritualData: (data: any) => void}) => {
     
+    const { preachingGroups, addPreachingGroup, deletePreachingGroup } = usePeople();
+    const [isGroupManagerOpen, setIsGroupManagerOpen] = React.useState(false);
+
     const handleChange = (field: string, value: any) => {
-        setSpiritualData({ ...spiritualData, [field]: value });
+        if (field === 'group') {
+            const selectedGroup = preachingGroups.find(g => g.id === value);
+            setSpiritualData({ 
+                ...spiritualData, 
+                group: value,
+                groupName: selectedGroup ? selectedGroup.name : null
+            });
+        } else {
+            setSpiritualData({ ...spiritualData, [field]: value });
+        }
     };
 
     const handleFunctionChange = (key: string) => {
@@ -409,10 +480,6 @@ const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any,
          handleChange('pioneer', { ...spiritualData.pioneer, [field]: value });
     }
 
-    const [preachingGroups, setPreachingGroups] = React.useState<{id: string, name: string}[]>([]);
-    const [isGroupFormOpen, setIsGroupFormOpen] = React.useState(false);
-
-
     const calculateYears = (date?: Date) => {
         if (!date || !isValid(date)) return 0;
         const today = new Date();
@@ -425,10 +492,16 @@ const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any,
     }
     
     const handleSaveGroup = (name: string) => {
-        const newGroup = { id: `groupe-${Date.now()}`, name };
-        setPreachingGroups([...preachingGroups, newGroup]);
+        const newGroup = addPreachingGroup(name);
         handleChange('group', newGroup.id);
-        setIsGroupFormOpen(false);
+    };
+
+    const handleDeleteGroup = (groupId: string) => {
+        // If the deleted group was the selected one, unassign it
+        if (spiritualData.group === groupId) {
+            handleChange('group', null);
+        }
+        deletePreachingGroup(groupId);
     };
 
     return (
@@ -438,26 +511,36 @@ const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any,
                 <div>
                     <Label>Groupe</Label>
                     <div className="flex items-center gap-2">
-                        <Select value={spiritualData.group || undefined} onValueChange={(v) => handleChange('group', v)}>
+                        <Select value={spiritualData.group || "non-attribue"} onValueChange={(v) => handleChange('group', v === 'non-attribue' ? null : v)}>
                             <SelectTrigger className="h-8 bg-white">
                                 <SelectValue placeholder="Non attribué" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="non-attribue">Non attribué</SelectItem>
-                                {preachingGroups.map(group => (
-                                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
-                                ))}
-                            </SelectContent>
+                                    <ScrollArea className="h-[40vh]">
+                                        <SelectItem value="non-attribue">Non attribué</SelectItem>
+                                        {preachingGroups
+                                            .slice() // Create a shallow copy to avoid mutating the original array
+                                            .sort((a, b) => a.name.localeCompare(b.name))
+                                            .map(group => (
+                                                <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                                        ))}
+                                    </ScrollArea>
+                                </SelectContent>
                         </Select>
-                        <Dialog open={isGroupFormOpen} onOpenChange={setIsGroupFormOpen}>
+                        <Dialog open={isGroupManagerOpen} onOpenChange={setIsGroupManagerOpen}>
                             <DialogTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="h-4 w-4" /></Button>
                             </DialogTrigger>
                             <DialogContent>
                                 <DialogHeader>
-                                    <DialogTitle>Gérer les groupes</DialogTitle>
+                                    <DialogTitle>Gérer les groupes de prédication</DialogTitle>
                                 </DialogHeader>
-                                <GroupForm onSave={handleSaveGroup} onCancel={() => setIsGroupFormOpen(false)} />
+                                <PreachingGroupManager 
+                                    groups={preachingGroups}
+                                    onAddGroup={handleSaveGroup}
+                                    onDeleteGroup={handleDeleteGroup}
+                                    onCancel={() => setIsGroupManagerOpen(false)}
+                                />
                             </DialogContent>
                         </Dialog>
                     </div>
@@ -900,21 +983,21 @@ const AssignTab = ({ assignmentsData, setAssignmentsData }: { assignmentsData: P
 
 const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['activity'], setActivityData: (data: Person['activity']) => void }) => {
     
-    const [serviceYear, setServiceYear] = React.useState(getYear(new Date()));
+    const [startYear, setStartYear] = React.useState(2025);
 
     const months = React.useMemo(() => {
         const result = [];
+        // Start date is July (month 6) of the selected year
+        const startDate = new Date(startYear, 6, 1);
         for (let i = 0; i < 12; i++) {
-            const monthIndex = (8 + i) % 12; // Start from September (month 8)
-            const year = monthIndex < 8 ? serviceYear + 1 : serviceYear;
-            const date = setMonth(setYear(new Date(), year), monthIndex);
+            const date = new Date(startDate.getFullYear(), startDate.getMonth() + i, 1);
             result.push({
                 key: format(date, 'yyyy-MM'),
                 label: format(date, 'MMMM yyyy', { locale: fr }),
             });
         }
         return result;
-    }, [serviceYear]);
+    }, [startYear]);
 
     const handleDataChange = (monthKey: string, field: keyof Person['activity'][0], value: any) => {
         const existingRecordIndex = activityData.findIndex(record => record.month === monthKey);
@@ -929,7 +1012,7 @@ const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['
                 bibleStudies: null,
                 isAuxiliaryPioneer: false,
                 hours: null,
-                credit: false,
+                credit: null,
                 isLate: false,
                 remarks: '',
             };
@@ -971,13 +1054,15 @@ const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['
     return (
         <div className="p-1">
              <div className="flex items-center gap-4 mb-4">
-                <Label>Année de service</Label>
-                <Select value={serviceYear.toString()} onValueChange={(v) => setServiceYear(Number(v))}>
+                <Label>Année</Label>
+                <Select value={startYear.toString()} onValueChange={(v) => setStartYear(Number(v))}>
                     <SelectTrigger className="w-28 bg-white h-9">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                        <ScrollArea className="h-[40vh]">
+                            {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+                        </ScrollArea>
                     </SelectContent>
                 </Select>
             </div>
@@ -990,7 +1075,7 @@ const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['
                             <TableHead className="text-center w-1/12">Cours bibliques</TableHead>
                             <TableHead className="text-center w-1/12">Pionnier auxiliaire</TableHead>
                             <TableHead className="text-center w-1/12">Heures</TableHead>
-                            <TableHead className="text-center w-1/12">Crédit</TableHead>
+                            <TableHead className="text-center w-1/12">Crédit (minutes)</TableHead>
                             <TableHead className="text-center w-1/12">En retard</TableHead>
                             <TableHead className="w-1/4">Remarques</TableHead>
                         </TableRow>
@@ -1005,7 +1090,7 @@ const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['
                                     <TableCell><Input type="number" className="h-8 bg-white text-center" value={data.bibleStudies ?? ''} onChange={(e) => handleDataChange(key, 'bibleStudies', e.target.value ? Number(e.target.value) : null)}/></TableCell>
                                     <TableCell className="text-center"><Checkbox checked={data.isAuxiliaryPioneer} onCheckedChange={(c) => handleDataChange(key, 'isAuxiliaryPioneer', c)} /></TableCell>
                                     <TableCell><Input type="number" className="h-8 bg-white text-center" value={data.hours ?? ''} onChange={(e) => handleDataChange(key, 'hours', e.target.value ? Number(e.target.value) : null)}/></TableCell>
-                                    <TableCell className="text-center"><Checkbox checked={data.credit} onCheckedChange={(c) => handleDataChange(key, 'credit', c)}/></TableCell>
+                                    <TableCell><Input type="number" className="h-8 bg-white text-center" value={data.credit ?? ''} onChange={(e) => handleDataChange(key, 'credit', e.target.value ? Number(e.target.value) : null)}/></TableCell>
                                     <TableCell className="text-center"><Checkbox checked={data.isLate} onCheckedChange={(c) => handleDataChange(key, 'isLate', c)} /></TableCell>
                                     <TableCell><Input className="h-8 bg-white" value={data.remarks} onChange={(e) => handleDataChange(key, 'remarks', e.target.value)} /></TableCell>
                                 </TableRow>
@@ -1155,7 +1240,7 @@ interface PeopleListProps {
   onSelectPerson: (person: Person) => void;
 }
 
-const roles = {
+export const roles = {
   'all': "Tout",
   'gems.president': "Président",
   'gems.secondaryRoomCounselor': "Conseil. salle sec.",
@@ -1163,19 +1248,22 @@ const roles = {
   'gems.talks': "Discours",
   'gems.spiritualGems': "Perles spirituelles",
   'gems.bibleReading': "Lecture de la Bible",
-  'ministry.student': "Élève VCM",
+  'ministry.student': "Eleve VCM",
+  'ministry.engage_conversation': "Engage la conversation",
+  'ministry.maintain_interest': "Entretien l'interet",
+  'ministry.make_disciples': "Fais des disciples",
   'ministry.firstContact': "Premier contact",
   'ministry.returnVisit': "Nouvelle visite",
   'ministry.bibleStudy': "Cours biblique",
   'ministry.explainBeliefs': "Explique tes croyances",
   'ministry.discourse': "Discours (répété)",
   'ministry.interlocutor': "Adjoint",
-  'christianLife.interventions': "Interventions Vie Chrétienne",
+  'christianLife.interventions': "Intervention vie Chrétienne",
   'christianLife.congregationBibleStudy': "EBA",
   'christianLife.reader': "Lecteur",
   'weekendMeeting.localSpeaker': "Orateur local",
   'weekendMeeting.externalSpeaker': "Orateur extérieur",
-  'weekendMeeting.president': "Week-end Président",
+  'weekendMeeting.president': "Weekend-end Président",
   'weekendMeeting.wtReader': "Lecteur Tour de Garde",
   'weekendMeeting.finalPrayer': "Prière de fin",
   'weekendMeeting.orateur2': "Orateur 2",
@@ -1184,20 +1272,24 @@ const roles = {
   'preaching.leadMeetings': "Diriger des réunions pour la prédication",
   'preaching.substituteDriver': "Conducteur remplaçant",
   'preaching.meetingPrayers': "Prières pour les réunions de prédication",
-  'services.attendanceCount': "Comptage_Assistance",
+  'services.attendanceCount': "Comptage Assistance",
   'services.doorAttendant': "Accueil à la porte",
+  'services.door_attendant_alt': "Accuel à la porte",
   'services.soundSystem': "Sonorisation",
   'services.rovingMic': "Micros baladeur",
   'services.stageMic': "Micros Estrade",
+  'services.stage_mic_alt': "Micro Estrade",
   'services.sanitary': "Sanitaire",
   'services.hallAttendant': "Accueil dans la salle",
-  'services.mainDoorAttendant': "Accueil à la grande porte",
+  'services.hall_attendant_alt': "Accueil dans la salle",
+  'services.mainDoorAttendant': "accueil à la grande porte",
+  'services.main_door_attendant_alt': "accueil à la grande porte",
   'services.maintenance': "Maintenance",
-  'cleaning.hallCleaningAfterMeeting': "Nettoyage de la Salle_Après la réunion",
+  'cleaning.hallCleaningAfterMeeting': "Nettoyage de la salle après réunion",
   'cleaning.greenSpaces': "Entretien espaces verts"
 };
 
-const mainFilters = {
+export const mainFilters = {
     'all': 'Tous',
     'families': 'Familles',
     'all_publishers': 'Tous les proclamateurs',
@@ -1230,18 +1322,24 @@ const mainFilters = {
     'anointed': 'Oint',
     'kh_key': 'Clé de la Salle du Royaume',
     'tele_volunteer': 'Télévolontaire',
-    'complex_volunteer': 'Volontaire au complexe',
+    'complex_volunteer': 'Volontaire au complexe des écoles bibliques',
     'bethel_volunteer': 'Volontaire au BÉTHEL',
+    'other_theocratic_info_4': 'Autres informations théocratiques 4',
+    'other_theocratic_info_5': 'Autres informations théocratiques 5',
+    'other_theocratic_info_6': 'Autres informations théocratiques 6',
+    'custom_spiritual_7': 'Custom spiritual 7',
     'direct_reports': 'Rapports envoyés directement à la filiale',
-    'deleted': 'Supprimé',
+    'sent_back': 'Renvoyé',
     'departed': 'Parti(e)',
 };
 
 
 const PeopleList = ({ people, selectedPerson, onSelectPerson }: PeopleListProps) => {
+    const { preachingGroups } = usePeople();
     const [searchTerm, setSearchTerm] = React.useState('');
     const [selectedRole, setSelectedRole] = React.useState('all');
     const [selectedMainFilter, setSelectedMainFilter] = React.useState('all');
+    const [selectedGroup, setSelectedGroup] = React.useState('all-groups');
 
     const filteredPeople = people.filter(p => {
         const nameMatch = p.displayName.toLowerCase().includes(searchTerm.toLowerCase());
@@ -1254,26 +1352,62 @@ const PeopleList = ({ people, selectedPerson, onSelectPerson }: PeopleListProps)
         };
 
         const mainFilterMatch = () => {
+            const spiritual = p.spiritual;
+            if (!spiritual) return false;
+
             switch(selectedMainFilter) {
                 case 'all': return true;
-                case 'elders': return p.spiritual.function === 'elder';
-                case 'servants': return p.spiritual.function === 'servant';
-                case 'appointed_brothers': return p.gender === 'male' && (p.spiritual.function === 'elder' || p.spiritual.function === 'servant');
+                case 'families': return true; // This should be handled separately, maybe a different view.
+                case 'all_publishers': return spiritual.function && ['publisher', 'servant', 'elder', 'unbaptized'].includes(spiritual.function);
+                case 'active_publishers': return spiritual.active;
+                case 'irregular_publishers': return spiritual.active && !spiritual.regular;
+                case 'inactive_publishers': return !spiritual.active;
+                case 'unbaptized_publishers': return spiritual.function === 'unbaptized';
+                case 'not_publishers': return !spiritual.function;
+                case 'baptized': return !!spiritual.baptismDate;
+                case 'elders': return spiritual.function === 'elder';
+                case 'servants': return spiritual.function === 'servant';
+                case 'appointed_brothers': return p.gender === 'male' && (spiritual.function === 'elder' || spiritual.function === 'servant');
+                case 'active_unappointed_brothers': return p.gender === 'male' && spiritual.active && !spiritual.function;
                 case 'brothers': return p.gender === 'male';
                 case 'sisters': return p.gender === 'female';
+                case 'all_pioneers': return !!spiritual.pioneer.status;
+                case 'regular_pioneers': return spiritual.pioneer.status === 'permanent';
+                case 'auxiliary_pioneers': return spiritual.pioneer.status === 'aux-permanent';
+                case 'special_pioneers': return spiritual.pioneer.status === 'special';
+                case 'missionaries': return spiritual.pioneer.status === 'missionary';
+                case 'group_overseers': return spiritual.roleInGroup === 'overseer';
+                case 'group_assistants': return spiritual.roleInGroup === 'assistant';
                 case 'family_heads': return p.isHeadOfFamily;
                 case 'aged_or_infirm': return p.agedOrInfirm;
                 case 'child': return p.child;
                 case 'blind': return p.blind;
                 case 'deaf': return p.deaf;
                 case 'incarcerated': return p.incarcerated;
-                case 'anointed': return p.spiritual.anointed;
+                case 'other_personal_info': return !!p.otherInfo;
+                case 'anointed': return spiritual.anointed;
+                case 'kh_key': return !!spiritual.kingdomHallKey;
+                case 'tele_volunteer': return !!spiritual.teleVolunteerDate;
+                case 'complex_volunteer': return !!spiritual.complexVolunteerDate;
+                case 'bethel_volunteer': return !!spiritual.bethelVolunteerDate;
+                case 'other_theocratic_info_4': return !!spiritual.otherInfo1;
+                case 'other_theocratic_info_5': return !!spiritual.otherInfo2;
+                case 'other_theocratic_info_6': return !!spiritual.otherInfo3;
+                case 'custom_spiritual_7': return !!spiritual.customSpiritual7Date;
+                case 'direct_reports': return spiritual.directReports;
+                case 'sent_back': return spiritual.isDeleted;
+                case 'deleted': return spiritual.isDeleted;
                 case 'departed': return p.departed;
                 default: return true;
             }
         };
+        
+        const groupMatch = () => {
+            if (selectedGroup === 'all-groups') return true;
+            return p.spiritual.group === selectedGroup;
+        };
 
-        return roleMatch() && mainFilterMatch();
+        return roleMatch() && mainFilterMatch() && groupMatch();
     });
 
     return (
@@ -1283,25 +1417,37 @@ const PeopleList = ({ people, selectedPerson, onSelectPerson }: PeopleListProps)
                     <Select value={selectedMainFilter} onValueChange={setSelectedMainFilter}>
                         <SelectTrigger><SelectValue/></SelectTrigger>
                         <SelectContent>
-                           {Object.entries(mainFilters).map(([key, value]) => (
-                                <SelectItem key={key} value={key}>{value}</SelectItem>
-                            ))}
+                           <ScrollArea className="h-[40vh]">
+                               {Object.entries(mainFilters).map(([key, value]) => (
+                                    <SelectItem key={key} value={key}>{value}</SelectItem>
+                                ))}
+                           </ScrollArea>
                         </SelectContent>
                     </Select>
                      <Select value={selectedRole} onValueChange={setSelectedRole}>
                         <SelectTrigger><SelectValue/></SelectTrigger>
                         <SelectContent>
-                             {Object.entries(roles).map(([key, value]) => (
-                                <SelectItem key={key} value={key}>{value}</SelectItem>
-                             ))}
+                             <ScrollArea className="h-[40vh]">
+                                 {Object.entries(roles).map(([key, value]) => (
+                                    <SelectItem key={key} value={key}>{value}</SelectItem>
+                                 ))}
+                             </ScrollArea>
                         </SelectContent>
                     </Select>
                 </div>
                  <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
-                    <Select defaultValue="all-groups">
+                    <Select value={selectedGroup} onValueChange={setSelectedGroup}>
                         <SelectTrigger><SelectValue/></SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all-groups">Tous les groupe</SelectItem>
+                            <ScrollArea className="h-[40vh]">
+                                <SelectItem value="all-groups">Tous les groupes</SelectItem>
+                                {preachingGroups
+                                    .slice()
+                                    .sort((a, b) => a.name.localeCompare(b.name))
+                                    .map(group => (
+                                    <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                                ))}
+                            </ScrollArea>
                         </SelectContent>
                     </Select>
                      <div className="flex items-center gap-2">
@@ -1408,11 +1554,11 @@ const getInitialPersonData = (): Omit<Person, 'id'> => ({
     },
     assignments: {
         gems: { president: false, prayers: false, spiritualGems: false, secondaryRoomCounselor: false, talks: false, bibleReading: false },
-        ministry: { student: false, firstContact: false, returnVisit: false, bibleStudy: false, explainBeliefs: false, hall: 'all', interlocutor: false, discourse: false, languageGroupOnly: false },
+        ministry: { student: false, firstContact: false, returnVisit: false, bibleStudy: false, explainBeliefs: false, hall: 'all', interlocutor: false, discourse: false, languageGroupOnly: false, engageConversation: false, maintainInterest: false, makeDisciples: false },
         christianLife: { interventions: false, congregationBibleStudy: false, reader: false },
         weekendMeeting: { localSpeaker: false, externalSpeaker: false, discourseNumbers: '', frequency: '4', president: false, finalPrayer: false, hospitality: false, wtReader: false, orateur2: false, groupLangueUniquement: false },
         preaching: { publicWitnessing: false, leadMeetings: false, substituteDriver: '', keyPerson: false, meetingPrayers: false },
-        services: { meeting: 'all', attendanceCount: false, doorAttendant: false, soundSystem: false, rovingMic: false, stageMic: false, sanitary: false, hallAttendant: false, mainDoorAttendant: false, customService1: false, customService1Label: '', maintenance: false },
+        services: { meeting: 'all', attendanceCount: false, doorAttendant: false, soundSystem: false, rovingMic: false, stageMic: false, sanitary: false, hallAttendant: false, mainDoorAttendant: false, customService1: false, customService1Label: '', maintenance: false, doorAttendantAlt: false, stageMicAlt: false, hallAttendantAlt: false, mainDoorAttendantAlt: false },
         cleaning: { hallCleaning: false, hallCleaningAfterMeeting: false, customCleaning1: false, customCleaning1Label: '', customCleaning2: false, customCleaning2Label: '', greenSpaces: false, lawn: false },
     },
     emergency: {
@@ -1420,17 +1566,18 @@ const getInitialPersonData = (): Omit<Person, 'id'> => ({
         notes: '',
         disasterAccommodations: false,
         contacts: [],
-    }
+    },
+    sharingPermissions: {},
 });
 
 
-export function PeopleForm({ people, selectedPerson, onSelectPerson, onSave, onNew, onDelete }: { 
-    people: Person[], 
+export function PeopleForm({ selectedPerson, onSave, onNew, onDelete, activeTab, onTabChange }: { 
     selectedPerson: Person | null, 
-    onSelectPerson: (person: Person) => void,
     onSave: (person: Omit<Person, 'id'> & { id?: string }) => void,
     onNew: () => void,
-    onDelete: () => void
+    onDelete: () => void,
+    activeTab: string,
+    onTabChange: (tab: string) => void
 }) {
     const [personData, setPersonData] = React.useState<Omit<Person, 'id'> & {id?: string}>(getInitialPersonData());
     
@@ -1504,6 +1651,10 @@ export function PeopleForm({ people, selectedPerson, onSelectPerson, onSave, onN
 
     const handleSave = () => {
         onSave(personData);
+        // If we are saving a new person (no ID yet), reset the form state for the next entry.
+        if (!personData.id) {
+            setPersonData(getInitialPersonData());
+        }
     };
     
     const setSpiritualData = (data: Person['spiritual']) => {
@@ -1523,13 +1674,11 @@ export function PeopleForm({ people, selectedPerson, onSelectPerson, onSave, onN
     }
 
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-[400px_1fr] gap-4 items-start">
-             <PeopleList people={people} selectedPerson={selectedPerson} onSelectPerson={onSelectPerson} />
-            <div className="bg-card p-4 rounded-lg border">
-                <Tabs defaultValue="informations">
+        <div className="bg-card p-4 rounded-lg border">
+                <Tabs value={activeTab} onValueChange={onTabChange} defaultValue="informations">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
-                            <Button type="button" variant="ghost" size="icon" onClick={onNew}><UserPlus /></Button>
+                            
                             <Button type="button" variant="ghost" size="icon" onClick={onDelete} disabled={!selectedPerson}><UserMinus /></Button>
                              <Button variant="outline" size="sm" type="button" onClick={handleSave}>Sauvegarder</Button>
                             <div className="border-l h-6 mx-2"></div>
@@ -1547,23 +1696,42 @@ export function PeopleForm({ people, selectedPerson, onSelectPerson, onSave, onN
                             <Button type="button" variant="ghost" size="icon"><HelpCircle /></Button>
                         </div>
                     </div>
-                    <TabsContent value="informations">
+                    <TabsContent value="informations" className="printable-area">
+                        <div className="print-only hidden my-4">
+                            <h2 className="text-xl font-bold text-center">Fiche d'informations</h2>
+                            <h3 className="text-lg text-center">{personData.displayName}</h3>
+                        </div>
                         <InfoTab personData={personData} setPersonData={setPersonData} />
                     </TabsContent>
-                    <TabsContent value="spirituel">
+                    <TabsContent value="spirituel" className="printable-area">
+                        <div className="print-only hidden my-4">
+                            <h2 className="text-xl font-bold text-center">Informations spirituelles</h2>
+                            <h3 className="text-lg text-center">{personData.displayName}</h3>
+                        </div>
                         <SpiritualTab spiritualData={personData.spiritual} setSpiritualData={setSpiritualData} />
                     </TabsContent>
-                    <TabsContent value="attribuer">
+                    <TabsContent value="attribuer" className="printable-area">
+                        <div className="print-only hidden my-4">
+                            <h2 className="text-xl font-bold text-center">Attributions</h2>
+                            <h3 className="text-lg text-center">{personData.displayName}</h3>
+                        </div>
                         <AssignTab assignmentsData={personData.assignments} setAssignmentsData={setAssignmentsData} />
                     </TabsContent>
-                    <TabsContent value="activite">
+                    <TabsContent value="activite" className="printable-area">
+                         <div className="print-only hidden my-4">
+                            <h2 className="text-xl font-bold text-center">Activité du proclamateur</h2>
+                            <h3 className="text-lg text-center">{personData.displayName}</h3>
+                        </div>
                          <ActivityTab activityData={personData.activity || []} setActivityData={setActivityData} />
                     </TabsContent>
-                    <TabsContent value="urgence">
+                    <TabsContent value="urgence" className="printable-area">
+                        <div className="print-only hidden my-4">
+                            <h2 className="text-xl font-bold text-center">Contacts d'urgence</h2>
+                            <h3 className="text-lg text-center">{personData.displayName}</h3>
+                        </div>
                          <EmergencyTab emergencyData={personData.emergency} setEmergencyData={setEmergencyData} />
                     </TabsContent>
                 </Tabs>
             </div>
-        </div>
     );
 }

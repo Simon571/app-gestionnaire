@@ -61,8 +61,10 @@ export default function AssistantPage() {
     }
   }
 
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    return (
+        <div>
+            <h1 className="text-3xl font-bold">Assistant IA</h1>
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="h-[80vh] flex flex-col">
             <CardHeader>
               <CardTitle>Assistant IA</CardTitle>
@@ -118,8 +120,8 @@ export default function AssistantPage() {
                     </Button>
                 </form>
             </CardContent>
-        </Card>
-        <Card className="h-[80vh] flex flex-col">
+    </Card>
+    <Card className="h-[80vh] flex flex-col">
             <CardHeader>
                 <CardTitle>Description de l'application</CardTitle>
             </CardHeader>
@@ -199,7 +201,8 @@ export default function AssistantPage() {
                     </ul>
                 </div>
             </CardContent>
-        </Card>
-    </div>
-  )
+                </Card>
+            </div>
+        </div>
+    )
 }
