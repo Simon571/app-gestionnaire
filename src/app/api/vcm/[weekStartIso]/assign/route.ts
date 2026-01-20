@@ -20,27 +20,35 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function GET(request: NextRequest, { params }: { params: { weekStartIso: string } }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ weekStartIso: string }> }
+) {
     try {
+        const { weekStartIso } = await params;
         const allAssignments = await readAssignments();
-        const weekAssignments = allAssignments[params.weekStartIso] || {};
+        const weekAssignments = allAssignments[weekStartIso] || {};
         return NextResponse.json(weekAssignments);
     } catch (e) {
         return NextResponse.json({ message: 'Erreur serveur', error: (e as Error).message }, { status: 500 });
     }
 }
 
-export async function POST(req: NextRequest, { params }: { params: { weekStartIso: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ weekStartIso: string }> }
+) {
   const body = await req.json().catch(() => ({}));
-  console.log("[API][ASSIGN]", { week: params.weekStartIso, payload: body });
+  const { weekStartIso } = await params;
+  console.log("[API][ASSIGN]", { week: weekStartIso, payload: body });
   
   try {
     const allAssignments = await readAssignments();
-    if (!allAssignments[params.weekStartIso]) {
-        allAssignments[params.weekStartIso] = {};
+    if (!allAssignments[weekStartIso]) {
+        allAssignments[weekStartIso] = {};
     }
-    allAssignments[params.weekStartIso][body.itemId] = {
-        ...(allAssignments[params.weekStartIso][body.itemId] || {}),
+    allAssignments[weekStartIso][body.itemId] = {
+        ...(allAssignments[weekStartIso][body.itemId] || {}),
         personId: body.personId,
         role: body.role,
         override: body.override
