@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --turbopack -H 0.0.0.0",
+    "dev:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts next dev --turbopack -H 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "build:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts NEXT_EXPORT=true next build",
+    "build:vercel": "next build",
+    "start": "next start -H 0.0.0.0",
     "lint": "next lint",
     "scrape-vcm": "ts-node --project scripts/tsconfig.json scripts/scrape-vcm.ts",
     "normalize-vcm": "ts-node --project scripts/tsconfig.json scripts/normalize-vcm.ts",
@@ -17,11 +20,15 @@
     "vcm:validate:en": "ts-node --project scripts/tsconfig.json scripts/validate-vcm.ts --lang=en",
     "typecheck": "tsc --noEmit",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build",
+    "tauri:build": "npm run build:tauri && tauri build",
+    "tauri:build:release": "npm run build:tauri && tauri build --bundles msi nsis",
     "generate:icons": "node scripts/generate-house-icon.js && node scripts/generate-windows-icons.js",
-  "postbuild": "node scripts/copy-next-static.js",
+    "vercel:deploy": "vercel --prod",
+    "postbuild": "node scripts/copy-next-static.js",
     "postinstall": "patch-package",
-    "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit"
+    "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit",
+    "sync:keys": "ts-node --project scripts/tsconfig.json scripts/publisher-sync-keys.ts",
+    "test:writer": "vitest run src/lib/__tests__/publisher-sync-flutter-writer.test.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",
@@ -52,6 +59,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@supabase/supabase-js": "^2.80.0",
     "@tauri-apps/api": "^2.9.0",
+    "better-sqlite3": "^12.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -72,6 +80,7 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.54.2",
     "recharts": "^2.15.1",
+    "sonner": "^2.0.7",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "tweetnacl": "^1.0.3",
@@ -80,15 +89,20 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.7.1",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.13",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/wav": "^1.0.3",
+    "cross-env": "^10.1.0",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.0.7",
     "genkit-cli": "^1.13.0",
     "playwright": "^1.55.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^1.1.4"
   }
 }

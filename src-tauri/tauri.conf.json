@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "app-gestionnaire",
-  "version": "0.1.0",
-  "identifier": "com.appgestionnaire.dev",
+  "productName": "Gestionnaire d'Assemblée",
+  "version": "1.0.0",
+  "identifier": "com.appgestionnaire.app",
   "build": {
-    "frontendDist": "./launcher",
+    "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "npm run dev:tauri",
+    "beforeBuildCommand": "npm run build:tauri"
   },
   "app": {
     "windows": [

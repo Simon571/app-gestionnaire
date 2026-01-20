@@ -3,25 +3,26 @@ import withNextIntl from 'next-intl/plugin';
 
 const withNextIntlConfig = withNextIntl('./src/i18n.ts');
 
+const isStaticExport = process.env.NEXT_EXPORT === 'true';
+
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'standalone',
+  ...(isStaticExport ? { output: 'export' } : {}),
+
+  images: {
+    unoptimized: true,
+  },
   typescript: {
-    ignoreBuildErrors: true,
+    // ⚠️ Vérifie les erreurs TypeScript pendant le build
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    // ⚠️ Vérifie les warnings ESLint pendant le build
+    ignoreDuringBuilds: false,
   },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
+  
+  // Trailing slash pour cohérence
+  trailingSlash: true,
 };
 
 export default withNextIntlConfig(nextConfig);
