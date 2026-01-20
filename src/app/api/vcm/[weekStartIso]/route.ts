@@ -19,11 +19,15 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
+type RouteContext = {
+  params: Promise<{ weekStartIso: string }>
+};
+
 export async function DELETE(
-  _: NextRequest,
-  { params }: { params: Promise<{ weekStartIso: string }> }
+  request: NextRequest,
+  context: RouteContext
 ) {
-  const { weekStartIso } = await params;
+  const { weekStartIso } = await context.params;
   console.log("[API][DELETE] Suppression de toutes les données pour la semaine:", weekStartIso);
   try {
     const allAssignments = await readAssignments();
