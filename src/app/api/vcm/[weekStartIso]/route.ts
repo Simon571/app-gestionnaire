@@ -1,5 +1,5 @@
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -20,7 +20,7 @@ async function writeAssignments(data: any) {
 }
 
 export async function DELETE(
-  _: Request,
+  _: NextRequest,
   { params }: { params: Promise<{ weekStartIso: string }> }
 ) {
   const { weekStartIso } = await params;
