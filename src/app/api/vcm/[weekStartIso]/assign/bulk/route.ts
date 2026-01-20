@@ -19,19 +19,22 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function POST(req: NextRequest, { params }: { params: { weekStartIso: string } }) {
+type WeekRouteContext = { params: { weekStartIso: string } };
+
+export async function POST(req: NextRequest, context: WeekRouteContext) {
   const { items } = await req.json().catch(() => ({ items: [] }));
-  console.log("[API][BULK] Assignation en masse pour la semaine:", params.weekStartIso, `${items?.length || 0} items`);
+    const { weekStartIso } = context.params;
+  console.log("[API][BULK] Assignation en masse pour la semaine:", weekStartIso, `${items?.length || 0} items`);
 
   try {
     const allAssignments = await readAssignments();
-    if (!allAssignments[params.weekStartIso]) {
-        allAssignments[params.weekStartIso] = {};
+    if (!allAssignments[weekStartIso]) {
+        allAssignments[weekStartIso] = {};
     }
 
     for (const item of items) {
         if (item.itemId) {
-            allAssignments[params.weekStartIso][item.itemId] = {
+            allAssignments[weekStartIso][item.itemId] = {
                 personId: item.personId,
                 role: item.role
             };
