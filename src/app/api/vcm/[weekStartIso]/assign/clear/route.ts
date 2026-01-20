@@ -1,5 +1,5 @@
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from 'fs';
 import path from 'path';
 
@@ -19,11 +19,21 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function POST(_: Request, { params }: { params: { weekStartIso: string } }) {
-  console.log("[API][CLEAR] Effacement des assignations pour la semaine:", params.weekStartIso);
+export async function POST(req: NextRequest) {
+  const pathname = req.nextUrl?.pathname ?? new URL(req.url).pathname;
+  const segments = pathname.split('/').filter(Boolean);
+  const vcmIndex = segments.indexOf('vcm');
+  const weekStartIso = vcmIndex >= 0 && segments.length > vcmIndex + 1
+    ? decodeURIComponent(segments[vcmIndex + 1])
+    : '';
+
+  if (!weekStartIso) {
+    return NextResponse.json({ message: 'Paramètre weekStartIso manquant' }, { status: 400 });
+  }
+  console.log("[API][CLEAR] Effacement des assignations pour la semaine:", weekStartIso);
   try {
     const allAssignments = await readAssignments();
-    delete allAssignments[params.weekStartIso];
+    delete allAssignments[weekStartIso];
     await writeAssignments(allAssignments);
     return NextResponse.json({ ok: true });
   } catch (e) {
