@@ -19,11 +19,12 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-type WeekRouteContext = { params: { weekStartIso: string } };
-
-export async function POST(req: NextRequest, context: WeekRouteContext) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { weekStartIso: string } }
+) {
   const { items } = await req.json().catch(() => ({ items: [] }));
-    const { weekStartIso } = context.params;
+  const { weekStartIso } = params;
   console.log("[API][BULK] Assignation en masse pour la semaine:", weekStartIso, `${items?.length || 0} items`);
 
   try {
