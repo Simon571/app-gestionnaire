@@ -19,13 +19,11 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function POST(req: NextRequest) {
-  const pathname = req.nextUrl?.pathname ?? new URL(req.url).pathname;
-  const segments = pathname.split('/').filter(Boolean);
-  const vcmIndex = segments.indexOf('vcm');
-  const weekStartIso = vcmIndex >= 0 && segments.length > vcmIndex + 1
-    ? decodeURIComponent(segments[vcmIndex + 1])
-    : '';
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ weekStartIso: string }> }
+) {
+  const { weekStartIso } = await params;
 
   if (!weekStartIso) {
     return NextResponse.json({ message: 'Paramètre weekStartIso manquant' }, { status: 400 });
