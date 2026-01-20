@@ -19,12 +19,18 @@ async function writeAssignments(data: any) {
     await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { weekStartIso: string } }
-) {
+export async function POST(req: NextRequest) {
   const { items } = await req.json().catch(() => ({ items: [] }));
-  const { weekStartIso } = params;
+  const pathname = req.nextUrl?.pathname ?? new URL(req.url).pathname;
+  const segments = pathname.split('/').filter(Boolean);
+  const vcmIndex = segments.indexOf('vcm');
+  const weekStartIso = vcmIndex >= 0 && segments.length > vcmIndex + 1
+    ? decodeURIComponent(segments[vcmIndex + 1])
+    : '';
+
+  if (!weekStartIso) {
+    return NextResponse.json({ message: 'Paramètre weekStartIso manquant' }, { status: 400 });
+  }
   console.log("[API][BULK] Assignation en masse pour la semaine:", weekStartIso, `${items?.length || 0} items`);
 
   try {
