@@ -1,5 +1,7 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -34,6 +36,9 @@ import {
   Edit,
   Trash2,
   Plus,
+  Wand2,
+  Send,
+  Loader2,
 } from 'lucide-react';
 import { usePeople } from '@/context/people-context';
 import type { Person } from '@/app/personnes/page';
@@ -41,8 +46,11 @@ import { format, addDays, parseISO, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { type Discourse } from '@/lib/discours-data';
 import { useToast } from '@/hooks/use-toast';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
+import { AutoAssignDialog, type AutoAssignConfig } from '@/components/programme/auto-assign-dialog';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 
 type ScheduleRow = {
   id: number;
@@ -344,11 +352,12 @@ const DiscourseManagerDialog = ({ discourseList, onUpdate }: { discourseList: Di
 };
 
 
-export default function DiscoursPublicsLocalPage() {
-    const { people, discourseList, updateDiscourseList } = usePeople();
+function DiscoursPublicsLocalPageContent() {
+    const { people, families, discourseList, updateDiscourseList } = usePeople();
     const [scheduleData, setScheduleData] = React.useState(generateInitialSchedule);
     const [selectedWeekIndex, setSelectedWeekIndex] = React.useState<number>(0);
     const { toast } = useToast();
+    const { syncDiscoursPublics, isSyncing } = useSyncToFlutter();
     
     const selectedWeek = scheduleData[selectedWeekIndex];
 
@@ -380,6 +389,170 @@ export default function DiscoursPublicsLocalPage() {
         }, 0);
         setSelectedWeekIndex(closestIndex);
         toast({ description: "Affichage de la semaine en cours." });
+    };
+
+    // Configuration des rôles pour la saisie automatique
+    const autoAssignRoles = [
+        { id: 'orateur', label: 'Orateur', maxCount: 1, defaultCount: 1 },
+        { id: 'president', label: 'Président', maxCount: 1, defaultCount: 1 },
+        { id: 'lecteur', label: 'Lecteur Tour de Garde', maxCount: 1, defaultCount: 1 },
+        { id: 'priere', label: 'Prière de fin', maxCount: 1, defaultCount: 1 },
+    ];
+
+    const handleAutoAssign = (config: AutoAssignConfig) => {
+        const getEligiblePeople = (assignmentType: AssignmentType) => {
+            const assignmentMap: Record<AssignmentType, string> = {
+                orateur: 'weekendMeeting.localSpeaker',
+                president: 'weekendMeeting.president',
+                lecteur: 'weekendMeeting.wtReader',
+                priere: 'weekendMeeting.finalPrayer',
+                orateur2: 'weekendMeeting.orateur2',
+                hospitalite: 'weekendMeeting.hospitality'
+            };
+            
+            const fullAssignment = assignmentMap[assignmentType];
+            const [section, field] = fullAssignment.split('.');
+            
+            // Pour l'orateur, inclure les anciens et serviteurs ministériels si aucun orateur local
+            if (assignmentType === 'orateur') {
+                const localSpeakers = people.filter(p => (p.assignments as any)?.[section]?.[field]);
+                if (localSpeakers.length > 0) return localSpeakers;
+                // Fallback: anciens et serviteurs ministériels
+                return people.filter(p => 
+                    p.gender === 'male' && 
+                    (p.spiritual?.function === 'elder' || p.spiritual?.function === 'servant')
+                );
+            }
+
+            return people.filter(p => (p.assignments as any)?.[section]?.[field]);
+        };
+
+        const findLastAssignment = (personId: string, assignmentType: AssignmentType) => {
+            let mostRecentDate: Date | null = null;
+            scheduleData.forEach(schedule => {
+                let assigned = false;
+                switch(assignmentType) {
+                    case 'orateur': assigned = schedule.orateur === personId; break;
+                    case 'president': assigned = schedule.president === personId; break;
+                    case 'lecteur': assigned = schedule.lecteur === personId; break;
+                    case 'priere': assigned = schedule.priere === personId; break;
+                    case 'orateur2': assigned = schedule.orateur2 === personId; break;
+                }
+                if (assigned && (!mostRecentDate || schedule.date > mostRecentDate)) {
+                    mostRecentDate = schedule.date;
+                }
+            });
+            return mostRecentDate;
+        };
+
+        const selectBestCandidate = (assignmentType: AssignmentType, usedIds: Set<string>, sortCriteria: string) => {
+            let eligible = getEligiblePeople(assignmentType)
+                .filter(p => !usedIds.has(p.id))
+                .map(p => ({
+                    ...p,
+                    lastDate: findLastAssignment(p.id, assignmentType),
+                    daysSince: findLastAssignment(p.id, assignmentType) 
+                        ? differenceInDays(new Date(), findLastAssignment(p.id, assignmentType)!)
+                        : Infinity
+                }));
+            
+            // Trier selon le critère choisi
+            if (sortCriteria === 'last_assignment') {
+                eligible = eligible.sort((a, b) => b.daysSince - a.daysSince);
+            } else if (sortCriteria === 'alphabetical') {
+                eligible = eligible.sort((a, b) => a.displayName.localeCompare(b.displayName));
+            } else if (sortCriteria === 'random') {
+                eligible = eligible.sort(() => Math.random() - 0.5);
+            }
+            
+            return eligible[0]?.id || null;
+        };
+
+        const newSchedule = [...scheduleData];
+        let assignedCount = 0;
+
+        // Appliquer sur les N semaines à partir de la semaine sélectionnée
+        for (let weekOffset = 0; weekOffset < config.weeksCount; weekOffset++) {
+            const weekIndex = selectedWeekIndex + weekOffset;
+            if (weekIndex >= newSchedule.length) break;
+            
+            const week = newSchedule[weekIndex];
+            const usedIds = new Set<string>();
+
+            // Collecter les IDs déjà utilisés cette semaine
+            if (week.orateur) usedIds.add(week.orateur);
+            if (week.president) usedIds.add(week.president);
+            if (week.lecteur) usedIds.add(week.lecteur);
+            if (week.priere) usedIds.add(week.priere);
+
+            // Assigner les rôles sélectionnés
+            const rolesToAssign: AssignmentType[] = [];
+            if (config.selectedRoles['orateur'] > 0) rolesToAssign.push('orateur');
+            if (config.selectedRoles['president'] > 0) rolesToAssign.push('president');
+            if (config.selectedRoles['lecteur'] > 0) rolesToAssign.push('lecteur');
+            if (config.selectedRoles['priere'] > 0) rolesToAssign.push('priere');
+
+            rolesToAssign.forEach(role => {
+                if (!week[role]) {
+                    const candidate = selectBestCandidate(role, usedIds, config.sortCriteria);
+                    if (candidate) {
+                        (week as any)[role] = candidate;
+                        usedIds.add(candidate);
+                        assignedCount++;
+                    }
+                }
+            });
+        }
+
+        setScheduleData(newSchedule);
+        toast({
+            title: "Saisie automatique effectuée",
+            description: `${assignedCount} attribution(s) effectuée(s) sur ${config.weeksCount} semaine(s).`,
+        });
+    };
+
+    // Synchronisation automatique quand les données changent
+    const firstMount = React.useRef(true);
+    React.useEffect(() => {
+        if (firstMount.current) {
+            firstMount.current = false;
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            // Sauvegarder dans localStorage
+            try {
+                localStorage.setItem('programme-discours-publics-local', JSON.stringify({ scheduleData, savedAt: new Date().toISOString() }));
+            } catch (e) { /* ignore */ }
+            
+            // Synchroniser automatiquement vers Flutter
+            const payload = {
+                generatedAt: new Date().toISOString(),
+                type: 'local' as const,
+                schedule: scheduleData.map(row => ({
+                    date: row.date instanceof Date ? row.date.toISOString() : row.date,
+                    orateur: row.orateur,
+                    assemblee: row.assemblee,
+                    discours: row.discours,
+                    isExternal: row.isExternal,
+                    isCancelled: row.isCancelled,
+                    president: row.president,
+                    lecteur: row.lecteur,
+                    priere: row.priere,
+                    orateur2: row.orateur2,
+                    hospitalite: row.hospitalite,
+                }))
+            };
+            await syncDiscoursPublics(payload);
+        }, 1500);
+
+        return () => clearTimeout(timer);
+    }, [scheduleData, syncDiscoursPublics]);
+
+    const saveSchedule = () => {
+      try {
+        localStorage.setItem('programme-discours-publics-local', JSON.stringify({ scheduleData, savedAt: new Date().toISOString() }));
+      } catch (e) { /* ignore */ }
     };
 
     const handleCancelWeek = () => {
@@ -522,11 +695,22 @@ export default function DiscoursPublicsLocalPage() {
         </div>
 
         <div className="flex items-center gap-2 pt-2 border-t">
+            <AutoAssignDialog
+              title="Paramètres de la saisie automatique - Discours publics"
+              roles={autoAssignRoles}
+              onConfirm={handleAutoAssign}
+            />
             <Button variant="outline" size="icon" onClick={() => toast({ title: "Bientôt disponible", description: "La fonction de recherche sera bientôt ajoutée."})}><Search className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={() => toast({ title: "Bientôt disponible", description: "L'envoi par e-mail sera bientôt disponible."})}><Mail className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={handlePrint}><Printer className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={handleCancelWeek}><Ban className="h-4 w-4" /></Button>
             <Button variant="outline" size="icon" onClick={() => window.location.href = '/personnes'}><Users className="h-4 w-4" /></Button>
+            <LinkToPublisher
+              type={'discours_publics'}
+              label="Enregistrer & Envoyer"
+              getPayload={() => ({ generatedAt: new Date().toISOString(), scheduleData, selectedWeekIndex })}
+              save={() => { try { localStorage.setItem('programme-discours-publics-local', JSON.stringify({ scheduleData, savedAt: new Date().toISOString() })); } catch {} }}
+            />
             <Button variant="outline" size="icon" onClick={handleGoToToday}><Calendar className="h-4 w-4" /></Button>
         </div>
       </CardHeader>
@@ -586,3 +770,13 @@ export default function DiscoursPublicsLocalPage() {
     </Card>
   );
 }
+
+// Export avec SSR désactivé pour éviter les erreurs d'hydratation
+export default dynamic(() => Promise.resolve(DiscoursPublicsLocalPageContent), {
+    ssr: false,
+    loading: () => (
+        <div className="h-full flex items-center justify-center">
+            <div className="text-muted-foreground">Chargement du programme...</div>
+        </div>
+    ),
+});

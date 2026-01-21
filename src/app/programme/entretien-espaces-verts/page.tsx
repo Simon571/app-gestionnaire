@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePeople } from '@/context/people-context';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 import {
   Dialog,
   DialogContent,
@@ -182,6 +183,20 @@ export default function EntretienEspacesVertsPage() {
               </TooltipTrigger>
               <TooltipContent>Utilisateur</TooltipContent>
             </Tooltip>
+            <LinkToPublisher
+              type={'services'}
+              label="Enregistrer & Envoyer"
+              getPayload={() => {
+                const generatedAt = new Date().toISOString();
+                // Normalize to a list of items so Flutter can detect upcoming services
+                const persons = Object.values(selectedPersons).filter(Boolean);
+                const items = persons.length
+                  ? persons.map((name) => ({ date: generatedAt, service: 'entretien_espaces_verts', users: [name] }))
+                  : [];
+                return { generatedAt, weeks, selectedWeek, selectedPersons, items };
+              }}
+              save={() => localStorage.setItem('programme-entretien-espaces-verts', JSON.stringify({ weeks, selectedWeek, selectedPersons, savedAt: new Date().toISOString() }))}
+            />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button size="icon" variant="outline">

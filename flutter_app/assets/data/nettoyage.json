@@ -1,0 +1,68 @@
+{
+  "generatedAt": "2025-12-11T22:20:31.705Z",
+  "selectedWeek": "décembre 08-14",
+  "reunionSemaine": "Groupe 1",
+  "reunionWeekend": "Groupe 1",
+  "cleaningData": [
+    {
+      "week": "décembre 08-14",
+      "reunionSemaine": "Groupe 1",
+      "reunionWeekend": "Groupe 1"
+    },
+    {
+      "week": "décembre 15-21",
+      "reunionSemaine": "Groupe 2",
+      "reunionWeekend": "Groupe 2"
+    },
+    {
+      "week": "décembre 22-28",
+      "reunionSemaine": "Groupe 3",
+      "reunionWeekend": "Groupe 3"
+    },
+    {
+      "week": "décembre 29 - janvier 04",
+      "reunionSemaine": "Groupe 4",
+      "reunionWeekend": "Groupe 4"
+    },
+    {
+      "week": "janvier 05-11",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "janvier 12-18",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "janvier 19-25",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "janvier 26 - février 01",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "février 02-08",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "février 09-15",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "février 16-22",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    },
+    {
+      "week": "février 23 - mars 01",
+      "reunionSemaine": "",
+      "reunionWeekend": ""
+    }
+  ]
+}

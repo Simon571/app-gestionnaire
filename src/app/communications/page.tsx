@@ -1,6 +1,8 @@
 'use client';
 
 import * as React from 'react';
+import { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,14 +23,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Calendar as CalendarIcon, Plus, Trash2, ChevronUp, ChevronDown, Upload, Loader2, Volume2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Plus, Trash2, ChevronUp, ChevronDown, Upload, Loader2, Volume2, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { textToSpeech } from '@/ai/flows/tts-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
+
+type BoardType = 'assembly' | 'elders' | 'elders-assistants';
 
 type Communication = {
   id: string;
@@ -41,6 +48,7 @@ type Communication = {
   link: string;
   content: string;
   order: number;
+  boardType: BoardType;
 };
 
 const DatePicker = ({ date, setDate }: { date: Date, setDate: (date: Date) => void }) => {
@@ -70,13 +78,34 @@ const DatePicker = ({ date, setDate }: { date: Date, setDate: (date: Date) => vo
   );
 };
 
-export default function BulletinBoardPage() {
+function BulletinBoardContent() {
+  const searchParams = useSearchParams();
+  const boardParam = searchParams.get('board') as BoardType | null;
+  
   const [communications, setCommunications] = React.useState<Communication[]>([]);
   const [selectedCommunicationId, setSelectedCommunicationId] = React.useState<string | null>(null);
+  const [activeTab, setActiveTab] = React.useState<BoardType>(boardParam || 'assembly');
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const { syncCommunications, isSyncing } = useSyncToFlutter();
+  const [isSending, setIsSending] = React.useState(false);
+  const [isMounted, setIsMounted] = React.useState(false);
 
   const [audioState, setAudioState] = React.useState<{ [key: string]: { loading: boolean; data: string | null } }>({});
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Mettre à jour l'onglet actif quand le paramètre URL change
+  React.useEffect(() => {
+    if (boardParam && (boardParam === 'assembly' || boardParam === 'elders' || boardParam === 'elders-assistants')) {
+      setActiveTab(boardParam);
+    }
+  }, [boardParam]);
+
+  // Filtrer les communications par type de tableau
+  const filteredCommunications = communications.filter(c => c.boardType === activeTab);
 
   const handleNew = () => {
     const newComm: Communication = {
@@ -89,11 +118,135 @@ export default function BulletinBoardPage() {
       attachment: null,
       link: '',
       content: '',
-      order: communications.length + 1
+      order: filteredCommunications.length + 1,
+      boardType: activeTab || 'assembly' // Valeur par défaut si activeTab est vide
     };
     setCommunications(prev => [...prev, newComm]);
     setSelectedCommunicationId(newComm.id);
     toast({ title: "Nouvelle communication créée." });
+  };
+
+  // Sauvegarde automatique locale uniquement (pas de sync vers Flutter)
+  const firstMount = React.useRef(true);
+  React.useEffect(() => {
+    if (firstMount.current) {
+      firstMount.current = false;
+      return;
+    }
+
+    // Ne pas sauvegarder si pas de communications
+    if (communications.length === 0) return;
+
+    const timer = setTimeout(async () => {
+      // Sauvegarder localement uniquement
+      try {
+        localStorage.setItem('communications', JSON.stringify(communications));
+      } catch (error) {
+        console.error('Failed to save communications', error);
+      }
+      // Note: La synchronisation vers Flutter se fait uniquement via les boutons "Envoyer"
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [communications]);
+
+  // Charger les communications existantes (stockage local simple)
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('communications');
+      if (raw) {
+        const parsed: Communication[] = JSON.parse(raw);
+        setCommunications(parsed.map(comm => ({
+          ...comm,
+          displayAfter: new Date(comm.displayAfter),
+          expirationDate: new Date(comm.expirationDate),
+          boardType: (comm.boardType || 'assembly') as BoardType, // Valeur par défaut pour anciennes données
+        })));
+      }
+    } catch (error) {
+      console.error('Failed to load communications', error);
+    }
+  }, []);
+
+  const handleSave = () => {
+    try {
+      localStorage.setItem('communications', JSON.stringify(communications));
+      toast({ title: 'Communications sauvegardées' });
+    } catch (error) {
+      console.error('Failed to save communications', error);
+      toast({ title: 'Erreur', description: 'Impossible de sauvegarder.', variant: 'destructive' });
+    }
+  };
+
+  const handleSend = async () => {
+    if (!communications.length) {
+      toast({ title: 'Aucune communication à envoyer', variant: 'destructive' });
+      return;
+    }
+    setIsSending(true);
+    try {
+      // Grouper les communications par tableau
+      const byBoard = {
+        assembly: communications.filter(c => c.boardType === 'assembly'),
+        elders: communications.filter(c => c.boardType === 'elders'),
+        'elders-assistants': communications.filter(c => c.boardType === 'elders-assistants'),
+      };
+
+      // Envoyer chaque groupe avec un message spécifique
+      const now = new Date().toISOString();
+      const boardLabels = {
+        assembly: "Tableau d'affichage assemblée",
+        elders: "Tableau d'affichage anciens",
+        'elders-assistants': "Tableau d'affichage anciens et assistants",
+      };
+
+      const sendPromises = Object.entries(byBoard).map(async ([boardType, items]) => {
+        if (items.length === 0) return null;
+        
+        const response = await publisherSyncFetch('/api/publisher-app/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'communications',
+            payload: {
+              generatedAt: now,
+              boardType,
+              boardLabel: boardLabels[boardType as BoardType],
+              communications: items,
+              totalCount: items.length,
+            },
+            notify: true,
+            metadata: {
+              boardType,
+              count: items.length,
+              message: `${items.length} communication(s) sur ${boardLabels[boardType as BoardType]}`,
+            }
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Échec d'envoi pour ${boardType}`);
+        }
+        return boardType;
+      });
+
+      const results = await Promise.all(sendPromises);
+      const sent = results.filter(Boolean).length;
+      
+      toast({ 
+        title: 'Données envoyées', 
+        description: `${sent} tableau(x) synchronisé(s) vers Publisher App.` 
+      });
+    } catch (error) {
+      console.error('Send communications error', error);
+      toast({ 
+        title: 'Envoi impossible', 
+        description: error instanceof Error ? error.message : 'Vérifiez la configuration Publisher App.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleDelete = () => {
@@ -171,21 +324,124 @@ export default function BulletinBoardPage() {
 
   const selectedCommunication = communications.find(c => c.id === selectedCommunicationId);
 
+  const getBoardLabel = (boardType: BoardType) => {
+    switch (boardType) {
+      case 'assembly': return "Tableau d'affichage assemblée";
+      case 'elders': return "Tableau d'affichage anciens";
+      case 'elders-assistants': return "Tableau d'affichage anciens et assistants";
+    }
+  };
+
+  // Fonction pour envoyer uniquement le tableau actif
+  const handleSendActiveBoard = async () => {
+    const activeComms = communications.filter(c => c.boardType === activeTab);
+    if (activeComms.length === 0) {
+      toast({ title: 'Aucune communication sur ce tableau', variant: 'destructive' });
+      return;
+    }
+    
+    setIsSending(true);
+    try {
+      const now = new Date().toISOString();
+      const boardLabel = getBoardLabel(activeTab);
+      
+      const response = await publisherSyncFetch('/api/publisher-app/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'communications',
+          payload: {
+            generatedAt: now,
+            boardType: activeTab,
+            boardLabel,
+            communications: activeComms,
+            totalCount: activeComms.length,
+          },
+          notify: true,
+          metadata: {
+            boardType: activeTab,
+            count: activeComms.length,
+            message: `${activeComms.length} communication(s) sur ${boardLabel}`,
+          }
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Échec d\'envoi');
+      }
+      
+      toast({ 
+        title: 'Tableau envoyé', 
+        description: `${activeComms.length} communication(s) de "${boardLabel}" synchronisées.` 
+      });
+    } catch (error) {
+      console.error('Send active board error', error);
+      toast({ 
+        title: 'Envoi impossible', 
+        description: error instanceof Error ? error.message : 'Erreur lors de l\'envoi.', 
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
        <div className="flex items-center justify-between">
             <div>
-                <h2 className="text-2xl font-bold tracking-tight">Tableau d'affichage</h2>
-                <p className="text-muted-foreground">C'est ici que les admin doivent mettre les communiqués et d'autres informations qui vont s'afficher dans l'application des utilisateurs</p>
+                <h2 className="text-2xl font-bold tracking-tight">Tableaux d'affichage</h2>
+                <p className="text-muted-foreground">Gérez les communications pour différents groupes de l'assemblée</p>
             </div>
             <div className="flex items-center gap-2">
                 <Button onClick={handleNew}><Plus className="mr-2 h-4 w-4" />Nouveau</Button>
                 <Button variant="destructive" onClick={handleDelete} disabled={!selectedCommunicationId}>
                     <Trash2 className="mr-2 h-4 w-4" />Supprimer
                 </Button>
+              <Button variant="default" onClick={handleSave} disabled={!communications.length}>
+                <Upload className="mr-2 h-4 w-4" />Enregistrer
+              </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleSendActiveBoard}
+                  disabled={communications.filter(c => c.boardType === activeTab).length === 0 || isSending}
+                  className="bg-blue-50 hover:bg-blue-100"
+                >
+                  {!isMounted ? (
+                    <Send className="mr-2 h-4 w-4" />
+                  ) : isSending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="mr-2 h-4 w-4" />
+                  )}
+                  Envoyer ce tableau
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleSend}
+                  disabled={!communications.length || isSending}
+                >
+                  {!isMounted ? (
+                    <Upload className="mr-2 h-4 w-4" />
+                  ) : isSending ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Upload className="mr-2 h-4 w-4" />
+                  )}
+                  Tout envoyer
+                </Button>
             </div>
        </div>
-       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+       
+       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as BoardType)} className="w-full">
+         <TabsList className="grid w-full grid-cols-3">
+           <TabsTrigger value="assembly">Assemblée</TabsTrigger>
+           <TabsTrigger value="elders">Anciens</TabsTrigger>
+           <TabsTrigger value="elders-assistants">Anciens et Assistants</TabsTrigger>
+         </TabsList>
+         
+         <TabsContent value={activeTab} className="mt-4">
+           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card>
                 <CardContent className="p-4 space-y-4">
                     <div className="grid grid-cols-[120px_1fr] items-center gap-4">
@@ -209,15 +465,14 @@ export default function BulletinBoardPage() {
                         <Label>Afficher après</Label>
                         <div className="flex items-center gap-2">
                            {selectedCommunication ? <DatePicker date={selectedCommunication.displayAfter} setDate={(d) => updateSelectedCommunication('displayAfter', d)} /> : <DatePicker date={new Date()} setDate={() => {}} />}
-                           <Select value={selectedCommunication?.displayAfterTime} onValueChange={(v) => updateSelectedCommunication('displayAfterTime', v)} disabled={!selectedCommunication}>
-                                <SelectTrigger className="w-[90px]">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="09:30">09:30</SelectItem>
-                                    <SelectItem value="19:30">19:30</SelectItem>
-                                </SelectContent>
-                            </Select>
+                         <Input
+                          type="time"
+                          className="w-[110px]"
+                          step={300}
+                          value={selectedCommunication?.displayAfterTime || ''}
+                          onChange={(e) => updateSelectedCommunication('displayAfterTime', e.target.value)}
+                          disabled={!selectedCommunication}
+                         />
                         </div>
                     </div>
                      <div className="grid grid-cols-[120px_1fr] items-center gap-4">
@@ -258,7 +513,7 @@ export default function BulletinBoardPage() {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {communications.sort((a,b) => a.order - b.order).map((comm) => (
+                                {filteredCommunications.sort((a,b) => a.order - b.order).map((comm) => (
                                 <TableRow 
                                     key={comm.id} 
                                     onClick={() => handleSelectCommunication(comm.id)}
@@ -305,6 +560,16 @@ export default function BulletinBoardPage() {
                 </CardContent>
             </Card>
        </div>
+         </TabsContent>
+       </Tabs>
     </div>
+  );
+}
+
+export default function BulletinBoardPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen">Chargement...</div>}>
+      <BulletinBoardContent />
+    </Suspense>
   );
 }

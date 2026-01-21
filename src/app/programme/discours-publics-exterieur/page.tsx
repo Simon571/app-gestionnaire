@@ -5,10 +5,12 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Printer } from "lucide-react";
+import { Printer, Send, Loader2 } from "lucide-react";
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { usePeople } from "@/context/people-context";
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 import { parse, addDays } from 'date-fns';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 
 // Function to generate a given number of weeks starting from a specific date
 const generateWeeks = (startDate: Date, count: number) => {
@@ -33,6 +35,7 @@ const getInitialStartDate = () => {
 
 export default function DiscoursPublicsExterieurPage() {
   const { people } = usePeople();
+  const { syncDiscoursPublics, isSyncing } = useSyncToFlutter();
   
   const localSpeakers = useMemo(() => {
     return people.filter(p => p.assignments?.weekendMeeting?.localSpeaker);
@@ -99,6 +102,49 @@ export default function DiscoursPublicsExterieurPage() {
     });
   };
 
+  // Synchronisation automatique quand les données changent
+  const firstMount = useRef(true);
+  useEffect(() => {
+    if (firstMount.current) {
+      firstMount.current = false;
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      // Sauvegarder dans localStorage
+      try {
+        localStorage.setItem('programme-discours-publics-exterieur', JSON.stringify({ 
+          columns, 
+          assignments, 
+          savedAt: new Date().toISOString() 
+        }));
+      } catch (e) { /* ignore */ }
+      
+      // Préparer les données pour la synchronisation
+      const speakerSchedule = columns.map((speakerId, colIndex) => {
+        if (!speakerId) return null;
+        const speaker = people.find(p => p.id === speakerId);
+        const unavailableWeeks = Object.entries(assignments)
+          .filter(([week, speakerAssignments]) => speakerAssignments[speakerId])
+          .map(([week]) => week);
+        return {
+          speakerId,
+          speakerName: speaker?.displayName || '',
+          unavailableWeeks
+        };
+      }).filter(Boolean);
+
+      // Synchroniser vers Flutter
+      await syncDiscoursPublics({
+        generatedAt: new Date().toISOString(),
+        type: 'exterieur',
+        speakers: speakerSchedule
+      });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [columns, assignments, people, syncDiscoursPublics]);
+
   const addColumn = () => {
     setColumns(c => [...c, '']);
   }
@@ -117,6 +163,12 @@ export default function DiscoursPublicsExterieurPage() {
                 Sélectionnez un orateur pour chaque colonne et cochez les semaines où ils sont absents. La liste des semaines se charge automatiquement.
                 </CardDescription>
             </div>
+            <LinkToPublisher
+              type={'discours_publics'}
+              label="Enregistrer & Envoyer"
+              getPayload={() => ({ generatedAt: new Date().toISOString(), weeks, assignments, columns })}
+              save={() => { try { localStorage.setItem('programme-discours-publics-exterieur', JSON.stringify({ weeks, assignments, columns, savedAt: new Date().toISOString() })); } catch {} }}
+            />
             <Button variant="ghost" size="icon" onClick={handlePrint}><Printer className="h-5 w-5"/></Button>
         </div>
       </CardHeader>

@@ -29,14 +29,16 @@ import {
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Send, Loader2 } from 'lucide-react';
 import { mockTerritories, Territory } from '@/lib/territory-data';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 import { usePeople } from '@/context/people-context';
 import { TerritoryListTable } from '@/components/territory-list-table';
 import { TerritoryMapList } from '@/components/territory-map-list';
 import { TerritoryOverallMap } from '@/components/territory-overall-map';
 import { TerritoryCampaigns } from '@/components/territory-campaigns';
 import TerritorySettings from '@/components/territory-settings';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 
 const COLORS = {
   'Terminé': '#4CAF50',
@@ -50,6 +52,7 @@ const COLORS = {
 export default function TerritoriesPage() {
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const { people } = usePeople();
+  const { syncTerritories, isSyncing } = useSyncToFlutter();
   const [isAdmin, setIsAdmin] = React.useState(false);
 
   React.useEffect(() => {
@@ -243,6 +246,14 @@ export default function TerritoriesPage() {
       </TabsList>
 
       <TabsContent value="dashboard" className="space-y-4 py-4">
+        <div className="flex justify-end no-print mb-2">
+          <LinkToPublisher
+            type={'territories'}
+            label="Enregistrer & Envoyer (Territoires)"
+            getPayload={() => ({ generatedAt: new Date().toISOString(), stats, territories: mockTerritories })}
+            save={() => { try { localStorage.setItem('territories-dashboard', JSON.stringify({ stats, territories: mockTerritories, savedAt: new Date().toISOString() })); } catch {} }}
+          />
+        </div>
         {/* Global Stats */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
@@ -339,12 +350,26 @@ export default function TerritoriesPage() {
 
       {/* Placeholder for other tabs */}
       <TabsContent value="list">
+        <div className="flex justify-end no-print mb-2">
+          <LinkToPublisher
+            type={'territories'}
+            label="Enregistrer & Envoyer (Liste)"
+            getPayload={() => ({ generatedAt: new Date().toISOString(), territories: mockTerritories })}
+            save={() => { try { localStorage.setItem('territories-list', JSON.stringify({ territories: mockTerritories, savedAt: new Date().toISOString() })); } catch {} }}
+          />
+        </div>
         <TerritoryListTable />
       </TabsContent>
       <TabsContent value="map-list">
          <div className="flex items-center justify-between mb-4">
            <h3 className="text-lg font-medium">Liste & Carte</h3>
            <div className="flex items-center gap-2">
+               <LinkToPublisher
+                 type={'territories'}
+                 label="Enregistrer & Envoyer (Liste & Carte)"
+                 getPayload={() => ({ generatedAt: new Date().toISOString(), territories: mockTerritories })}
+                 save={() => { try { localStorage.setItem('territories-map-list', JSON.stringify({ territories: mockTerritories, savedAt: new Date().toISOString() })); } catch {} }}
+               />
                <Button variant="outline" onClick={exportTerritoriesDialog}>
                  <Download className="mr-2 h-4 w-4" />Exporter
                </Button>
@@ -482,12 +507,36 @@ export default function TerritoriesPage() {
          <TerritoryMapList />
       </TabsContent>
       <TabsContent value="map-overview">
+         <div className="flex justify-end no-print mb-2">
+           <LinkToPublisher
+             type={'territories'}
+             label="Enregistrer & Envoyer (Carte d'ensemble)"
+             getPayload={() => ({ generatedAt: new Date().toISOString(), territories: mockTerritories })}
+             save={() => { try { localStorage.setItem('territories-map-overview', JSON.stringify({ territories: mockTerritories, savedAt: new Date().toISOString() })); } catch {} }}
+           />
+         </div>
          <TerritoryOverallMap />
       </TabsContent>
       <TabsContent value="campaigns">
+         <div className="flex justify-end no-print mb-2">
+           <LinkToPublisher
+             type={'territories'}
+             label="Enregistrer & Envoyer (Campagnes)"
+             getPayload={() => ({ generatedAt: new Date().toISOString(), campaigns: /* placeholder */ [], territories: mockTerritories })}
+             save={() => { try { localStorage.setItem('territories-campaigns', JSON.stringify({ territories: mockTerritories, savedAt: new Date().toISOString() })); } catch {} }}
+           />
+         </div>
          <TerritoryCampaigns />
       </TabsContent>
       <TabsContent value="settings">
+         <div className="flex justify-end no-print mb-2">
+           <LinkToPublisher
+             type={'territories'}
+             label="Enregistrer & Envoyer (Paramètres)"
+             getPayload={() => ({ generatedAt: new Date().toISOString(), settings: {} })}
+             save={() => { try { localStorage.setItem('territories-settings', JSON.stringify({ settings: {}, savedAt: new Date().toISOString() })); } catch {} }}
+           />
+         </div>
          <TerritorySettings />
       </TabsContent>
 

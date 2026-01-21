@@ -50,11 +50,47 @@ import {
   Plus,
   X,
   Trash2,
+  Send,
+  Loader2,
 } from 'lucide-react';
 import { add, format, startOfWeek, endOfWeek, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MultiSelect, Option } from '@/components/ui/multi-select';
 import { usePeople } from '@/context/people-context';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
+
+function isEligibleForServiceRole(person: any, role: string): boolean {
+  const services = person?.assignments?.services;
+
+  switch (role) {
+    case 'Comptage_Assistance':
+      return Boolean(services?.attendanceCount);
+    case 'Accueil à la porte':
+      return Boolean(services?.doorAttendant || services?.doorAttendantAlt);
+    case 'Sonorisation':
+      return Boolean(services?.soundSystem);
+    case 'Micros baladeur':
+      return Boolean(services?.rovingMic);
+    case 'Micros Estrade':
+      return Boolean(services?.stageMic || services?.stageMicAlt);
+    case 'Sanitaire':
+      return Boolean(services?.sanitary);
+    case 'Accueil dans la salle':
+      return Boolean(services?.hallAttendant || services?.hallAttendantAlt);
+    case 'Accueil à la grande porte':
+      return Boolean(services?.mainDoorAttendant || services?.mainDoorAttendantAlt);
+    default:
+      // Custom/unknown role: keep current behavior (no filter)
+      return true;
+  }
+}
+
+function getEligiblePeopleForRole(people: any[], role: string) {
+  return people
+    .filter((p: any) => p?.displayName && p.displayName.trim() !== '')
+    .filter((p: any) => isEligibleForServiceRole(p, role));
+}
 
 const initialRoles = [
   'Comptage_Assistance', 'Accueil à la porte', 'Sonorisation',
@@ -117,34 +153,24 @@ const generateInitialServiceData = (rolesToUse: string[]) => {
 };
 
 export default function ServicesPage() {
-  const { people } = usePeople();
+  const { people, preachingGroups: contextGroups } = usePeople();
+  const { syncServices, isSyncing } = useSyncToFlutter();
   const [roles, setRoles] = useState(initialRoles);
   const [rolePersonCounts, setRolePersonCounts] = useState(initialRolePersonCounts);
   const [serviceData, setServiceData] = useState(() => generateInitialServiceData(initialRoles));
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedWeek, setSelectedWeek] = useState(getCurrentWeekString());
 
-  const peopleOptions: Option[] = people.map(p => ({
-    value: p.id,
-    label: p.displayName,
-  }));
-
-  const preachingGroups = useMemo(() => {
-    const groupMap: Record<string, any[]> = {};
-    people.forEach(person => {
-        const groupId = person.spiritual.group || 'unassigned';
-        if (groupId === 'unassigned') return;
-        if (!groupMap[groupId]) {
-            groupMap[groupId] = [];
-        }
-        groupMap[groupId].push(person);
-    });
-    const sortedGroupIds = Object.keys(groupMap).sort();
-    return sortedGroupIds.map((groupId, index) => ({
-      id: groupId,
-      name: `Groupe ${index + 1}`
+  const peopleOptionsAll: Option[] = people
+    .filter((p: any) => p?.id && p?.displayName && p.displayName.trim() !== '')
+    .map((p: any) => ({
+      value: p.id,
+      label: p.displayName,
     }));
-  }, [people]);
+
+  // Utiliser preachingGroups du contexte
+  const preachingGroups = contextGroups;
+
 
   const preachingGroupOptions: Option[] = preachingGroups.map(g => ({
     value: g.id,
@@ -247,12 +273,28 @@ export default function ServicesPage() {
         return;
     }
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
         console.log('Sauvegarde automatique des données...', serviceData);
-    }, 1000);
+        // Sauvegarder dans localStorage
+        localStorage.setItem('programme-services', JSON.stringify({ roles, rolePersonCounts, serviceData, savedAt: new Date().toISOString() }));
+        
+        // Synchroniser automatiquement vers Flutter
+        const items: any[] = [];
+        const currentWeekData = serviceData.find(w => w.week === selectedWeek);
+        const dateIso = selectedDate ? selectedDate.toISOString() : new Date().toISOString();
+        if (currentWeekData) {
+          roles.forEach((role) => {
+            const assigned = (currentWeekData as any)[role] ?? [];
+            if (assigned && assigned.length) {
+              items.push({ date: dateIso, service: role, users: assigned });
+            }
+          });
+        }
+        await syncServices({ type: 'services', date: dateIso, assignments: items });
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [serviceData]);
+  }, [serviceData, roles, rolePersonCounts, selectedWeek, selectedDate, syncServices]);
 
   const selectedWeekData = serviceData.find(w => w.week === selectedWeek);
 
@@ -309,9 +351,29 @@ export default function ServicesPage() {
               <Trash2 className="mr-2 h-4 w-4" />
               Effacer
             </Button>
-            <AutomaticAssignmentDialog rolePersonCounts={rolePersonCounts} />
+            <AutomaticAssignmentDialog rolePersonCounts={rolePersonCounts} preachingGroups={preachingGroups} serviceData={serviceData} setServiceData={setServiceData} people={people} />
             <Button variant="ghost" size="icon" onClick={handlePrint}><Printer className="h-4 w-4" /></Button>
             <Button variant="ghost" size="icon"><Share2 className="h-4 w-4" /></Button>
+            <LinkToPublisher
+              type={'services'}
+              label="Enregistrer & Envoyer les Services"
+              getPayload={() => {
+                const generatedAt = new Date().toISOString();
+                const weekData = serviceData.find(w => w.week === selectedWeek);
+                const items: any[] = [];
+                const dateIso = selectedDate ? selectedDate.toISOString() : new Date().toISOString();
+                if (weekData) {
+                  roles.forEach((role) => {
+                    const assigned = (weekData as any)[role] ?? [];
+                    if (assigned && assigned.length) {
+                      items.push({ date: dateIso, service: role, users: assigned });
+                    }
+                  });
+                }
+                return { generatedAt, roles, rolePersonCounts, serviceData, items };
+              }}
+              save={() => localStorage.setItem('programme-services', JSON.stringify({ roles, rolePersonCounts, serviceData, savedAt: new Date().toISOString() }))}
+            />
           </div>
         </div>
 
@@ -320,7 +382,6 @@ export default function ServicesPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {roles.map(role => {
                     const isEntretien = role === 'Entretien';
-                    const options = isEntretien ? preachingGroupOptions : peopleOptions;
                     const assignedNames = (selectedWeekData?.[role as keyof typeof selectedWeekData] as unknown as string[]) || [];
                     
                     let selectedIds: string[];
@@ -333,6 +394,26 @@ export default function ServicesPage() {
                             .filter(p => assignedNames.includes(p.displayName))
                             .map(p => p.id);
                     }
+
+                    const eligiblePeople = isEntretien ? [] : getEligiblePeopleForRole(people as any[], role);
+
+                    const selectedPeople = isEntretien
+                      ? []
+                      : (people as any[]).filter((p: any) => selectedIds.includes(p.id));
+
+                    const options = isEntretien
+                      ? preachingGroupOptions
+                      : (() => {
+                          const combined = [...eligiblePeople, ...selectedPeople];
+                          const uniqueById = new Map<string, { value: string; label: string }>();
+                          combined.forEach((p: any) => {
+                            if (p?.id && p?.displayName) uniqueById.set(p.id, { value: p.id, label: p.displayName });
+                          });
+
+                          // If we have at least one eligible/selected, use that. Otherwise fallback.
+                          if (uniqueById.size > 0) return Array.from(uniqueById.values());
+                          return peopleOptionsAll;
+                        })();
 
                     return (
                         <div key={role} className="flex flex-col gap-2">
@@ -450,13 +531,59 @@ function AddServiceDialog({ onAddService }: { onAddService: (name: string, count
   );
 }
 
-function AutomaticAssignmentDialog({ rolePersonCounts }: { rolePersonCounts: { [key: string]: number } }) {
+function AutomaticAssignmentDialog({ rolePersonCounts, preachingGroups, serviceData, setServiceData, people }: { rolePersonCounts: { [key: string]: number }, preachingGroups: { id: string; name: string }[], serviceData: any[], setServiceData: React.Dispatch<React.SetStateAction<any[]>>, people: any[] }) {
   const [open, setOpen] = useState(false);
+  const [weeksToAssign, setWeeksToAssign] = useState(4);
+  const [selectedRoles, setSelectedRoles] = useState<Record<string, number>>({});
+
+  const handleRoleCountChange = (role: string, count: number) => {
+    setSelectedRoles(prev => ({
+      ...prev,
+      [role]: prev[role] === count ? 0 : count
+    }));
+  };
 
   const handleAutomaticAssignment = () => {
-    console.log('Lancement de la saisie automatique...');
+    const allPeople = people.filter((p: any) => p.displayName && p.displayName.trim() !== "");
+    
+    if (allPeople.length === 0 && preachingGroups.length === 0) {
+      alert("Aucune personne ou groupe disponible.");
+      return;
+    }
+
+    setServiceData(currentData => {
+      const newData = [...currentData];
+      
+      for (let weekIndex = 0; weekIndex < weeksToAssign && weekIndex < newData.length; weekIndex++) {
+        const weekData = { ...newData[weekIndex] };
+        
+        Object.entries(selectedRoles).forEach(([role, count]) => {
+          if (count > 0) {
+            if (role === "Entretien") {
+              if (preachingGroups.length > 0) {
+                const groupIndex = weekIndex % preachingGroups.length;
+                weekData[role] = [preachingGroups[groupIndex].name];
+              }
+            } else {
+              const eligiblePeople = getEligiblePeopleForRole(allPeople, role);
+              const pool = eligiblePeople.length > 0 ? eligiblePeople : allPeople;
+              const assignedPeople: string[] = [];
+              for (let i = 0; i < count && i < pool.length; i++) {
+                const personIndex = (weekIndex * count + i) % pool.length;
+                assignedPeople.push(pool[personIndex].displayName);
+              }
+              weekData[role] = assignedPeople;
+            }
+          }
+        });
+        
+        newData[weekIndex] = weekData;
+      }
+
+      return newData;
+    });
+
     setOpen(false);
-    alert('Saisie automatique effectuée (simulation) !');
   };
 
   return (
@@ -480,7 +607,7 @@ function AutomaticAssignmentDialog({ rolePersonCounts }: { rolePersonCounts: { [
                 <div className="flex items-center gap-4">
                   {[...Array(maxCount)].map((_, i) => (
                     <div key={i} className="flex items-center gap-1.5">
-                      <Checkbox id={`${role}-${i + 1}`} />
+                      <Checkbox id={`${role}-${i + 1}`} checked={selectedRoles[role] === (i + 1)} onCheckedChange={() => handleRoleCountChange(role, i + 1)} />
                       <Label htmlFor={`${role}-${i + 1}`} className="text-sm font-normal">{i + 1}</Label>
                     </div>
                   ))}
@@ -492,7 +619,7 @@ function AutomaticAssignmentDialog({ rolePersonCounts }: { rolePersonCounts: { [
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
               <Label htmlFor="weeks-count">Semaines pour l'attribution</Label>
-              <Select>
+              <Select value={String(weeksToAssign)} onValueChange={(v) => setWeeksToAssign(parseInt(v))}>
                 <SelectTrigger id="weeks-count"><SelectValue placeholder="Nombre de semaines" /></SelectTrigger>
                 <SelectContent>
                   {[2, 3, 4, 5, 6, 7, 8].map(w => <SelectItem key={w} value={String(w)}>{w} semaines</SelectItem>)}
@@ -534,3 +661,4 @@ function AutomaticAssignmentDialog({ rolePersonCounts }: { rolePersonCounts: { [
     </Dialog>
   );
 }
+

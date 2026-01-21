@@ -177,11 +177,10 @@ const InfoTab = ({ personData, setPersonData }: { personData: any, setPersonData
     React.useEffect(() => {
         const nameParts = [personData.firstName, personData.middleName, personData.lastName].filter(Boolean);
         const newDisplayName = nameParts.join(' ');
-        if (newDisplayName !== personData.displayName) {
-           setPersonData({ ...personData, displayName: newDisplayName });
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [personData.firstName, personData.middleName, personData.lastName]);
+          if (newDisplayName !== personData.displayName) {
+              setPersonData({ ...personData, displayName: newDisplayName });
+          }
+     }, [personData.firstName, personData.middleName, personData.lastName]);
 
 
     const calculateAge = (date: Date) => {
@@ -471,13 +470,16 @@ const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any,
         handleChange('function', spiritualData.function === key ? null : key);
     };
 
+    // Default pioneer object to avoid undefined errors
+    const pioneer = spiritualData.pioneer ?? { status: null, date: undefined, sfl: false, schoolDate: undefined };
+
     const handlePioneerStatusChange = (key: string) => {
-        const currentStatus = spiritualData.pioneer.status;
-        handleChange('pioneer', { ...spiritualData.pioneer, status: currentStatus === key ? null : key });
+        const currentStatus = pioneer.status;
+        handleChange('pioneer', { ...pioneer, status: currentStatus === key ? null : key });
     };
 
     const handlePioneerSubChange = (field: string, value: any) => {
-         handleChange('pioneer', { ...spiritualData.pioneer, [field]: value });
+         handleChange('pioneer', { ...pioneer, [field]: value });
     }
 
     const calculateYears = (date?: Date) => {
@@ -606,33 +608,33 @@ const SpiritualTab = ({ spiritualData, setSpiritualData }: { spiritualData: any,
                  <div>
                     <Label>Pionnier</Label>
                      <div className="flex items-center justify-between my-1">
-                        <DateInput date={spiritualData.pioneer.date} setDate={(d) => handlePioneerSubChange('date', d)}/>
+                        <DateInput date={pioneer.date} setDate={(d) => handlePioneerSubChange('date', d)}/>
                         <div className="flex items-center space-x-2">
-                           <Checkbox id="sfl" checked={spiritualData.pioneer.sfl} onCheckedChange={(c) => handlePioneerSubChange('sfl', Boolean(c))} />
+                           <Checkbox id="sfl" checked={pioneer.sfl} onCheckedChange={(c) => handlePioneerSubChange('sfl', Boolean(c))} />
                            <Label htmlFor="sfl" className="font-normal text-xs">S.O. (sfl 9:18)</Label>
                         </div>
                       </div>
                     <div className="space-y-2 mt-2">
                          <div className="flex items-center space-x-2">
-                            <Checkbox id="p-aux-perm" checked={spiritualData.pioneer.status === 'aux-permanent'} onCheckedChange={() => handlePioneerStatusChange('aux-permanent')} />
-                            <Label htmlFor="p-aux-perm" className="font-normal text-xs">Pionnier aux. permanent</Label>
+                            <Checkbox id="p-aux-perm" checked={pioneer.status === 'aux-permanent'} onCheckedChange={() => handlePioneerStatusChange('aux-permanent')} />
+                            <Label htmlFor="p-aux-perm" className="font-normal text-xs">Pionnier auxiliaire</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                             <Checkbox id="p-perm" checked={spiritualData.pioneer.status === 'permanent'} onCheckedChange={() => handlePioneerStatusChange('permanent')} />
+                             <Checkbox id="p-perm" checked={pioneer.status === 'permanent'} onCheckedChange={() => handlePioneerStatusChange('permanent')} />
                             <Label htmlFor="p-perm" className="font-normal text-xs">Pionnier permanent</Label>
                         </div>
                         <div className="flex items-center space-x-2">
-                             <Checkbox id="p-special" checked={spiritualData.pioneer.status === 'special'} onCheckedChange={() => handlePioneerStatusChange('special')} />
+                             <Checkbox id="p-special" checked={pioneer.status === 'special'} onCheckedChange={() => handlePioneerStatusChange('special')} />
                             <Label htmlFor="p-special" className="font-normal text-xs">Pionnier spécial</Label>
                         </div>
                          <div className="flex items-center space-x-2">
-                             <Checkbox id="p-missionnaire" checked={spiritualData.pioneer.status === 'missionary'} onCheckedChange={() => handlePioneerStatusChange('missionary')} />
+                             <Checkbox id="p-missionnaire" checked={pioneer.status === 'missionary'} onCheckedChange={() => handlePioneerStatusChange('missionary')} />
                             <Label htmlFor="p-missionnaire" className="font-normal text-xs">Missionnaire affecté dan...</Label>
                         </div>
                     </div>
                      <div className="flex items-center justify-between gap-2 mt-2">
                         <Label className="text-xs">École des pionniers</Label>
-                        <DateInput date={spiritualData.pioneer.schoolDate} setDate={(d) => handlePioneerSubChange('schoolDate', d)}/>
+                        <DateInput date={pioneer.schoolDate} setDate={(d) => handlePioneerSubChange('schoolDate', d)}/>
                     </div>
                 </div>
             </div>
@@ -1029,7 +1031,7 @@ const ActivityTab = ({ activityData, setActivityData }: { activityData: Person['
             bibleStudies: null,
             isAuxiliaryPioneer: false,
             hours: null,
-            credit: false,
+            credit: null,
             isLate: false,
             remarks: '',
         };
@@ -1125,13 +1127,16 @@ const EmergencyTab = ({ emergencyData, setEmergencyData }: { emergencyData: Pers
     
     const [selectedContactId, setSelectedContactId] = React.useState<string | null>(null);
 
+    // Default contacts array to avoid undefined errors
+    const contacts = emergencyData.contacts ?? [];
+
     const handleNotesChange = (field: 'disasterAccommodations' | 'notes', value: any) => {
         setEmergencyData({ ...emergencyData, [field]: value });
     };
 
     const handleContactChange = (field: keyof Person['emergency']['contacts'][0], value: any) => {
         if (!selectedContactId) return;
-        const updatedContacts = emergencyData.contacts.map(c => 
+        const updatedContacts = contacts.map(c => 
             c.id === selectedContactId ? { ...c, [field]: value } : c
         );
         setEmergencyData({ ...emergencyData, contacts: updatedContacts });
@@ -1148,19 +1153,19 @@ const EmergencyTab = ({ emergencyData, setEmergencyData }: { emergencyData: Pers
             relationship: '',
             notes: '',
         };
-        const updatedContacts = [...emergencyData.contacts, newContact];
+        const updatedContacts = [...contacts, newContact];
         setEmergencyData({ ...emergencyData, contacts: updatedContacts });
         setSelectedContactId(newContact.id);
     }
     
     const handleDeleteContact = () => {
         if (!selectedContactId) return;
-        const updatedContacts = emergencyData.contacts.filter(c => c.id !== selectedContactId);
+        const updatedContacts = contacts.filter(c => c.id !== selectedContactId);
         setEmergencyData({ ...emergencyData, contacts: updatedContacts });
         setSelectedContactId(null);
     }
 
-    const selectedContact = emergencyData.contacts.find(c => c.id === selectedContactId);
+    const selectedContact = contacts.find(c => c.id === selectedContactId);
 
     return (
         <div className="p-1 space-y-4">
@@ -1188,7 +1193,7 @@ const EmergencyTab = ({ emergencyData, setEmergencyData }: { emergencyData: Pers
                          <Button variant="destructive" className="justify-start" onClick={handleDeleteContact} disabled={!selectedContactId}><Trash2 className="mr-2"/>Supprimer</Button>
                          <div className="border rounded-md h-32 mt-2 relative">
                             <ScrollArea className="h-full">
-                                {emergencyData.contacts.map(contact => (
+                                {contacts.map(contact => (
                                     <div key={contact.id} 
                                          className={cn("p-2 cursor-pointer", selectedContactId === contact.id && "bg-accent")}
                                          onClick={() => setSelectedContactId(contact.id)}>
@@ -1523,6 +1528,7 @@ const getInitialPersonData = (): Omit<Person, 'id'> => ({
     activity: [],
     spiritual: {
       group: null,
+            groupName: null,
       roleInGroup: 'member',
       functionDate: undefined,
       function: null,
@@ -1595,6 +1601,16 @@ export function PeopleForm({ selectedPerson, onSave, onNew, onDelete, activeTab,
             });
             
             if (personCopy.spiritual) {
+                // Merge with defaults to avoid undefined nested objects (e.g., pioneer)
+                personCopy.spiritual = {
+                    ...initialData.spiritual,
+                    ...personCopy.spiritual,
+                    pioneer: {
+                        ...initialData.spiritual.pioneer,
+                        ...(personCopy.spiritual.pioneer ?? {}),
+                    },
+                };
+
                 spiritualDateFields.forEach(field => {
                     if(personCopy.spiritual[field]) personCopy.spiritual[field] = new Date(personCopy.spiritual[field]);
                 });

@@ -38,11 +38,12 @@ export class EncryptionService {
 
   /**
    * Hash sécurisé pour les mots de passe (PBKDF2)
+   * ⚠️ 600000 itérations recommandées par OWASP pour résister aux attaques brute-force
    */
   static hashPassword(password: string): string {
     return CryptoJS.PBKDF2(password, this.ENCRYPTION_KEY, {
       keySize: 256 / 32,
-      iterations: 1000
+      iterations: 600000
     }).toString();
   }
 
@@ -101,6 +102,29 @@ export class EncryptionService {
       console.error('Erreur de vérification du token:', error);
       throw new Error('Token invalide');
     }
+  }
+
+  /**
+   * Validation simple d'adresse email (prévention d'énumération côté API)
+   */
+  static validateEmail(email: string): boolean {
+    if (typeof email !== 'string') return false;
+    const normalized = email.trim();
+    if (!normalized) return false;
+    const basicPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    return basicPattern.test(normalized);
+  }
+
+  /**
+   * Validation minimale de mot de passe (longueur + variété basique)
+   */
+  static validatePassword(password: string): boolean {
+    if (typeof password !== 'string') return false;
+    const normalized = password.trim();
+    if (normalized.length < 8) return false;
+    const hasLetter = /[A-Za-z]/.test(normalized);
+    const hasNumber = /\d/.test(normalized);
+    return hasLetter && hasNumber;
   }
 
   /**
@@ -210,38 +234,65 @@ export class SecureCookie {
  * Audit logging pour conformité GDPR
  */
 export class AuditLog {
-  static log(action: string, userId: string, details: any): void {
-    const timestamp = new Date().toISOString();
+  private static readonly STORAGE_KEY = 'audit_logs';
+  private static instance: AuditLog | null = null;
+
+  static getInstance(): AuditLog {
+    if (!this.instance) {
+      this.instance = new AuditLog();
+    }
+    return this.instance;
+  }
+
+  log(action: string, details: any, userId?: string): void {
+    AuditLog.log(action, userId ?? 'local-user', details);
+  }
+
+  static log(action: string, details: any): void;
+  static log(action: string, userId: string, details: any): void;
+  static log(action: string, userOrDetails: string | any, maybeDetails?: any): void {
+    const hasExplicitUser = typeof userOrDetails === 'string' && typeof maybeDetails !== 'undefined';
+    const userId = hasExplicitUser ? userOrDetails : 'local-user';
+    const details = hasExplicitUser ? maybeDetails : userOrDetails;
+
     const logEntry = {
-      timestamp,
+      timestamp: new Date().toISOString(),
       action,
       userId,
-      details: EncryptionService.maskSensitiveData(details),
-      ipAddress: 'client-side', // À enrichir côté serveur
-      userAgent: navigator.userAgent
+      details: EncryptionService.maskSensitiveData(details ?? {}),
+      ipAddress: typeof window !== 'undefined' ? 'client-side' : 'server-side',
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server-side',
     };
 
-    // Sauvegarder dans localStorage
+    // Pendant l'exécution serveur, contentez-vous de journaliser en console
+    if (typeof window === 'undefined') {
+      console.info('[AuditLog]', logEntry);
+      return;
+    }
+
     try {
-      const logs = SecureStorage.getItem('audit_logs') || [];
+      const logs = SecureStorage.getItem(this.STORAGE_KEY) || [];
       logs.push(logEntry);
-      // Limiter à 1000 entrées
       if (logs.length > 1000) {
         logs.shift();
       }
-      SecureStorage.setItem('audit_logs', logs);
+      SecureStorage.setItem(this.STORAGE_KEY, logs);
     } catch (error) {
       console.error('Erreur lors de l\'audit logging:', error);
     }
-
-    // À implémenter : Envoyer au serveur via API
   }
 
   static getLogs(): any[] {
-    return SecureStorage.getItem('audit_logs') || [];
+    if (typeof window === 'undefined') {
+      return [];
+    }
+    return SecureStorage.getItem(this.STORAGE_KEY) || [];
   }
 
   static clearLogs(): void {
-    SecureStorage.removeItem('audit_logs');
+    if (typeof window === 'undefined') {
+      return;
+    }
+    SecureStorage.removeItem(this.STORAGE_KEY);
   }
 }

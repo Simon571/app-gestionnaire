@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,16 +14,26 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Plus, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
+import { usePeople } from '@/context/people-context';
+import { syncToFlutter } from '@/lib/sync-to-flutter';
+
+type TacheStatus = 'todo' | 'in_progress' | 'done';
 
 interface UserTask {
   id: string;
   title: string;
   description: string;
-  assignedTo?: string;
+  assignedToPersonIds: string[];
   dueDate: string;
   frequency?: string;
   roles?: string;
   assignedBy?: string;
+  status?: TacheStatus;
+  createdAt?: string;
+  updatedAt?: string;
+
+  // compat: certains anciens payloads peuvent encore envoyer des noms
+  assignedTo?: string | string[];
 }
 
 interface AutomaticTask {
@@ -34,41 +44,97 @@ interface AutomaticTask {
 
 export default function TachesPage() {
   const [activeTab, setActiveTab] = useState<'user' | 'automatic'>('user');
+  const { people, isLoaded } = usePeople();
+  const peopleById = useMemo(() => new Map(people.map((p) => [p.id, p])), [people]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   
   // Tâches utilisateur
-  const [userTasks, setUserTasks] = useState<UserTask[]>([
-    {
-      id: '1',
-      title: 'Revoir avec l\'assistant l\'activité des membres du groupe',
-      description: 'Examiner les activités et les progrès',
-      assignedTo: 'Jean Dupont',
-      dueDate: '2025/11/01',
-      assignedBy: 'Tâche automatique',
-    },
-    {
-      id: '2',
-      title: 'Armand MURHIMALIKA: Organiser une visite',
-      description: 'Coordonner une visite',
-      assignedTo: 'Armand MURHIMALIKA',
-      dueDate: '2025/11/07',
-      assignedBy: 'Tâche automatique',
-    },
-    {
-      id: '3',
-      title: 'Kertys MWIKA: Organiser une visite',
-      description: 'Coordonner une visite',
-      assignedTo: 'Kertys MWIKA',
-      dueDate: '2025/11/07',
-      assignedBy: 'Tâche automatique',
-    },
-  ]);
+  const [userTasks, setUserTasks] = useState<UserTask[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    assignedTo: '',
+    assignedToPersonId: '',
     dueDate: '',
     assignedBy: '',
   });
+
+  // Charger les tâches depuis l'API (persistant)
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/taches');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const taches = Array.isArray(data.taches) ? (data.taches as UserTask[]) : [];
+        if (!cancelled) setUserTasks(taches);
+      } catch (e) {
+        console.error('Failed to load taches', e);
+        if (!cancelled) setUserTasks([]);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Migration légère: si une tâche contient encore un nom, tenter de le convertir en personId
+  useEffect(() => {
+    if (!isLoaded) return;
+    setUserTasks((prev) => {
+      let changed = false;
+      const next = prev.map((t) => {
+        const ids = Array.isArray(t.assignedToPersonIds) ? t.assignedToPersonIds : [];
+        if (ids.length > 0) return { ...t, assignedToPersonIds: ids };
+
+        const legacy = t.assignedTo;
+        const legacyNames = Array.isArray(legacy)
+          ? legacy
+          : typeof legacy === 'string' && legacy.trim() !== ''
+            ? [legacy]
+            : [];
+
+        if (legacyNames.length === 0) return { ...t, assignedToPersonIds: [] };
+
+        const resolved: string[] = [];
+        for (const name of legacyNames) {
+          const normalized = name.trim().toLowerCase();
+          const match = people.find((p) => p.displayName?.trim().toLowerCase() === normalized);
+          if (match) resolved.push(match.id);
+        }
+
+        if (resolved.length === 0) return { ...t, assignedToPersonIds: [] };
+        changed = true;
+        return { ...t, assignedToPersonIds: resolved };
+      });
+      return changed ? next : prev;
+    });
+  }, [isLoaded, people]);
+
+  const saveAll = async (nextTasks: UserTask[]) => {
+    try {
+      setIsSaving(true);
+      await fetch('/api/taches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ taches: nextTasks }),
+      });
+
+      await syncToFlutter('taches', {
+        updatedAt: new Date().toISOString(),
+        taches: nextTasks,
+      });
+    } catch (e) {
+      console.error('Failed to save/sync taches', e);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   // Tâches automatiques
   const [automaticTasks] = useState<AutomaticTask[]>([
@@ -122,21 +188,29 @@ export default function TachesPage() {
   // Handlers pour tâches utilisateur
   const handleAddUserTask = () => {
     if (formData.title.trim()) {
+      const nowIso = new Date().toISOString();
       const newTask: UserTask = {
         id: Date.now().toString(),
         title: formData.title,
         description: formData.description,
-        assignedTo: formData.assignedTo,
+        assignedToPersonIds: formData.assignedToPersonId ? [formData.assignedToPersonId] : [],
         dueDate: formData.dueDate,
         assignedBy: formData.assignedBy,
+        status: 'todo',
+        createdAt: nowIso,
+        updatedAt: nowIso,
       };
-      setUserTasks([...userTasks, newTask]);
-      setFormData({ title: '', description: '', assignedTo: '', dueDate: '', assignedBy: '' });
+      const nextTasks = [...userTasks, newTask];
+      setUserTasks(nextTasks);
+      saveAll(nextTasks);
+      setFormData({ title: '', description: '', assignedToPersonId: '', dueDate: '', assignedBy: '' });
     }
   };
 
   const handleDeleteUserTask = (id: string) => {
-    setUserTasks(userTasks.filter(task => task.id !== id));
+    const nextTasks = userTasks.filter(task => task.id !== id);
+    setUserTasks(nextTasks);
+    saveAll(nextTasks);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -205,13 +279,20 @@ export default function TachesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Personnes</label>
-                <Select value={formData.assignedTo} onValueChange={(value) => setFormData(prev => ({ ...prev, assignedTo: value }))}>
+                <Select value={formData.assignedToPersonId} onValueChange={(value) => setFormData(prev => ({ ...prev, assignedToPersonId: value }))}>
                   <SelectTrigger className="text-sm">
                     <SelectValue placeholder="Sélectionner" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="option1">Option 1</SelectItem>
-                    <SelectItem value="option2">Option 2</SelectItem>
+                    {people
+                      .filter((p) => p.displayName && p.displayName.trim() !== '')
+                      .slice()
+                      .sort((a, b) => a.displayName.localeCompare(b.displayName, 'fr'))
+                      .map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.displayName}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -243,9 +324,10 @@ export default function TachesPage() {
                   onClick={handleAddUserTask}
                   size="sm"
                   className="flex-1"
+                  disabled={isSaving}
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Ajouter
+                  {isSaving ? 'Sauvegarde...' : 'Ajouter'}
                 </Button>
                 <Button
                   variant="outline"
@@ -273,7 +355,13 @@ export default function TachesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {userTasks.length === 0 ? (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
+                        Chargement des tâches...
+                      </td>
+                    </tr>
+                  ) : userTasks.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-4 py-8 text-center text-sm text-gray-500">
                         Aucune tâche utilisateur
@@ -283,7 +371,12 @@ export default function TachesPage() {
                     userTasks.map((task, index) => (
                       <tr key={task.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} >
                         <td className="px-4 py-3 text-sm text-gray-800 border-b">{task.title}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600 border-b">{task.assignedTo || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600 border-b">
+                          {(task.assignedToPersonIds || [])
+                            .map((id) => peopleById.get(id)?.displayName)
+                            .filter(Boolean)
+                            .join(', ') || '-'}
+                        </td>
                         <td className="px-4 py-3 text-sm text-gray-600 border-b">{task.dueDate || '-'}</td>
                         <td className="px-4 py-3 text-sm text-gray-600 border-b">{task.assignedBy || '-'}</td>
                         <td className="px-4 py-3 text-center border-b">

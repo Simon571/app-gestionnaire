@@ -1,0 +1,33 @@
+{
+  "slots": [
+    {
+      "id": "1765187230730",
+      "day": "mercredi",
+      "period": "AM",
+      "location": "Terrain des assemblées",
+      "speaker": "Jean Dupont ",
+      "notes": "",
+      "date": "2025-11-04T23:00:00.000Z",
+      "lieu": "Terrain des assemblées",
+      "publishers": [
+        "Jean Dupont "
+      ]
+    },
+    {
+      "id": "1765222519209",
+      "day": "samedi",
+      "period": "AM",
+      "location": "salle du Royaume",
+      "speaker": "Simon NZAMBA",
+      "notes": "",
+      "date": "2025-11-07T23:00:00.000Z",
+      "lieu": "salle du Royaume",
+      "publishers": [
+        "Simon NZAMBA"
+      ]
+    }
+  ],
+  "locations": [],
+  "weekStart": "2025-11-02T23:00:00.000Z",
+  "updatedAt": "2025-12-08T19:37:09.479Z"
+}

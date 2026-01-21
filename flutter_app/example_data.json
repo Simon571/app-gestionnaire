@@ -1,0 +1,195 @@
+[
+  {
+    "id": "001",
+    "firstName": "Jean",
+    "middleName": "",
+    "lastName": "Dupont",
+    "displayName": "Jean Dupont",
+    "pin": "1234",
+    "email1": "jean.dupont@example.com",
+    "email2": "",
+    "mobilePhone": "+243123456789",
+    "gender": "male",
+    "spiritual": {
+      "function": "publisher",
+      "active": true,
+      "regular": true,
+      "group": "groupe1"
+    },
+    "spiritual_active": true,
+    "activity": [
+      {
+        "month": "2025-11",
+        "participated": true,
+        "bibleStudies": 3,
+        "isAuxiliaryPioneer": false,
+        "hours": 12.5,
+        "credit": 0,
+        "isLate": false,
+        "remarks": ""
+      },
+      {
+        "month": "2025-10",
+        "participated": true,
+        "bibleStudies": 2,
+        "isAuxiliaryPioneer": false,
+        "hours": 10.0,
+        "credit": 0,
+        "isLate": false,
+        "remarks": ""
+      }
+    ],
+    "assignments": {
+      "services": {
+        "attendanceCount": false,
+        "doorAttendant": true,
+        "soundSystem": false,
+        "rovingMic": true,
+        "stageMic": false,
+        "sanitary": false,
+        "hallAttendant": false,
+        "mainDoorAttendant": false,
+        "maintenance": false
+      },
+      "ministry": {
+        "student": false,
+        "firstContact": true,
+        "returnVisit": true,
+        "bibleStudy": true,
+        "explainBeliefs": false,
+        "discourse": false
+      },
+      "gems": {
+        "president": false
+      },
+      "christianLife": {
+        "interventions": true
+      },
+      "weekendMeeting": {
+        "localSpeaker": false
+      }
+    }
+  },
+  {
+    "id": "002",
+    "firstName": "Marie",
+    "middleName": "",
+    "lastName": "Martin",
+    "displayName": "Marie Martin",
+    "pin": "5678",
+    "email1": "marie.martin@example.com",
+    "email2": "",
+    "mobilePhone": "+243987654321",
+    "gender": "female",
+    "spiritual": {
+      "function": "publisher",
+      "active": true,
+      "regular": true,
+      "group": "groupe1"
+    },
+    "spiritual_active": true,
+    "activity": [
+      {
+        "month": "2025-11",
+        "participated": true,
+        "bibleStudies": 4,
+        "isAuxiliaryPioneer": true,
+        "hours": 18.5,
+        "credit": 0,
+        "isLate": false,
+        "remarks": ""
+      }
+    ],
+    "assignments": {
+      "services": {
+        "attendanceCount": true,
+        "doorAttendant": false,
+        "soundSystem": true,
+        "rovingMic": false,
+        "stageMic": false,
+        "sanitary": true,
+        "hallAttendant": true,
+        "mainDoorAttendant": false,
+        "maintenance": false
+      },
+      "ministry": {
+        "student": true,
+        "firstContact": false,
+        "returnVisit": true,
+        "bibleStudy": true,
+        "explainBeliefs": true,
+        "discourse": false
+      },
+      "gems": {
+        "president": false
+      },
+      "christianLife": {
+        "interventions": false
+      },
+      "weekendMeeting": {
+        "localSpeaker": false
+      }
+    }
+  },
+  {
+    "id": "003",
+    "firstName": "Paul",
+    "middleName": "",
+    "lastName": "Bernard",
+    "displayName": "Paul Bernard",
+    "pin": "9012",
+    "email1": "paul.bernard@example.com",
+    "email2": "",
+    "mobilePhone": "+243555666777",
+    "gender": "male",
+    "spiritual": {
+      "function": "servant",
+      "active": true,
+      "regular": true,
+      "group": "groupe2"
+    },
+    "spiritual_active": true,
+    "activity": [
+      {
+        "month": "2025-11",
+        "participated": false,
+        "bibleStudies": 0,
+        "isAuxiliaryPioneer": false,
+        "hours": 0,
+        "credit": 0,
+        "isLate": false,
+        "remarks": "Congé maladie"
+      }
+    ],
+    "assignments": {
+      "services": {
+        "attendanceCount": false,
+        "doorAttendant": false,
+        "soundSystem": false,
+        "rovingMic": false,
+        "stageMic": true,
+        "sanitary": false,
+        "hallAttendant": false,
+        "mainDoorAttendant": false,
+        "maintenance": true
+      },
+      "ministry": {
+        "student": false,
+        "firstContact": false,
+        "returnVisit": false,
+        "bibleStudy": false,
+        "explainBeliefs": false,
+        "discourse": true
+      },
+      "gems": {
+        "president": false
+      },
+      "christianLife": {
+        "interventions": false
+      },
+      "weekendMeeting": {
+        "localSpeaker": false
+      }
+    }
+  }
+]

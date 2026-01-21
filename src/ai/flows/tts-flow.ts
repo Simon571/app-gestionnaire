@@ -49,34 +49,38 @@ async function toWav(
   });
 }
 
-const textToSpeechFlow = ai.defineFlow(
-  {
-    name: 'textToSpeechFlow',
-    inputSchema: z.string(),
-    outputSchema: TextToSpeechOutputSchema,
-  },
-  async (query) => {
-    const { media } = await ai.generate({
-      model: googleAI.model('gemini-2.5-flash-preview-tts'),
-      config: {
-        responseModalities: ['AUDIO'],
-        speechConfig: {
-          voiceConfig: {
-            prebuiltVoiceConfig: { voiceName: 'Algenib' },
-          },
-        },
+const textToSpeechFlow = ai
+  ? ai.defineFlow(
+      {
+        name: 'textToSpeechFlow',
+        inputSchema: z.string(),
+        outputSchema: TextToSpeechOutputSchema,
       },
-      prompt: query,
-    });
-    if (!media) {
-      throw new Error('no media returned');
-    }
-    const audioBuffer = Buffer.from(
-      media.url.substring(media.url.indexOf(',') + 1),
-      'base64'
-    );
-    return {
-      media: 'data:audio/wav;base64,' + (await toWav(audioBuffer)),
+      async (query: string) => {
+        const { media } = await ai.generate({
+          model: googleAI.model('gemini-2.5-flash-preview-tts'),
+          config: {
+            responseModalities: ['AUDIO'],
+            speechConfig: {
+              voiceConfig: {
+                prebuiltVoiceConfig: { voiceName: 'Algenib' },
+              },
+            },
+          },
+          prompt: query,
+        });
+        if (!media) {
+          throw new Error('no media returned');
+        }
+        const audioBuffer = Buffer.from(
+          media.url.substring(media.url.indexOf(',') + 1),
+          'base64'
+        );
+        return {
+          media: 'data:audio/wav;base64,' + (await toWav(audioBuffer)),
+        };
+      }
+    )
+  : async () => {
+      throw new Error('AI is disabled. Set NEXT_PUBLIC_ENABLE_AI=1 and restart.');
     };
-  }
-);

@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ChevronLeft, ChevronRight, RotateCcw, Plus, Trash2, Edit3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCcw, Plus, Trash2, Edit3, Send, Loader2 } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -27,6 +27,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePeople } from '@/context/people-context';
+import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+import { useToast } from '@/hooks/use-toast';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
+
+const STORAGE_KEY_SLOTS = 'temoignage-public-slots';
+const STORAGE_KEY_LOCATIONS = 'temoignage-public-locations';
 
 interface Location {
   id: string;
@@ -59,14 +65,134 @@ const getWeekRange = (date: Date) => {
 };
 
 function PlanningTab() {
+  const { toast } = useToast();
+  const { syncTemoignagePublic, isSyncing } = useSyncToFlutter();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 3));
   const [slots, setSlots] = useState<WeeklySlot[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<WeeklySlot | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const [formData, setFormData] = useState({
     location: '',
     speaker: '',
     notes: '',
   });
+
+  // Load slots from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_SLOTS);
+      if (stored) {
+        setSlots(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load slots from localStorage', e);
+    }
+  }, []);
+
+  // Save slots to localStorage when changed
+  const saveSlots = useCallback((newSlots: WeeklySlot[]) => {
+    setSlots(newSlots);
+    try {
+      localStorage.setItem(STORAGE_KEY_SLOTS, JSON.stringify(newSlots));
+    } catch (e) {
+      console.error('Failed to save slots to localStorage', e);
+    }
+  }, []);
+
+  // Synchronisation automatique quand les slots changent
+  const firstMount = useRef(true);
+  useEffect(() => {
+    if (firstMount.current) {
+      firstMount.current = false;
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      // Charger les locations depuis localStorage
+      let locations: Location[] = [];
+      try {
+        const storedLocations = localStorage.getItem(STORAGE_KEY_LOCATIONS);
+        if (storedLocations) {
+          locations = JSON.parse(storedLocations);
+        }
+      } catch (e) {
+        console.error('Failed to load locations', e);
+      }
+
+      // Synchroniser vers Flutter
+      await syncTemoignagePublic({
+        schedule: slots,
+        locations,
+      });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [slots, syncTemoignagePublic]);
+
+  // Convert day name to date for the current week
+  const dayNameToDate = useCallback((dayName: string, weekMonday: Date): string => {
+    const dayIndex = daysOfWeek.indexOf(dayName.toLowerCase());
+    if (dayIndex === -1) return new Date().toISOString();
+    const date = new Date(weekMonday);
+    date.setDate(weekMonday.getDate() + dayIndex);
+    return date.toISOString();
+  }, []);
+
+  // Send data to Flutter via sync API
+  const handleSendToFlutter = async () => {
+    setIsSending(true);
+    try {
+      // Load locations from localStorage too
+      let locations: Location[] = [];
+      try {
+        const storedLocations = localStorage.getItem(STORAGE_KEY_LOCATIONS);
+        if (storedLocations) {
+          locations = JSON.parse(storedLocations);
+        }
+      } catch (e) {
+        console.error('Failed to load locations', e);
+      }
+
+      // Transform slots to include proper dates for Flutter
+      const { monday: weekMonday } = getWeekRange(currentDate);
+      const slotsWithDates = slots.map(slot => ({
+        ...slot,
+        date: dayNameToDate(slot.day, weekMonday),
+        // Add fields Flutter expects
+        lieu: slot.location,
+        publishers: slot.speaker ? [slot.speaker] : [],
+      }));
+
+      const response = await publisherSyncFetch('/api/publisher-app/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'temoignage_public',
+          payload: { slots: slotsWithDates, locations, weekStart: weekMonday.toISOString() },
+          notify: true,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Envoyé avec succès',
+          description: 'Les données du témoignage public ont été envoyées vers Publisher App.',
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de l\'envoi');
+      }
+    } catch (error) {
+      console.error('Failed to send to Flutter', error);
+      toast({
+        title: 'Erreur',
+        description: error instanceof Error ? error.message : 'Impossible d\'envoyer les données vers Flutter.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   const { monday, sunday } = getWeekRange(currentDate);
   const weekLabel = `${String(monday.getDate()).padStart(2, '0')}-${String(sunday.getDate()).padStart(2, '0')}`;
@@ -114,9 +240,9 @@ function PlanningTab() {
     if (existingIndex >= 0) {
       const newSlots = [...slots];
       newSlots[existingIndex] = updatedSlot;
-      setSlots(newSlots);
+      saveSlots(newSlots);
     } else {
-      setSlots([...slots, updatedSlot]);
+      saveSlots([...slots, updatedSlot]);
     }
 
     setSelectedSlot(null);
@@ -125,7 +251,7 @@ function PlanningTab() {
 
   const handleDelete = () => {
     if (!selectedSlot) return;
-    setSlots(slots.filter(s => !(s.day === selectedSlot.day && s.period === selectedSlot.period)));
+    saveSlots(slots.filter(s => !(s.day === selectedSlot.day && s.period === selectedSlot.period)));
     setSelectedSlot(null);
     setFormData({ location: '', speaker: '', notes: '' });
   };
@@ -264,6 +390,18 @@ function PlanningTab() {
                 <TooltipContent>Supprimer</TooltipContent>
               </Tooltip>
             </div>
+
+            {/* Send to Flutter Button */}
+            <div className="pt-2">
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={handleSendToFlutter}
+                disabled={isSending || slots.length === 0}
+              >
+                <Send className="w-4 h-4 mr-2" />
+                {isSending ? 'Envoi en cours...' : 'Envoyer vers Publisher App'}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -389,11 +527,65 @@ function PlanningTab() {
 }
 
 function LieuxTab() {
+  const { toast } = useToast();
+  const { syncTemoignagePublic } = useSyncToFlutter();
   const [locations, setLocations] = useState<Location[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null);
   const [formData, setFormData] = useState({
     name: '',
   });
+
+  // Load locations from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_LOCATIONS);
+      if (stored) {
+        setLocations(JSON.parse(stored));
+      }
+    } catch (e) {
+      console.error('Failed to load locations from localStorage', e);
+    }
+  }, []);
+
+  // Save locations to localStorage when changed
+  const saveLocations = useCallback((newLocations: Location[]) => {
+    setLocations(newLocations);
+    try {
+      localStorage.setItem(STORAGE_KEY_LOCATIONS, JSON.stringify(newLocations));
+    } catch (e) {
+      console.error('Failed to save locations to localStorage', e);
+    }
+  }, []);
+
+  // Synchronisation automatique quand les locations changent
+  const firstMount = useRef(true);
+  useEffect(() => {
+    if (firstMount.current) {
+      firstMount.current = false;
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      // Charger les slots depuis localStorage
+      let slots: WeeklySlot[] = [];
+      try {
+        const storedSlots = localStorage.getItem(STORAGE_KEY_SLOTS);
+        if (storedSlots) {
+          slots = JSON.parse(storedSlots);
+        }
+      } catch (e) {
+        console.error('Failed to load slots', e);
+      }
+
+      // Synchroniser vers Flutter
+      await syncTemoignagePublic({
+        schedule: slots,
+        locations,
+      });
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [locations, syncTemoignagePublic]);
 
   const handleAddLocation = () => {
     if (!formData.name.trim()) return;
@@ -403,7 +595,7 @@ function LieuxTab() {
       name: formData.name,
     };
 
-    setLocations([...locations, newLocation]);
+    saveLocations([...locations, newLocation]);
     setFormData({ name: '' });
     setSelectedLocation(null);
   };
@@ -416,7 +608,7 @@ function LieuxTab() {
   const handleSaveLocation = () => {
     if (!selectedLocation || !formData.name.trim()) return;
 
-    setLocations(locations.map(l => 
+    saveLocations(locations.map(l => 
       l.id === selectedLocation.id 
         ? { ...l, name: formData.name }
         : l
@@ -426,7 +618,7 @@ function LieuxTab() {
   };
 
   const handleDeleteLocation = (id: string) => {
-    setLocations(locations.filter(l => l.id !== id));
+    saveLocations(locations.filter(l => l.id !== id));
     if (selectedLocation?.id === id) {
       setFormData({ name: '' });
       setSelectedLocation(null);

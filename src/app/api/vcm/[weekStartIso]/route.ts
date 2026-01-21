@@ -1,3 +1,5 @@
+export const dynamic = "force-static";
+export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
 import { promises as fs } from 'fs';

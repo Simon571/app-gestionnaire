@@ -20,8 +20,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['PT Sans', 'sans-serif'],
+        // ✅ Utilise la variable CSS de next/font pour un chargement optimisé
+        body: ['var(--font-pt-sans)', 'PT Sans', 'sans-serif'],
+        headline: ['var(--font-pt-sans)', 'PT Sans', 'sans-serif'],
+        sans: ['var(--font-pt-sans)', 'PT Sans', 'sans-serif'],
         code: ['monospace'],
       },
       colors: {

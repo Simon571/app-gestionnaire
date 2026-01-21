@@ -5,7 +5,7 @@ import { PeopleForm } from '@/components/people-form';
 import { usePeople } from '@/context/people-context';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, RefreshCw } from 'lucide-react';
 import React from 'react';
 
 export type ActivityReport = {
@@ -518,11 +518,84 @@ export default function PeoplePage() {
         reader.readAsText(file, 'utf-8');
     };
 
+    const handleSyncFromPublisherApp = async () => {
+        try {
+            const response = await fetch('/api/sync-publisher-users-to-people');
+            if (!response.ok) {
+                throw new Error('Échec de la synchronisation');
+            }
+
+            const data = await response.json();
+            const publisherUsers = data.people || [];
+
+            // Fusionner avec les personnes existantes (ne pas écraser)
+            const existingIds = new Set(peopleList.map(p => p.id));
+            const newPeople = publisherUsers.filter((p: Person) => !existingIds.has(p.id));
+
+            if (newPeople.length > 0) {
+                const merged = [...peopleList, ...newPeople];
+                replacePeople(merged);
+                toast({
+                    title: "Synchronisation réussie",
+                    description: `${newPeople.length} nouvelle(s) personne(s) importée(s) depuis Publisher App.`,
+                });
+            } else {
+                toast({
+                    title: "Aucune nouvelle personne",
+                    description: "Tous les utilisateurs Publisher App sont déjà dans la liste.",
+                });
+            }
+        } catch (error) {
+            console.error('Sync from publisher app failed:', error);
+            toast({
+                title: "Erreur de synchronisation",
+                description: "Impossible de synchroniser depuis Publisher App.",
+                variant: 'destructive',
+            });
+        }
+    };
+
+    const handleRepairPublisherApp = async () => {
+        try {
+            // Envoyer les données du localStorage vers publisher-users.json
+            const response = await fetch('/api/repair-publisher-users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ people: peopleList }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Échec de la réparation');
+            }
+
+            const data = await response.json();
+            toast({
+                title: "Réparation réussie",
+                description: `${data.count} utilisateur(s) synchronisé(s) vers Publisher App avec groupes.`,
+            });
+        } catch (error) {
+            console.error('Repair publisher app failed:', error);
+            toast({
+                title: "Erreur de réparation",
+                description: "Impossible de réparer Publisher App. Vérifiez la console.",
+                variant: 'destructive',
+            });
+        }
+    };
+
     return (
         <div className="space-y-6 p-4 min-h-screen">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <h1 className="text-3xl font-bold">Personnes</h1>
                     <div className="flex flex-wrap items-center gap-2">
+                        <Button variant="outline" onClick={handleRepairPublisherApp} className="flex items-center gap-2 bg-orange-50">
+                            <RefreshCw className="h-4 w-4 text-orange-600" />
+                            <span className="text-orange-600">Réparer Publisher App</span>
+                        </Button>
+                        <Button variant="outline" onClick={handleSyncFromPublisherApp} className="flex items-center gap-2">
+                            <RefreshCw className="h-4 w-4" />
+                            Sync Publisher App
+                        </Button>
                         <Button variant="outline" onClick={handleImportButtonClick} className="flex items-center gap-2">
                             <Upload className="h-4 w-4" />
                             Importer

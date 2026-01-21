@@ -7,6 +7,7 @@ export type VcmItemType =
   | "autre";
 
 export interface VcmItem {
+  id?: string;
   type: VcmItemType;
   title: string;
   theme?: string;
@@ -14,6 +15,11 @@ export interface VcmItem {
   songNumber?: number;
   scriptures?: string;
   notes?: string[];
+  number?: number | null;
+  category?: string;
+  description?: string;
+  // Champ pour stocker l'assignation d'une personne à cet item
+  personId?: string | null;
 }
 
 export interface VcmSection {
@@ -24,8 +30,8 @@ export interface VcmSection {
 
 export interface VcmWeek {
   weekTitle: string;
-  startDate: string;
-  endDate: string;
+  startDate: string | null;
+  endDate: string | null;
   sourceUrl: string;
   sections: VcmSection[];
 }

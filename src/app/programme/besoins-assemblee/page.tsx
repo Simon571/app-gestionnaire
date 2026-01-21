@@ -10,6 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Trash2, MessageSquare, Printer, HelpCircle, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 import { cn } from '@/lib/utils';
 
 type Theme = {
@@ -158,11 +159,25 @@ export default function BesoinsAssembleePage() {
                 <CardHeader className="no-print">
                     <div className="flex items-center justify-between">
                          <CardTitle>Besoins de l'assemblée programmés</CardTitle>
-                         <div className="flex items-center gap-1">
-                            <Button variant="ghost" size="icon"><MessageSquare className="h-5 w-5"/></Button>
-                            <Button variant="ghost" size="icon" onClick={handlePrint}><Printer className="h-5 w-5"/></Button>
-                            <Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5"/></Button>
-                         </div>
+                                                 <div className="flex items-center gap-1">
+                                                        <Button variant="ghost" size="icon"><MessageSquare className="h-5 w-5"/></Button>
+                                                        <LinkToPublisher
+                                                            type={'programme_week'}
+                                                            label="Enregistrer & Envoyer"
+                                                            getPayload={() => {
+                                                                const generatedAt = new Date().toISOString();
+                                                                // programme_week writer expects either a weekStart or weeks:[] array
+                                                                // Wrap data into weeks[] so the flutter-writer merges correctly
+                                                                const weekStart = new Date().toISOString();
+                                                                return { generatedAt, weeks: [{ weekStart, themes, programmedNeeds }] };
+                                                            }}
+                                                            save={() => {
+                                                                try { localStorage.setItem('programme-besoins-assemblee', JSON.stringify({ themes, programmedNeeds, savedAt: new Date().toISOString() })); } catch {};
+                                                            }}
+                                                        />
+                                                        <Button variant="ghost" size="icon" onClick={handlePrint}><Printer className="h-5 w-5"/></Button>
+                                                        <Button variant="ghost" size="icon"><HelpCircle className="h-5 w-5"/></Button>
+                                                 </div>
                     </div>
                 </CardHeader>
                 <CardContent className="flex-grow overflow-hidden printable-area">

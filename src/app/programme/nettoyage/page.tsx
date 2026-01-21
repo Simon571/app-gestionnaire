@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
@@ -47,31 +47,23 @@ import {
   Calendar as CalendarIcon,
   Bot,
   AlertTriangle,
-  Plus,
-  X,
   Trash2,
+  Send,
+  Loader2,
 } from 'lucide-react';
-import { add, format, startOfWeek, endOfWeek, addWeeks } from 'date-fns';
+import { format, startOfWeek, endOfWeek, addWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { MultiSelect, Option } from '@/components/ui/multi-select';
 import { usePeople } from '@/context/people-context';
-
-const initialRoles = [
-  'Salle principale', 'Scène', 'Toilettes',
-  'Entrée et couloirs', 'Salles annexes', 'Extérieur',
-];
-
-const initialRolePersonCounts: { [key: string]: number } = {
-  'Salle principale': 4, 'Scène': 2, 'Toilettes': 2,
-  'Entrée et couloirs': 2, 'Salles annexes': 2, 'Extérieur': 2,
-};
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 
 const generateWeeks = (startDate: Date, numWeeks: number) => {
   const weeks = [];
   for (let i = 0; i < numWeeks; i++) {
     const weekStart = addWeeks(startDate, i);
     const weekEnd = endOfWeek(weekStart, { locale: fr });
-    
+
     const formatRange = (start: Date, end: Date) => {
       const startMonth = format(start, 'MMMM', { locale: fr });
       const endMonth = format(end, 'MMMM', { locale: fr });
@@ -79,9 +71,9 @@ const generateWeeks = (startDate: Date, numWeeks: number) => {
       const endDay = format(end, 'dd', { locale: fr });
 
       if (startMonth === endMonth) {
-        return `${startMonth} ${startDay}–${endDay}`;
+        return startMonth + ' ' + startDay + '-' + endDay;
       }
-      return `${startMonth} ${startDay}–${endMonth} ${endDay}`;
+      return startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
     };
 
     weeks.push(formatRange(weekStart, weekEnd));
@@ -90,128 +82,85 @@ const generateWeeks = (startDate: Date, numWeeks: number) => {
 };
 
 const getCurrentWeekString = () => {
-    const now = new Date();
-    const weekStart = startOfWeek(now, { locale: fr });
-    const weekEnd = endOfWeek(now, { locale: fr });
-    const startMonth = format(weekStart, 'MMMM', { locale: fr });
-    const endMonth = format(weekEnd, 'MMMM', { locale: fr });
-    const startDay = format(weekStart, 'dd', { locale: fr });
-    const endDay = format(weekEnd, 'dd', { locale: fr });
+  const now = new Date();
+  const weekStart = startOfWeek(now, { locale: fr });
+  const weekEnd = endOfWeek(now, { locale: fr });
+  const startMonth = format(weekStart, 'MMMM', { locale: fr });
+  const endMonth = format(weekEnd, 'MMMM', { locale: fr });
+  const startDay = format(weekStart, 'dd', { locale: fr });
+  const endDay = format(weekEnd, 'dd', { locale: fr });
 
-    if (startMonth === endMonth) {
-        return `${startMonth} ${startDay}–${endDay}`;
-    }
-    return `${startMonth} ${startDay}–${endMonth} ${endDay}`;
+  if (startMonth === endMonth) {
+    return startMonth + ' ' + startDay + '-' + endDay;
+  }
+  return startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
 };
 
-const generateInitialServiceData = (rolesToUse: string[]) => {
+interface CleaningData {
+  week: string;
+  reunionSemaine: string;
+  reunionWeekend: string;
+}
+
+const generateInitialCleaningData = (): CleaningData[] => {
   const startDate = startOfWeek(new Date(), { locale: fr });
-  const weekStrings = generateWeeks(startDate, 24);
-  
+  const weekStrings = generateWeeks(startDate, 52);
+
   return weekStrings.map(week => ({
-      week,
-      ...rolesToUse.reduce((acc, role) => ({ ...acc, [role]: [] }), {})
+    week,
+    reunionSemaine: '',
+    reunionWeekend: '',
   }));
 };
 
 export default function CleaningPage() {
-  const { people } = usePeople();
-  const [roles, setRoles] = useState(initialRoles);
-  const [rolePersonCounts, setRolePersonCounts] = useState(initialRolePersonCounts);
-  const [serviceData, setServiceData] = useState(() => generateInitialServiceData(initialRoles));
+  const { people, preachingGroups: contextGroups } = usePeople();
+  const { syncNettoyage, isSyncing } = useSyncToFlutter();
+  const [cleaningData, setCleaningData] = useState<CleaningData[]>(() => generateInitialCleaningData());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedWeek, setSelectedWeek] = useState(getCurrentWeekString());
 
-  const peopleOptions: Option[] = people.map(p => ({
-    value: p.id,
-    label: p.displayName,
-  }));
+  // Utiliser preachingGroups du contexte
+  const preachingGroups = contextGroups;
 
-  const preachingGroups = useMemo(() => {
-    const groupMap: Record<string, any[]> = {};
-    people.forEach(person => {
-        const groupId = person.spiritual.group || 'unassigned';
-        if (groupId === 'unassigned') return;
-        if (!groupMap[groupId]) {
-            groupMap[groupId] = [];
-        }
-        groupMap[groupId].push(person);
-    });
-    const sortedGroupIds = Object.keys(groupMap).sort();
-    return sortedGroupIds.map((groupId, index) => ({
-      id: groupId,
-      name: `Groupe ${index + 1}`
-    }));
-  }, [people]);
 
   const preachingGroupOptions: Option[] = preachingGroups.map(g => ({
     value: g.id,
     label: g.name,
   }));
 
-  const handleAssignmentChange = (role: string, selectedIds: string[]) => {
-    setServiceData(currentData => {
-        return currentData.map(weekData => {
-            if (weekData.week === selectedWeek) {
-                let selectedNames: string[];
-                if (role === 'Entretien') {
-                    selectedNames = selectedIds.map(id => {
-                        const group = preachingGroups.find(g => g.id === id);
-                        return group ? group.name : '';
-                    }).filter(Boolean);
-                } else {
-                    selectedNames = selectedIds.map(id => {
-                        const person = people.find(p => p.id === id);
-                        return person ? person.displayName : '';
-                    }).filter(Boolean);
-                }
-                return { ...weekData, [role]: selectedNames };
-            }
-            return weekData;
+  const handleAssignmentChange = (field: 'reunionSemaine' | 'reunionWeekend', selectedIds: string[]) => {
+    setCleaningData(currentData => {
+      const newData = currentData.map(weekData => {
+        if (weekData.week === selectedWeek) {
+          const selectedNames = selectedIds.map(id => {
+            const group = preachingGroups.find(g => g.id === id);
+            return group ? group.name : '';
+          }).filter(Boolean);
+          return { ...weekData, [field]: selectedNames.join(', ') };
+        }
+        return weekData;
+      });
+      
+      // Auto-sync to Flutter
+      const currentWeekData = newData.find(w => w.week === selectedWeek);
+      if (currentWeekData) {
+        syncNettoyage({
+          date: selectedDate?.toISOString() || new Date().toISOString(),
+          groups: preachingGroups.filter(g => selectedIds.includes(g.id)),
+          assignments: newData,
         });
-    });
-  };
-
-  const handleAddService = (newRoleName: string, personCount: number) => {
-    const sanitizedRoleName = newRoleName.replace(/ /g, '_');
-    if (roles.includes(sanitizedRoleName)) {
-      alert('Ce service existe déjà.');
-      return;
-    }
-    setRoles(prev => [...prev, sanitizedRoleName]);
-    setRolePersonCounts(prev => ({ ...prev, [sanitizedRoleName]: personCount }));
-    setServiceData(prevData => prevData.map(week => ({
-        ...week,
-        [sanitizedRoleName]: []
-    })));
-  };
-
-  const handleDeleteService = (roleToDelete: string) => {
-    setRoles(prev => prev.filter(role => role !== roleToDelete));
-    setRolePersonCounts(prev => {
-        const newCounts = { ...prev };
-        delete newCounts[roleToDelete];
-        return newCounts;
-    });
-    setServiceData(prevData => {
-        const newData = prevData.map(week => {
-            const newWeekData = { ...week };
-            delete (newWeekData as any)[roleToDelete];
-            return newWeekData;
-        });
-        return newData;
+      }
+      
+      return newData;
     });
   };
 
   const handleClearWeek = () => {
-    setServiceData(currentData => {
+    setCleaningData(currentData => {
       return currentData.map(weekData => {
         if (weekData.week === selectedWeek) {
-          const clearedWeekData = { ...weekData };
-          roles.forEach(role => {
-            (clearedWeekData as any)[role] = [];
-          });
-          return clearedWeekData;
+          return { ...weekData, reunionSemaine: '', reunionWeekend: '' };
         }
         return weekData;
       });
@@ -230,36 +179,44 @@ export default function CleaningPage() {
 
     let weekString: string;
     if (startMonth === endMonth) {
-        weekString = `${startMonth} ${startDay}–${endDay}`;
+      weekString = startMonth + ' ' + startDay + '-' + endDay;
     } else {
-        weekString = `${startMonth} ${startDay}–${endMonth} ${endDay}`;
+      weekString = startMonth + ' ' + startDay + ' - ' + endMonth + ' ' + endDay;
     }
-    
+
     setSelectedWeek(weekString);
   };
 
   const firstMount = useRef(true);
   useEffect(() => {
     if (firstMount.current) {
-        firstMount.current = false;
-        return;
+      firstMount.current = false;
+      return;
     }
 
     const timer = setTimeout(() => {
-        console.log('Sauvegarde automatique des données...', serviceData);
+      console.log('Sauvegarde automatique des donnees...', cleaningData);
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [serviceData]);
+  }, [cleaningData]);
 
-  const selectedWeekData = serviceData.find(w => w.week === selectedWeek);
+  const selectedWeekData = cleaningData.find(w => w.week === selectedWeek);
+
+  const getSelectedGroupIds = (groupNames: string) => {
+    if (!groupNames) return [];
+    const names = groupNames.split(', ').filter(Boolean);
+    return preachingGroups
+      .filter(g => names.includes(g.name))
+      .map(g => g.id);
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Organisation du Nettoyage</CardTitle>
         <CardDescription>
-          Planifiez et visualisez les affectations pour le nettoyage.
+          Repartition du nettoyage par groupe de predication pour chaque reunion.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -268,10 +225,10 @@ export default function CleaningPage() {
             <Label htmlFor="week-select" className="sr-only">Semaine</Label>
             <Select value={selectedWeek} onValueChange={setSelectedWeek}>
               <SelectTrigger id="week-select" className="w-[200px]">
-                <SelectValue placeholder="Sélectionner une semaine" />
+                <SelectValue placeholder="Selectionner une semaine" />
               </SelectTrigger>
               <SelectContent>
-                {serviceData.map(d => <SelectItem key={d.week} value={d.week}>{d.week}</SelectItem>)}
+                {cleaningData.map(d => <SelectItem key={d.week} value={d.week}>{d.week}</SelectItem>)}
               </SelectContent>
             </Select>
             <Button variant="ghost" size="icon"><ChevronLeft className="h-4 w-4" /></Button>
@@ -281,97 +238,96 @@ export default function CleaningPage() {
                   <CalendarIcon className="h-4 w-4" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                className="w-auto p-0"
-                onInteractOutside={(e) => {
-                  e.preventDefault();
-                }}
-              >
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  initialFocus
-                />
+              <PopoverContent className="w-auto p-0" onInteractOutside={(e) => { e.preventDefault(); }}>
+                <Calendar mode="single" selected={selectedDate} onSelect={handleDateSelect} initialFocus />
               </PopoverContent>
             </Popover>
             <Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4" /></Button>
           </div>
           <div className="flex items-center gap-2">
-            <AddServiceDialog onAddService={handleAddService} />
             <Button variant="outline" onClick={handleClearWeek}>
               <Trash2 className="mr-2 h-4 w-4" />
               Effacer
             </Button>
-            <AutomaticAssignmentDialog rolePersonCounts={rolePersonCounts} />
-            <Button variant="ghost" size="icon" onClick={() => window.print()}><Printer className="h-4 w-4" /></Button>
-            <Button variant="ghost" size="icon"><Share2 className="h-4 w-4" /></Button>
+            <AutomaticAssignmentDialog
+              preachingGroups={preachingGroups}
+              cleaningData={cleaningData}
+              setCleaningData={setCleaningData}
+            />
+            <Button variant="outline">
+              <Share2 className="mr-2 h-4 w-4" />
+              Partager
+            </Button>
+            <Button variant="outline">
+              <Printer className="mr-2 h-4 w-4" />
+              Imprimer
+            </Button>
+            <LinkToPublisher
+              type={'nettoyage'}
+              label="Enregistrer & Envoyer"
+              getPayload={() => {
+                const generatedAt = new Date().toISOString();
+                const weekData = cleaningData.find(w => w.week === selectedWeek);
+                return {
+                  generatedAt,
+                  selectedWeek,
+                  reunionSemaine: weekData?.reunionSemaine || '',
+                  reunionWeekend: weekData?.reunionWeekend || '',
+                  cleaningData: cleaningData.slice(0, 12),
+                };
+              }}
+              save={() => localStorage.setItem('programme-nettoyage', JSON.stringify({ cleaningData, savedAt: new Date().toISOString() }))}
+            />
           </div>
         </div>
 
-        <div className="mb-8">
-            <h3 className="text-lg font-semibold mb-4 text-red-500 text-center">{selectedWeek}</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {roles.map(role => {
-                    const isEntretien = role === 'Entretien';
-                    const options = isEntretien ? preachingGroupOptions : peopleOptions;
-                    const assignedNames = (selectedWeekData?.[role as keyof typeof selectedWeekData] as unknown as string[]) || [];
-                    
-                    let selectedIds: string[];
-                    if (isEntretien) {
-                        selectedIds = preachingGroups
-                            .filter(g => assignedNames.includes(g.name))
-                            .map(g => g.id);
-                    } else {
-                        selectedIds = people
-                            .filter(p => assignedNames.includes(p.displayName))
-                            .map(p => p.id);
-                    }
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[200px]">Semaine</TableHead>
+              <TableHead>Reunion de semaine</TableHead>
+              <TableHead>Reunion de week-end</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow className={selectedWeekData ? 'bg-muted/50' : ''}>
+              <TableCell className="font-medium">{selectedWeek}</TableCell>
+              <TableCell>
+                <MultiSelect
+                  options={preachingGroupOptions}
+                  selected={getSelectedGroupIds(selectedWeekData?.reunionSemaine || '')}
+                  onChange={(ids) => handleAssignmentChange('reunionSemaine', ids)}
+                  placeholder="Selectionner groupe(s)..."
+                />
+              </TableCell>
+              <TableCell>
+                <MultiSelect
+                  options={preachingGroupOptions}
+                  selected={getSelectedGroupIds(selectedWeekData?.reunionWeekend || '')}
+                  onChange={(ids) => handleAssignmentChange('reunionWeekend', ids)}
+                  placeholder="Selectionner groupe(s)..."
+                />
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
 
-                    return (
-                        <div key={role} className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between">
-                                <Label>{role.replace(/_/g, ' ')}</Label>
-                                <Button variant="ghost" size="icon" onClick={() => handleDeleteService(role)}>
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <MultiSelect
-                                options={options}
-                                selected={selectedIds}
-                                onChange={(ids) => handleAssignmentChange(role, ids)}
-                                placeholder="Sélectionner..."
-                            />
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-
-        <div className="overflow-x-auto">
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold mb-4">Apercu du programme</h3>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[180px]">Date</TableHead>
-                {roles.map(role => <TableHead key={role}>{role.replace(/_/g, ' ')}</TableHead>)}
+                <TableHead className="w-[200px]">Semaine</TableHead>
+                <TableHead>Reunion de semaine</TableHead>
+                <TableHead>Reunion de week-end</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {serviceData.map((weekData) => (
-                <TableRow
-                  key={weekData.week}
-                  className={weekData.week === getCurrentWeekString() ? 'bg-yellow-100/70' : ''}
-                >
+              {cleaningData.slice(0, 12).map((weekData) => (
+                <TableRow key={weekData.week} className={weekData.week === selectedWeek ? 'bg-muted/50' : ''}>
                   <TableCell className="font-medium">{weekData.week}</TableCell>
-                  {roles.map(role => (
-                    <TableCell key={role}>
-                      <div className="flex flex-col gap-1">
-                        {(((weekData[role as keyof typeof weekData] as unknown) as string[]) || []).map((person, i) => (
-                          <span key={i} className="h-6">{person}</span>
-                        ))}
-                      </div>
-                    </TableCell>
-                  ))}
+                  <TableCell>{weekData.reunionSemaine || '-'}</TableCell>
+                  <TableCell>{weekData.reunionWeekend || '-'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -382,148 +338,130 @@ export default function CleaningPage() {
   );
 }
 
-function AddServiceDialog({ onAddService }: { onAddService: (name: string, count: number) => void }) {
-  const [open, setOpen] = useState(false);
-  const [newRoleName, setNewRoleName] = useState('');
-  const [personCount, setPersonCount] = useState(1);
-
-  const handleAdd = () => {
-    if (newRoleName.trim()) {
-      onAddService(newRoleName.trim(), personCount);
-      setNewRoleName('');
-      setPersonCount(1);
-      setOpen(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Plus className="mr-2 h-4 w-4" />
-          Ajouter une tâche
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Ajouter une nouvelle tâche</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="role-name" className="text-right">
-              Nom
-            </Label>
-            <Input
-              id="role-name"
-              value={newRoleName}
-              onChange={(e) => setNewRoleName(e.target.value)}
-              className="col-span-3"
-              placeholder="Ex: Entretien"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="person-count" className="text-right">
-              Personnes
-            </Label>
-            <Input
-              id="person-count"
-              type="number"
-              value={personCount}
-              onChange={(e) => setPersonCount(parseInt(e.target.value, 10) || 1)}
-              className="col-span-3"
-              min="1"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button onClick={handleAdd}>Ajouter la tâche</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+interface AutomaticAssignmentDialogProps {
+  preachingGroups: { id: string; name: string }[];
+  cleaningData: CleaningData[];
+  setCleaningData: React.Dispatch<React.SetStateAction<CleaningData[]>>;
 }
 
-function AutomaticAssignmentDialog({ rolePersonCounts }: { rolePersonCounts: { [key: string]: number } }) {
-  const [open, setOpen] = useState(false);
+function AutomaticAssignmentDialog({ preachingGroups, cleaningData, setCleaningData }: AutomaticAssignmentDialogProps) {
+  const [weeksToAssign, setWeeksToAssign] = useState(12);
+  const [groupsTotal, setGroupsTotal] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleAutomaticAssignment = () => {
-    console.log('Lancement de la saisie automatique...');
-    setOpen(false);
-    alert('Saisie automatique effectuée (simulation) !');
+    if (preachingGroups.length === 0) {
+      alert('Aucun groupe de predication disponible.');
+      return;
+    }
+
+    setCleaningData(currentData => {
+      const newData = [...currentData];
+      const numGroups = preachingGroups.length;
+      let groupIndex = 0;
+
+      for (let i = 0; i < weeksToAssign && i < newData.length; i++) {
+        if (groupsTotal === 1) {
+          // 1 groupe: meme groupe pour semaine et week-end
+          const groupName = preachingGroups[groupIndex % numGroups].name;
+          newData[i] = {
+            ...newData[i],
+            reunionSemaine: groupName,
+            reunionWeekend: groupName,
+          };
+          groupIndex++;
+        } else if (groupsTotal === 2) {
+          // 2 groupes: 1 groupe semaine, 1 autre week-end
+          const groupSemaine = preachingGroups[groupIndex % numGroups].name;
+          const groupWeekend = preachingGroups[(groupIndex + 1) % numGroups].name;
+          newData[i] = {
+            ...newData[i],
+            reunionSemaine: groupSemaine,
+            reunionWeekend: groupWeekend,
+          };
+          groupIndex += 2;
+        } else if (groupsTotal === 4) {
+          // 4 groupes: 2 groupes semaine, 2 autres week-end
+          const group1Semaine = preachingGroups[groupIndex % numGroups].name;
+          const group2Semaine = preachingGroups[(groupIndex + 1) % numGroups].name;
+          const group1Weekend = preachingGroups[(groupIndex + 2) % numGroups].name;
+          const group2Weekend = preachingGroups[(groupIndex + 3) % numGroups].name;
+          newData[i] = {
+            ...newData[i],
+            reunionSemaine: group1Semaine + ', ' + group2Semaine,
+            reunionWeekend: group1Weekend + ', ' + group2Weekend,
+          };
+          groupIndex += 4;
+        }
+      }
+
+      return newData;
+    });
+
+    setIsOpen(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <Bot className="mr-2 h-4 w-4" />
           Saisie automatique
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Paramètres de la saisie automatique</DialogTitle>
+          <DialogTitle>Repartition automatique par groupes</DialogTitle>
         </DialogHeader>
-        <div className="grid gap-6 py-4">
-          <div className="space-y-4">
-            <Label className="font-semibold">Choisir les tâches et le nombre de personnes</Label>
-            {Object.entries(rolePersonCounts).map(([role, maxCount]) => (
-              <div key={role} className="flex items-center justify-between">
-                <Label htmlFor={role} className="flex-1">{role.replace(/_/g, ' ')}</Label>
-                <div className="flex items-center gap-4">
-                  {[...Array(maxCount)].map((_, i) => (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <Checkbox id={`${role}-${i + 1}`} />
-                      <Label htmlFor={`${role}-${i + 1}`} className="text-sm font-normal">{i + 1}</Label>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="weeks-count">Semaines pour l'attribution</Label>
-              <Select>
-                <SelectTrigger id="weeks-count"><SelectValue placeholder="Nombre de semaines" /></SelectTrigger>
-                <SelectContent>
-                  {[2, 3, 4, 5, 6, 7, 8].map(w => <SelectItem key={w} value={String(w)}>{w} semaines</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="attribution-criteria">Commandé par</Label>
-              <Select>
-                <SelectTrigger id="attribution-criteria"><SelectValue placeholder="Critère d'attribution" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recent">Service récent</SelectItem>
-                  <SelectItem value="rotation">Rotation</SelectItem>
-                  <SelectItem value="random">Aléatoire</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 mt-2">
-            <Checkbox id="check-existing" defaultChecked />
-            <Label htmlFor="check-existing" className="font-normal">Vérifier l’attribution existante</Label>
-          </div>
-
-          <Alert variant="destructive" className="mt-4">
+        <div className="py-4 space-y-4">
+          <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Cette action va écraser toutes les futures affectations pour les rôles et semaines sélectionnés.
+              Cette action va repartir les groupes de predication en rotation sur les semaines selectionnees.
+              Les attributions existantes seront remplacees.
             </AlertDescription>
           </Alert>
+          <div className="space-y-2">
+            <Label htmlFor="weeks-count">Nombre de semaines a repartir</Label>
+            <Input
+              id="weeks-count"
+              type="number"
+              min={1}
+              max={52}
+              value={weeksToAssign}
+              onChange={(e) => setWeeksToAssign(parseInt(e.target.value) || 12)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Nombre de groupes pour les deux reunions</Label>
+            <Select value={String(groupsTotal)} onValueChange={(v) => setGroupsTotal(parseInt(v))}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">1 groupe (meme groupe semaine et week-end)</SelectItem>
+                <SelectItem value="2">2 groupes (1 semaine, 1 week-end)</SelectItem>
+                <SelectItem value="4">4 groupes (2 semaine, 2 week-end)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            Groupes disponibles: {preachingGroups.map(g => g.name).join(', ') || 'Aucun'}
+          </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="secondary">❌ Annuler</Button>
+            <Button variant="outline">Annuler</Button>
           </DialogClose>
-          <Button type="button" onClick={handleAutomaticAssignment}>🟦 Saisie automatique</Button>
+          <Button onClick={handleAutomaticAssignment}>
+            Repartir les groupes
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
+
+
+
+

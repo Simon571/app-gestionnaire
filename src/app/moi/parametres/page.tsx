@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { AlertCircle, Save, Eye, EyeOff, Check, X, Globe, Bell, Link2, User } from 'lucide-react';
-import { EncryptionService } from '@/lib/encryption-service';
+import { AuditLog } from '@/lib/encryption-service';
 
 // Types
 interface UserProfile {
@@ -200,7 +200,7 @@ export default function ParametresPage() {
         }
         
         // Audit logging
-        const auditLog = EncryptionService.AuditLog.getInstance();
+        const auditLog = AuditLog.getInstance();
         auditLog.log('PROFILE_UPDATED', { updatedFields: ['nom', 'email'] });
 
         setSaveMessage({ type: 'success', text: 'Profil sauvegardé avec succès' });
@@ -221,7 +221,7 @@ export default function ParametresPage() {
         localStorage.setItem('user_preferences', JSON.stringify(preferences));
         
         // Audit logging
-        const auditLog = EncryptionService.AuditLog.getInstance();
+        const auditLog = AuditLog.getInstance();
         auditLog.log('PREFERENCES_UPDATED', { langue: preferences.langue, fuseau: preferences.fuseau });
 
         setSaveMessage({ type: 'success', text: 'Préférences sauvegardées avec succès' });
@@ -242,7 +242,7 @@ export default function ParametresPage() {
         localStorage.setItem('user_notifications', JSON.stringify(notifications));
         
         // Audit logging
-        const auditLog = EncryptionService.AuditLog.getInstance();
+        const auditLog = AuditLog.getInstance();
         auditLog.log('NOTIFICATIONS_UPDATED', { 
           emailAlerts: notifications.emailAlerts,
           whatsappAlerts: notifications.whatsappAlerts 
@@ -266,7 +266,7 @@ export default function ParametresPage() {
         localStorage.setItem('user_integrations', JSON.stringify(integrations));
         
         // Audit logging
-        const auditLog = EncryptionService.AuditLog.getInstance();
+        const auditLog = AuditLog.getInstance();
         auditLog.log('INTEGRATIONS_UPDATED', { 
           webhookActive: integrations.webhookActive,
           slackActive: integrations.slackActive 

@@ -115,7 +115,7 @@ export default function ReportsPage() {
   };
   
   const calculateTotals = (data: (number | null)[]) => {
-    const total = data.reduce((sum, val) => sum + (val || 0), 0);
+    const total = data.reduce<number>((sum, val) => sum + (val ?? 0), 0);
     const count = data.filter(val => val !== null).length;
     const average = count > 0 ? Math.round(total / count) : 0;
     return { total, average };

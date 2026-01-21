@@ -1,0 +1,25 @@
+# Ignore heavy build artifacts and local backups for Railway deployments
+node_modules
+.next
+.idx
+export
+docs
+messages
+public/vcm
+public/vcm-program.json
+src-tauri
+*.tsbuildinfo
+.git
+.gitignore
+README.md
+RAILWAY-DEPLOYMENT-GUIDE.md
+docs-old
+backup
+dist
+build
+.env.local
+.env.*.local
+npm-debug.log
+yarn-error.log
+.DS_Store
+Thumbs.db

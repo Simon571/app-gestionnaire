@@ -1,29 +1,9 @@
 import { JoyeauxData, MinistryAssignment, ChristianLifePart, CongregationBibleStudy, FinalPrayer } from "@/components/vcm/FullMeetingBlock";
+import type { VcmWeek, VcmSection, VcmItem } from '@/lib/vcmTypes';
 import { parseISO, isWithinInterval, endOfDay } from 'date-fns';
 
-// Types reflecting vcm-program.normalized.json structure
-type VcmItem = {
-  type: string;
-  title: string;
-  theme: string;
-  duration?: number;
-  songNumber?: number;
-  scriptures?: string;
-};
-type VcmSection = {
-  key: string;
-  title: string;
-  items: VcmItem[];
-};
-type VcmWeekRaw = {
-  weekTitle: string;
-  startDate: string | null;
-  endDate: string | null;
-  sourceUrl: string;
-  sections: VcmSection[];
-};
 type VcmProgram = {
-  weeks: VcmWeekRaw[];
+  weeks: VcmWeek[];
 };
 
 // User-defined MwbWeek type
@@ -119,6 +99,55 @@ export async function loadVcmForDate(selectedDate: Date, opts?: { allowNearest?:
   }
 }
 
+export async function loadVcmWeeks(): Promise<VcmWeek[]> {
+  const program = await fetchVcmProgram();
+  return program?.weeks ?? [];
+}
+
+export function pickWeek(weeks: VcmWeek[], weekStartIso: string): VcmWeek | null {
+  const normalized = (weekStartIso || '').split('T')[0];
+  return (
+    weeks.find(week => week.startDate && week.startDate.startsWith(normalized)) ??
+    weeks.find(week => week.startDate && normalized && normalized < week.startDate) ??
+    null
+  );
+}
+
+export function buildItemId(week: VcmWeek, section: VcmSection, item: VcmItem, index: number): string {
+  const weekKey = week.startDate ?? week.weekTitle;
+  const sectionKey = section.key || section.title;
+  const itemKey = item.id || item.title || item.theme || `item-${index}`;
+  return [weekKey, sectionKey, itemKey, index].map(part => String(part).replace(/\s+/g, '_')).join(':');
+}
+
+export function roleForItem(item: VcmItem): string {
+  const type = (item.type || '').toLowerCase();
+  const title = (item.title || item.theme || '').toLowerCase();
+  if (type.includes('priere') || title.includes('prière')) return 'prayer';
+  if (type.includes('cantique') || title.includes('cantique')) return 'song';
+  if (type.includes('discours') || title.includes('discours')) return 'discourse';
+  if (type.includes('lecture') || title.includes('lecture')) return 'reading';
+  if (type.includes('ministere') || title.includes('minist')) return 'ministry';
+  return 'assignment';
+}
+
+export function isConversation(item: VcmItem): boolean {
+  const theme = (item.theme || item.title || '').toLowerCase();
+  return theme.includes('conversation') || theme.includes('visite') || theme.includes('discours');
+}
+
+export function buildWolUrlForWeek(week: VcmWeek): string {
+  if (week.sourceUrl) return week.sourceUrl;
+  if (week.startDate) {
+    const date = new Date(week.startDate);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+    return `https://wol.jw.org/fr/wol/dt/r30/lp-f/${year}/${month}/${day}`;
+  }
+  return 'https://wol.jw.org/fr/wol/h/r30/lp-f';
+}
+
 // Mapper function to transform a raw VCM week into the MwbWeek shape
 function buildMinistryTitle(item: VcmItem): string {
   const label = (item.title || '').trim();
@@ -144,7 +173,7 @@ function buildStudyDetail(item: VcmItem): string {
   return withoutLabel || withoutNumber || theme;
 }
 
-function mapRawWeekToMwbWeek(weekRaw: VcmWeekRaw): MwbWeek {
+function mapRawWeekToMwbWeek(weekRaw: VcmWeek): MwbWeek {
     const mwbWeek: MwbWeek = {
         dateISO: weekRaw.startDate || '',
         sourceUrl: weekRaw.sourceUrl,
@@ -218,7 +247,7 @@ function mapRawWeekToMwbWeek(weekRaw: VcmWeekRaw): MwbWeek {
     return mwbWeek;
 }
 
-function guessMinistryType(theme: string): MinistryAssignmentType | null {
+function guessMinistryType(theme?: string | null): MinistryAssignmentType | null {
   const t = (theme || '').toLowerCase();
   if (t.includes('conversation') || t.includes('first call') || t.includes('conversation starter')) return 'engage_conversation';
   if (t.includes('intérêt') || t.includes('interet') || t.includes('nouvelle visite') || t.includes('return visit')) return 'entretiens_interet';

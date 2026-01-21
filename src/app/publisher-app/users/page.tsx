@@ -44,6 +44,7 @@ export default function PublisherUsersPage() {
   const [selectedUser, setSelectedUser] = React.useState<PublisherUser | null>(null);
   const [selectedStatus, setSelectedStatus] = React.useState<string>('all');
   const [selectedGroup, setSelectedGroup] = React.useState<string>('all');
+  const [search, setSearch] = React.useState('');
 
   const handleSendInvitation = React.useCallback(() => {
     if (!selectedUser?.email) {
@@ -58,12 +59,19 @@ export default function PublisherUsersPage() {
   }, [people, preachingGroups]);
 
   const filteredUsers = React.useMemo(() => {
+    const needle = search.trim().toLowerCase();
     return publisherUsers.filter(user => {
       const statusMatch = selectedStatus === 'all' || user.status === selectedStatus;
       const groupMatch = selectedGroup === 'all' || user.group === selectedGroup;
-      return statusMatch && groupMatch;
+      const searchMatch =
+        !needle ||
+        user.firstName.toLowerCase().includes(needle) ||
+        user.lastName.toLowerCase().includes(needle) ||
+        user.pin?.toLowerCase().includes(needle) ||
+        (user.email ?? '').toLowerCase().includes(needle);
+      return statusMatch && groupMatch && searchMatch;
     });
-  }, [publisherUsers, selectedStatus, selectedGroup]);
+  }, [publisherUsers, selectedStatus, selectedGroup, search]);
 
   const isActionDisabled = !selectedUser;
 
@@ -109,7 +117,12 @@ export default function PublisherUsersPage() {
       <div className="space-y-4">
         {/* Filters */}
         <div className="flex flex-col md:flex-row gap-4">
-            <Input placeholder="Rechercher par nom ou PIN..." className="max-w-sm" />
+            <Input
+              placeholder="Rechercher par nom, PIN ou e-mail..."
+              className="max-w-sm"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
             <div className="flex gap-4">
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                     <SelectTrigger>

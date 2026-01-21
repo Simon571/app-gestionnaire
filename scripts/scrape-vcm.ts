@@ -150,13 +150,16 @@ const OUT_NAME = (getArg("out") || "vcm-program").replace(/\.json$/i, "");
 const today = new Date();
 const defaultStart = startOfWeek(today);
 const defaultEnd = addDays(defaultStart, 42);
-const startDate = START_ARG ? parseISODate(START_ARG) : defaultStart;
-const endDate = END_ARG ? parseISODate(END_ARG) : defaultEnd;
+const parsedStart = START_ARG ? parseISODate(START_ARG) : defaultStart;
+const parsedEnd = END_ARG ? parseISODate(END_ARG) : defaultEnd;
 
-if (!startDate || !endDate) {
+if (!parsedStart || !parsedEnd) {
   console.error("[VCM] Impossible d'interpréter les dates fournies. Utilisez le format YYYY-MM-DD.");
   process.exit(1);
 }
+
+const startDate = parsedStart;
+const endDate = parsedEnd;
 
 if (endDate < startDate) {
   console.error("[VCM] La date de fin est antérieure à la date de début.");

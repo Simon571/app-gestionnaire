@@ -1,0 +1,422 @@
+{
+  "generatedAt": "2026-01-08T16:02:54.253Z",
+  "roles": [
+    "Comptage_Assistance",
+    "Accueil à la porte",
+    "Sonorisation",
+    "Micros baladeur",
+    "Micros Estrade",
+    "Sanitaire",
+    "Accueil dans la salle",
+    "Accueil à la grande porte",
+    "Entretien"
+  ],
+  "rolePersonCounts": {
+    "Comptage_Assistance": 2,
+    "Accueil à la porte": 2,
+    "Sonorisation": 2,
+    "Micros baladeur": 4,
+    "Micros Estrade": 2,
+    "Sanitaire": 2,
+    "Accueil dans la salle": 2,
+    "Accueil à la grande porte": 2,
+    "Entretien": 1
+  },
+  "serviceData": [
+    {
+      "week": "janvier 05–11",
+      "Comptage_Assistance": [
+        "Paulin KASHALA"
+      ],
+      "Accueil à la porte": [
+        "Simon NZAMBA"
+      ],
+      "Sonorisation": [
+        "Paulin KASHALA"
+      ],
+      "Micros baladeur": [
+        "Paulin KASHALA"
+      ],
+      "Micros Estrade": [
+        "Paulin KASHALA"
+      ],
+      "Sanitaire": [
+        "Paulin KASHALA"
+      ],
+      "Accueil dans la salle": [
+        "Simon NZAMBA"
+      ],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "janvier 12–18",
+      "Comptage_Assistance": [
+        "Emery NZAMBA"
+      ],
+      "Accueil à la porte": [
+        "Abel MBOMBO"
+      ],
+      "Sonorisation": [
+        "Emery NZAMBA"
+      ],
+      "Micros baladeur": [
+        "Emery NZAMBA"
+      ],
+      "Micros Estrade": [
+        "Emery NZAMBA"
+      ],
+      "Sanitaire": [
+        "Emery NZAMBA"
+      ],
+      "Accueil dans la salle": [
+        "Abel MBOMBO"
+      ],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "janvier 19–25",
+      "Comptage_Assistance": [
+        "Asher NTUMBA"
+      ],
+      "Accueil à la porte": [
+        "Paulin KASHALA"
+      ],
+      "Sonorisation": [
+        "Asher NTUMBA"
+      ],
+      "Micros baladeur": [
+        "Dally KASHALA "
+      ],
+      "Micros Estrade": [
+        "Asher NTUMBA"
+      ],
+      "Sanitaire": [
+        "Dally KASHALA "
+      ],
+      "Accueil dans la salle": [
+        "Paulin KASHALA"
+      ],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "janvier 26–février 01",
+      "Comptage_Assistance": [
+        "Dieudonné  DIMBODIETU"
+      ],
+      "Accueil à la porte": [
+        "Christophe EFAMBE"
+      ],
+      "Sonorisation": [
+        "Dieudonné  DIMBODIETU"
+      ],
+      "Micros baladeur": [
+        "Asher NTUMBA"
+      ],
+      "Micros Estrade": [
+        "Dieudonné  DIMBODIETU"
+      ],
+      "Sanitaire": [
+        "Asher NTUMBA"
+      ],
+      "Accueil dans la salle": [
+        "Christophe EFAMBE"
+      ],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "février 02–08",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "février 09–15",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "février 16–22",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "février 23–mars 01",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mars 02–08",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mars 09–15",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mars 16–22",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mars 23–29",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mars 30–avril 05",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "avril 06–12",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "avril 13–19",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "avril 20–26",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "avril 27–mai 03",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mai 04–10",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mai 11–17",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mai 18–24",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "mai 25–31",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "juin 01–07",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "juin 08–14",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    },
+    {
+      "week": "juin 15–21",
+      "Comptage_Assistance": [],
+      "Accueil à la porte": [],
+      "Sonorisation": [],
+      "Micros baladeur": [],
+      "Micros Estrade": [],
+      "Sanitaire": [],
+      "Accueil dans la salle": [],
+      "Accueil à la grande porte": [],
+      "Entretien": []
+    }
+  ],
+  "items": [
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Comptage_Assistance",
+      "users": [
+        "Paulin KASHALA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Accueil à la porte",
+      "users": [
+        "Simon NZAMBA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Sonorisation",
+      "users": [
+        "Paulin KASHALA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Micros baladeur",
+      "users": [
+        "Paulin KASHALA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Micros Estrade",
+      "users": [
+        "Paulin KASHALA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Sanitaire",
+      "users": [
+        "Paulin KASHALA"
+      ]
+    },
+    {
+      "date": "2026-01-08T16:01:37.593Z",
+      "service": "Accueil dans la salle",
+      "users": [
+        "Simon NZAMBA"
+      ]
+    }
+  ]
+}

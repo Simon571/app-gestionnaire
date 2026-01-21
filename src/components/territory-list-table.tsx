@@ -17,15 +17,30 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { mockTerritories, Territory } from '@/lib/territory-data';
 import { cn } from '@/lib/utils';
 import { ArrowUpDown } from 'lucide-react';
+import { usePeople } from '@/context/people-context';
+import { createPeopleById, resolvePersonDisplayName } from '@/lib/people/resolve-person';
 
 type SortKey = string; // allow dynamic keys used by UI (kept simple to avoid refactor)
 
 export function TerritoryListTable() {
+  const { people } = usePeople();
   const [territories, setTerritories] = React.useState<Territory[]>(mockTerritories);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterStatus, setFilterStatus] = React.useState('all');
   const [filterType, setFilterType] = React.useState('all');
   const [sortConfig, setSortConfig] = React.useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>(null);
+
+  const peopleById = React.useMemo(() => createPeopleById(people as any), [people]);
+
+  const getAssigneeLabel = React.useCallback(
+    (territory: Territory) => {
+      if (territory.assigneePersonId) {
+        return resolvePersonDisplayName(peopleById as any, territory.assigneePersonId);
+      }
+      return territory.assignee || '';
+    },
+    [peopleById]
+  );
 
   const filteredTerritories = React.useMemo(() => {
     let filtered = territories.filter(t => 
@@ -43,8 +58,8 @@ export function TerritoryListTable() {
 
     if (sortConfig !== null) {
       filtered.sort((a, b) => {
-        const va = (a as any)[sortConfig.key];
-        const vb = (b as any)[sortConfig.key];
+        const va = sortConfig.key === 'assignee' ? getAssigneeLabel(a) : (a as any)[sortConfig.key];
+        const vb = sortConfig.key === 'assignee' ? getAssigneeLabel(b) : (b as any)[sortConfig.key];
         if (va === undefined && vb !== undefined) return sortConfig.direction === 'ascending' ? 1 : -1;
         if (vb === undefined && va !== undefined) return sortConfig.direction === 'ascending' ? -1 : 1;
         if (va < vb) return sortConfig.direction === 'ascending' ? -1 : 1;
@@ -156,7 +171,7 @@ export function TerritoryListTable() {
                 <TableCell>{territory.number}</TableCell>
                 <TableCell>{territory.location}</TableCell>
                 <TableCell>{territory.status}</TableCell>
-                <TableCell>{territory.assignee || 'Non attribué'}</TableCell>
+                <TableCell>{getAssigneeLabel(territory) || 'Non attribué'}</TableCell>
                 <TableCell>{territory.type}</TableCell>
                 <TableCell>{territory.assignmentDate?.toLocaleDateString() || 'N/A'}</TableCell>
                 <TableCell>{territory.completionDate?.toLocaleDateString() || 'N/A'}</TableCell>

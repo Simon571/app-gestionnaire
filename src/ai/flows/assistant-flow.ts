@@ -36,7 +36,7 @@ const askAssistantFlow = ai?.defineFlow(
     }),
     outputSchema: z.string(),
   },
-  async ({ query, history }) => {
+  async ({ query, history }: { query: string; history?: z.infer<typeof HistoryItemSchema>[] }) => {
     if (!ai) {
       throw new Error('AI non disponible dans cet environnement.');
     }

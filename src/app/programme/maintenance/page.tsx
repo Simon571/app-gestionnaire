@@ -1,4 +1,4 @@
-
+﻿
 'use client';
 
 import { useState } from 'react';
@@ -7,8 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Copy, BookOpen, Printer, HelpCircle, Edit3, Upload, Download } from 'lucide-react';
+import { Plus, Trash2, Copy, BookOpen, Printer, HelpCircle, Edit3, Upload, Download, Building } from 'lucide-react';
 import { usePeople } from '@/context/people-context';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 
 interface MaintenanceTask {
   id: string;
@@ -40,6 +41,9 @@ export default function MaintenancePage() {
   const [selectedTask, setSelectedTask] = useState<MaintenanceTask | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [openPersonDialog, setOpenPersonDialog] = useState(false);
+  const [openAssemblyDialog, setOpenAssemblyDialog] = useState(false);
+  const [localAssemblies, setLocalAssemblies] = useState<string[]>([]);
+  const [newAssemblyName, setNewAssemblyName] = useState('');
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
   const [selectedColumn, setSelectedColumn] = useState<number | null>(null);
   const [activeWeekMonth, setActiveWeekMonth] = useState<number>(0);
@@ -169,6 +173,29 @@ export default function MaintenancePage() {
           >
             <Download className="w-5 h-5" />
           </Button>
+          <Button
+            onClick={() => setOpenAssemblyDialog(true)}
+            className="bg-green-500 hover:bg-green-600 text-white p-2 h-8 w-8"
+            title="Assemblees locales"
+          >
+            <Building className="w-5 h-5" />
+          </Button>
+          <LinkToPublisher
+            type={'services'}
+            label="Enregistrer & Envoyer"
+            getPayload={() => {
+              const generatedAt = new Date().toISOString();
+              // Normalize tasks into an items array that Flutter understands
+              const items = tasks.map((t) => ({
+                date: generatedAt,
+                title: t.name,
+                description: t.description,
+                assignees: Object.values(t.assignments).filter(Boolean),
+              }));
+              return { generatedAt, tasks, items };
+            }}
+            save={() => localStorage.setItem('programme-maintenance', JSON.stringify({ tasks, savedAt: new Date().toISOString() }))}
+          />
         </div>
 
         {/* Tasks List */}
@@ -252,6 +279,16 @@ export default function MaintenancePage() {
                           </>
                         ) : (
                           <>
+                              {localAssemblies.length > 0 && (
+                                <>
+                                  <div className="px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-100">Assemblees</div>
+                                  {localAssemblies.map((assembly, idx) => (
+                                    <SelectItem key={'assembly-' + idx} value={'assembly-' + idx}>
+                                      {assembly}
+                                    </SelectItem>
+                                  ))}
+                                </>
+                              )}
                             {getMaintenancePeople().length > 0 ? (
                               getMaintenancePeople().map(person => 
                                 person.id ? (
@@ -464,6 +501,65 @@ export default function MaintenancePage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* ASSEMBLY DIALOG */}
+      <Dialog open={openAssemblyDialog} onOpenChange={setOpenAssemblyDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Assemblees locales</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex gap-2">
+              <Input
+                value={newAssemblyName}
+                onChange={(e) => setNewAssemblyName(e.target.value)}
+                placeholder="Nom de assemblee"
+                className="flex-1"
+              />
+              <Button
+                onClick={() => {
+                  if (newAssemblyName.trim()) {
+                    setLocalAssemblies([...localAssemblies, newAssemblyName.trim()]);
+                    setNewAssemblyName('');
+                  }
+                }}
+                className="bg-green-500 hover:bg-green-600 text-white"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="border rounded-lg max-h-60 overflow-y-auto">
+              {localAssemblies.length === 0 ? (
+                <div className="p-4 text-center text-gray-500 text-sm">
+                  Aucune assemblee ajoutee
+                </div>
+              ) : (
+                <ul className="divide-y">
+                  {localAssemblies.map((assembly, idx) => (
+                    <li key={idx} className="flex items-center justify-between p-2 hover:bg-gray-50">
+                      <span>{assembly}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setLocalAssemblies(localAssemblies.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button onClick={() => setOpenAssemblyDialog(false)} variant="outline">
+              Fermer
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+

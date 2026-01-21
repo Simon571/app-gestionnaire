@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePeople } from '@/context/people-context';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
+import { createPeopleById, findPersonIdByDisplayName, resolvePersonDisplayName } from '@/lib/people/resolve-person';
 
 interface Visit {
   id: string;
   date: Date;
   time: string;
+  /** Legacy free-text */
   responsible: string;
+  /** Preferred stable reference */
+  responsiblePersonId?: string;
   location: string;
   topic: string;
   participants: string[];
@@ -36,8 +41,8 @@ interface Visit {
 }
 
 export default function VisiteResponsableCirconscriptionPage() {
-  const { preachingGroups, isLoaded } = usePeople();
-  const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 5)); // November 5, 2025
+  const { people, preachingGroups, isLoaded } = usePeople();
+  const [currentDate, setCurrentDate] = useState(new Date()); // November 5, 2025
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [visits, setVisits] = useState<Visit[]>([]);
   const [selectedGroup, setSelectedGroup] = useState('all-groups');
@@ -75,11 +80,19 @@ export default function VisiteResponsableCirconscriptionPage() {
 
   const handleAddVisit = () => {
     if (!selectedDate) return;
+
+    const peopleById = createPeopleById(people as any);
+    const responsiblePersonId = findPersonIdByDisplayName(people as any, formData.responsible);
+    const normalizedResponsible = responsiblePersonId
+      ? resolvePersonDisplayName(peopleById as any, responsiblePersonId)
+      : formData.responsible;
     
     const newVisit: Visit = {
       id: Date.now().toString(),
       date: selectedDate,
       ...formData,
+      responsible: normalizedResponsible,
+      responsiblePersonId,
     };
     
     setVisits([...visits, newVisit]);
@@ -172,6 +185,14 @@ export default function VisiteResponsableCirconscriptionPage() {
                   </TooltipTrigger>
                   <TooltipContent>Modifier</TooltipContent>
                 </Tooltip>
+                <div className="w-full mt-2">
+                  <LinkToPublisher
+                    type={'assistance'}
+                    label="Enregistrer & Envoyer"
+                    getPayload={() => ({ generatedAt: new Date().toISOString(), currentDate, visits })}
+                    save={() => localStorage.setItem('programme-visite-responsable', JSON.stringify({ visits, currentDate, savedAt: new Date().toISOString() }))}
+                  />
+                </div>
               </div>
 
               {/* Time Selection */}

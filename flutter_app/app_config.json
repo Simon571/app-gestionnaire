@@ -1,0 +1,90 @@
+{
+  "name": "Gestionnaire d'Assemblée Mobile",
+  "version": "1.0.0",
+  "description": "Application mobile Flutter pour les utilisateurs de l'assemblée",
+  "author": "Gestionnaire d'Assemblée Team",
+  "minSdkVersion": 21,
+  "targetSdkVersion": 34,
+  "deploymentTargetIOS": "11.0",
+  "modules": {
+    "assemblée": {
+      "name": "Assemblée",
+      "icon": "home",
+      "description": "Rapport, événements à venir, témoignage public",
+      "screens": [
+        "rapport_mensuel",
+        "prochains_evenements",
+        "temoignage_public",
+        "tableau_affichage"
+      ]
+    },
+    "programmes": {
+      "name": "Programmes",
+      "icon": "calendar_today",
+      "description": "Réunions programmées",
+      "screens": [
+        "reunion_semaine",
+        "reunion_weekend",
+        "reunion_predication"
+      ]
+    },
+    "attributions": {
+      "name": "Attributions",
+      "icon": "assignment",
+      "description": "Services et attributions",
+      "screens": [
+        "attributions_par_semaine",
+        "details_attribution"
+      ]
+    },
+    "services": {
+      "name": "Services",
+      "icon": "construction",
+      "description": "Services assignés",
+      "screens": [
+        "services_a_venir",
+        "calendrier_services"
+      ]
+    },
+    "territoires": {
+      "name": "Territoires",
+      "icon": "map",
+      "description": "Gestion des territoires",
+      "screens": [
+        "liste_territoires",
+        "demandes"
+      ]
+    },
+    "moi": {
+      "name": "Moi",
+      "icon": "person",
+      "description": "Profil et paramètres",
+      "screens": [
+        "profil",
+        "historique",
+        "coordonnees",
+        "parametres"
+      ]
+    }
+  },
+  "authentication": {
+    "step1": "assemblée_pin",
+    "step2": "utilisateur_pin",
+    "storage": "shared_preferences",
+    "encryption": true
+  },
+  "sync": {
+    "method": "local_first",
+    "backend": "api_futur",
+    "frequency": "manuel"
+  },
+  "ui": {
+    "theme": "material_3",
+    "colors": {
+      "primary": "#1E88E5",
+      "secondary": "#43A047",
+      "accent": "#FF9800"
+    },
+    "language": "fr"
+  }
+}

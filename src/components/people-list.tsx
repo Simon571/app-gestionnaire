@@ -110,8 +110,8 @@ export function PeopleList({ people, selectedPerson, onSelectPerson, onNewPerson
   });
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex flex-col items-start justify-between">
+    <Card className="h-full flex flex-col max-h-[calc(100vh-120px)]">
+      <CardHeader className="flex flex-col items-start justify-between shrink-0">
         <div className="flex flex-row items-center justify-between w-full">
             <CardTitle>Personnes ({filteredPeople.length})</CardTitle>
             <Button onClick={onNewPerson}>Nouveau</Button>
@@ -160,8 +160,8 @@ export function PeopleList({ people, selectedPerson, onSelectPerson, onNewPerson
             </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 flex-grow">
-        <ScrollArea className="h-[calc(100vh-180px)]">
+      <CardContent className="p-0 flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
             <div className="p-2">
             {filteredPeople.map((person) => (
                 <Button

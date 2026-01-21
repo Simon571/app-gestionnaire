@@ -1,0 +1,9 @@
+{
+  "version": "1.0.1",
+  "buildNumber": 101,
+  "downloadUrl": "http://localhost:3001/downloads/app-release.apk",
+  "releaseNotes": "Correction des onglets Programme",
+  "minimumVersion": "1.0.0",
+  "forceUpdate": false,
+  "updatedAt": "2026-01-07T09:06:50.058Z"
+}

@@ -26,8 +26,21 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
-// Helper function to get the weeks of a month
+interface AttendanceRecord {
+  id: string;
+  meetingType: 'vcm' | 'weekend';
+  date: string;
+  weekStart?: string;
+  weekEndDate?: string;
+  inPerson: number;
+  online: number;
+  total: number;
+  initiator?: string;
+}
+
+// Helper function to get the weeks of a month with their date ranges
 const getWeeksOfMonth = (year: number, month: number) => {
   const weeks = [];
   const firstDay = new Date(year, month, 1);
@@ -40,17 +53,27 @@ const getWeeksOfMonth = (year: number, month: number) => {
   const startDayOfWeek = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
   end = 7 - startDayOfWeek;
   
-  weeks.push({ start, end: Math.min(end, numDays) });
+  weeks.push({ 
+    start, 
+    end: Math.min(end, numDays),
+    startDate: new Date(year, month, start),
+    endDate: new Date(year, month, Math.min(end, numDays))
+  });
   start = end + 1;
 
   while (start <= numDays) {
     end = start + 6;
-    weeks.push({ start, end: Math.min(end, numDays) });
+    weeks.push({ 
+      start, 
+      end: Math.min(end, numDays),
+      startDate: new Date(year, month, start),
+      endDate: new Date(year, month, Math.min(end, numDays))
+    });
     start = end + 1;
   }
   
   while (weeks.length < 5) {
-      weeks.push({ start: null, end: null });
+      weeks.push({ start: null, end: null, startDate: null, endDate: null });
   }
 
   return weeks.slice(0, 5); // Ensure exactly 5 weeks
@@ -65,6 +88,8 @@ export default function MeetingAttendancePage() {
   const [year, setYear] = React.useState(currentDate.getFullYear());
   const [month, setMonth] = React.useState(currentDate.getMonth());
   const [attendance, setAttendance] = React.useState<AttendanceData>({});
+  const [receivedRecords, setReceivedRecords] = React.useState<AttendanceRecord[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const monthName = new Date(year, month).toLocaleString('fr-FR', { month: 'long' });
   const weeks = getWeeksOfMonth(year, month);
@@ -74,6 +99,44 @@ export default function MeetingAttendancePage() {
     value: i,
     label: new Date(2000, i).toLocaleString('fr-FR', { month: 'long' }),
   }));
+
+  // Charger les données d'assistance depuis l'API
+  React.useEffect(() => {
+    const loadAttendance = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/attendance?year=${year}&month=${month}`);
+        if (response.ok) {
+          const data = await response.json();
+          setReceivedRecords(data.records || []);
+          
+          // Mapper les données reçues vers l'état d'attendance
+          const newAttendance: AttendanceData = {};
+          for (const record of data.records || []) {
+            const recordDate = new Date(record.date);
+            // Trouver la semaine correspondante
+            const weekIndex = weeks.findIndex(week => {
+              if (!week.startDate || !week.endDate) return false;
+              return recordDate >= week.startDate && recordDate <= week.endDate;
+            });
+            
+            if (weekIndex >= 0) {
+              const meetingType = record.meetingType === 'vcm' ? 'semaine' : 'weekend';
+              newAttendance[`${meetingType}-w${weekIndex}-presentiel`] = record.inPerson;
+              newAttendance[`${meetingType}-w${weekIndex}-enligne`] = record.online;
+            }
+          }
+          setAttendance(prev => ({ ...prev, ...newAttendance }));
+        }
+      } catch (error) {
+        console.error('Failed to load attendance:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadAttendance();
+  }, [year, month]);
 
   const handleAttendanceChange = (weekIndex: number, meetingType: 'semaine' | 'weekend', attendanceType: 'presentiel' | 'enligne', value: string) => {
     const key = `${meetingType}-w${weekIndex}-${attendanceType}`;
@@ -181,9 +244,17 @@ export default function MeetingAttendancePage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Assistance aux réunions</CardTitle>
+        <CardTitle className="flex items-center gap-2">
+          Assistance aux réunions
+          {receivedRecords.length > 0 && (
+            <Badge variant="secondary" className="ml-2">
+              {receivedRecords.length} enregistrement(s) reçu(s)
+            </Badge>
+          )}
+        </CardTitle>
         <CardDescription>
           Sélectionnez une année et un mois pour afficher ou saisir l'assistance.
+          {isLoading && <span className="ml-2 text-primary">Chargement...</span>}
         </CardDescription>
         <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <div className="grid w-full max-w-sm items-center gap-1.5">

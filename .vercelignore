@@ -1,0 +1,46 @@
+# Ignore heavy build artifacts and local backups for deployments
+node_modules
+node_modules - Copie
+.next
+.next - Copie
+.idx
+.idx - Copie
+export
+export - Copie
+docs - Copie
+messages - Copie
+public/vcm
+public/vcm-program.json
+src-tauri/next-dist
+*.tsbuildinfo
+
+# Tauri / Desktop app
+src-tauri/
+*.msi
+*.exe
+*.app
+*.dmg
+
+# Flutter app
+flutter_app/
+*.apk
+
+# Local data
+data/
+
+# IDE
+.idea/
+.vscode/
+
+# Documentation locale
+*.md
+!README.md
+
+# Scripts locaux
+*.ps1
+*.sh
+!deploy-vercel.ps1
+
+# Autres
+*.log
+*.iml

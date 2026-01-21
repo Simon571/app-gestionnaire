@@ -1,0 +1,235 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2025-12-07T23:00:00.000Z",
+      "weekEnd": "2025-12-13T23:00:00.000Z",
+      "weekLabel": "08 déc. - 14 déc. 2025",
+      "meetingType": "vie_chretienne_ministere",
+      "assignments": {
+        "hall1:treasures_discourse": "person-1764632424720",
+        "hall1:treasures_gems": "person-1764632233872",
+        "hall1:ministry_0_student": "person-1764634262130",
+        "hall1:treasures_president": "person-1764632007249",
+        "hall1:treasures_opening_prayer": "person-1764632007249",
+        "hall1:bible_reading": "person-1764632658049",
+        "hall1:ministry_0_assistant": "person-1764632658049",
+        "hall1:ministry_1_student": "person-1764632850887",
+        "hall1:ministry_1_assistant": "person-1764634389569",
+        "hall1:ministry_2_student": "person-1764632990055",
+        "hall1:ministry_2_assistant": "person-1764635290238",
+        "hall1:life_0_participant": "person-1764632007249",
+        "study_conductor": "person-1764632007249",
+        "study_reader": "person-1764632007249",
+        "closing_prayer": "person-1764632007249",
+        "hall1:ministry_3_student": "person-1764634152042",
+        "hall1:ministry_3_assistant": "person-1764635175062",
+        "hall1:life_1_participant": "person-1764632007249",
+        "hall1:life_2_participant": "person-1764632007249"
+      },
+      "songs": {
+        "opening": "42",
+        "middle": "160",
+        "closing": "34"
+      },
+      "participants": [
+        {
+          "personId": "person-1764632424720",
+          "personName": "Abel Mbombo",
+          "role": "hall1:treasures_discourse",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632233872",
+          "personName": "Paulin Kashala",
+          "role": "hall1:treasures_gems",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764634262130",
+          "personName": "Florence Nzamba ",
+          "role": "hall1:ministry_0_student",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "hall1:treasures_president",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "hall1:treasures_opening_prayer",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632658049",
+          "personName": "Andre Tshitungu",
+          "role": "hall1:bible_reading",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632658049",
+          "personName": "Andre Tshitungu",
+          "role": "hall1:ministry_0_assistant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632850887",
+          "personName": "Nicha Kashala ",
+          "role": "hall1:ministry_1_student",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764634389569",
+          "personName": "Papy Bunsanga ",
+          "role": "hall1:ministry_1_assistant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632990055",
+          "personName": "Rachel Ilele",
+          "role": "hall1:ministry_2_student",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764635290238",
+          "personName": "Gaston Mutanga",
+          "role": "hall1:ministry_2_assistant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "hall1:life_0_participant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "study_conductor",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "study_reader",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "closing_prayer",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764634152042",
+          "personName": "Anna Mukayi",
+          "role": "hall1:ministry_3_student",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764635175062",
+          "personName": "David Mpandi",
+          "role": "hall1:ministry_3_assistant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "hall1:life_1_participant",
+          "date": "2025-12-07T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632007249",
+          "personName": "Simon Nzamba Malongi",
+          "role": "hall1:life_2_participant",
+          "date": "2025-12-07T23:00:00.000Z"
+        }
+      ],
+      "hall": 1
+    },
+    {
+      "weekStart": "2025-12-14T23:00:00.000Z",
+      "weekEnd": "2025-12-20T23:00:00.000Z",
+      "weekLabel": "15 déc. - 21 déc. 2025",
+      "meetingType": "vie_chretienne_ministere",
+      "assignments": {
+        "hall1:treasures_president": "person-1764632424720",
+        "hall1:treasures_discourse": "person-1764634389569",
+        "hall1:bible_reading": "person-1764635290238",
+        "hall1:treasures_opening_prayer": "person-1764635175062",
+        "hall1:treasures_gems": "person-1764632233872"
+      },
+      "songs": {
+        "opening": "42",
+        "middle": "160",
+        "closing": "34"
+      },
+      "participants": [
+        {
+          "personId": "person-1764632424720",
+          "personName": "Abel Mbombo",
+          "role": "hall1:treasures_president",
+          "date": "2025-12-14T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764634389569",
+          "personName": "Papy Bunsanga ",
+          "role": "hall1:treasures_discourse",
+          "date": "2025-12-14T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764635290238",
+          "personName": "Gaston Mutanga",
+          "role": "hall1:bible_reading",
+          "date": "2025-12-14T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764635175062",
+          "personName": "David Mpandi",
+          "role": "hall1:treasures_opening_prayer",
+          "date": "2025-12-14T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1764632233872",
+          "personName": "Paulin Kashala",
+          "role": "hall1:treasures_gems",
+          "date": "2025-12-14T23:00:00.000Z"
+        }
+      ],
+      "hall": 1
+    },
+    {
+      "weekStart": "2026-01-04T23:00:00.000Z",
+      "weekEnd": "2026-01-10T23:00:00.000Z",
+      "weekLabel": "05 janv. - 11 janv. 2026",
+      "assignments": {
+        "hall1:treasures_president": "person-1764632007249",
+        "hall1:treasures_opening_prayer": "person-1764632233872",
+        "hall1:treasures_discourse": "person-1764632424720",
+        "hall1:treasures_gems": "person-1764634389569",
+        "hall1:bible_reading": "person-1764632658049",
+        "hall1:ministry_0_student": "person-1764632850887",
+        "hall1:ministry_0_assistant": "person-1764635175062",
+        "hall1:ministry_1_student": "person-1764632990055",
+        "hall1:ministry_1_assistant": "person-1764635290238",
+        "hall1:ministry_2_student": "person-1764634152042",
+        "hall1:ministry_2_assistant": "person-1764632007249",
+        "hall1:life_0_participant": "person-1764632007249",
+        "hall1:life_1_participant": "person-1764632007249",
+        "study_conductor": "person-1764632007249",
+        "study_reader": "person-1764632007249",
+        "closing_prayer": "person-1764632007249"
+      },
+      "songs": {
+        "opening": "42",
+        "middle": "160",
+        "closing": "34"
+      },
+      "participants": [],
+      "hall": "2",
+      "updatedAt": "2026-01-08T12:57:51.822Z"
+    }
+  ]
+}

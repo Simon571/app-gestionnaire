@@ -32,12 +32,16 @@ import {
   Minus,
   Save,
   Check,
-  X
+  X,
+  Send,
+  Loader2
 } from 'lucide-react';
 import { format, addDays, startOfWeek, getWeek, addWeeks, subWeeks } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { usePeople } from '@/context/people-context';
+import { publisherSyncFetch } from '@/lib/publisher-sync-client';
 import { useToast } from '@/hooks/use-toast';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 import type { Person } from '@/app/personnes/page';
 import {
   Command,
@@ -49,6 +53,7 @@ import {
 } from '@/components/ui/command';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { AutoAssignDialog, type AutoAssignConfig } from '@/components/programme/auto-assign-dialog';
 
 // Générateur de numéros de cantiques (1-200)
 function generateSongNumbers() {
@@ -75,12 +80,16 @@ interface VCMWeekData {
 
 // Types pour les données normalisées du site JW
 interface VCMItem {
+  id?: string;
   type: string;
   title: string;
-  theme: string;
+  theme?: string;
   duration?: number;
   songNumber?: number;
   scriptures?: string;
+  number?: number | null;
+  category?: string;
+  description?: string;
 }
 
 interface VCMSection {
@@ -101,11 +110,17 @@ interface VCMNormalizedData {
   weeks: VCMWeek[];
 }
 
-const DEFAULT_SONGS = {
+type SongSelection = {
+  opening: string;
+  middle: string;
+  closing: string;
+};
+
+const DEFAULT_SONGS: SongSelection = {
   opening: '42',
   middle: '160',
   closing: '34',
-} as const;
+};
 
 const formatPersonName = (person: Person) => {
   const fallback = [person.firstName, person.middleName, person.lastName, person.suffix]
@@ -255,11 +270,18 @@ const MINISTRY_TYPE_OPTIONS: string[] = [
 
 // Interface exacte du modèle VCM jw.org
 export default function ReunionVieMinisterePage() {
-  const [selectedWeek, setSelectedWeek] = React.useState<Date>(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [mounted, setMounted] = React.useState(false);
+  const [selectedWeek, setSelectedWeek] = React.useState<Date>(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [currentHall, setCurrentHall] = React.useState<1 | 2>(1);
   const [songs, setSongs] = React.useState(() => ({ ...DEFAULT_SONGS }));
   const [assignments, setAssignments] = React.useState<Record<string, string>>({});
   const [habitualAttendance, setHabitualAttendance] = React.useState('2');
+  const { syncProgrammeWeek, isSyncing } = useSyncToFlutter();
+
+  // Fix hydration mismatch by waiting for client mount
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
   const [vcmWeekData, setVcmWeekData] = React.useState<VCMWeekData | null>(null);
   const [vcmNormalizedData, setVcmNormalizedData] = React.useState<VCMNormalizedData | null>(null);
   const [vcmNormalizedWeek, setVcmNormalizedWeek] = React.useState<VCMWeek | null>(null);
@@ -661,6 +683,34 @@ export default function ReunionVieMinisterePage() {
     return mockPeople.filter((p: any) => p.gender === 'male');
   }, [people, isLoaded, mockPeople]);
 
+  const bibleReaders = React.useMemo(() => {
+    const source = activePeople;
+    const flagged = source.filter((p: any) => Boolean(p?.assignments?.gems?.bibleReading));
+    const eligible = flagged.filter((p: any) => p.gender === 'male');
+    if (eligible.length > 0) return eligible;
+
+    // Fallback: keep brothers + boys only (avoid sisters entirely)
+    return brothersAndChildren.filter((p: any) => p.gender === 'male');
+  }, [activePeople, brothersAndChildren]);
+
+  const congregationBibleStudyReaders = React.useMemo(() => {
+    const source = activePeople;
+    const flagged = source.filter((p: any) => Boolean(p?.assignments?.christianLife?.reader));
+    const eligible = flagged.filter((p: any) => p.gender === 'male');
+    if (eligible.length > 0) return eligible;
+
+    // Fallback: keep previous behavior (brothers) if no one is flagged
+    return brothers;
+  }, [activePeople, brothers]);
+
+  const interlocutors = React.useMemo(() => {
+    const source = activePeople;
+    const flagged = source.filter((p: any) => Boolean(p?.assignments?.ministry?.interlocutor));
+
+    // If no one is explicitly flagged, keep previous behavior to avoid empty lists.
+    return flagged.length > 0 ? flagged : brothersAndChildren;
+  }, [activePeople, brothersAndChildren]);
+
   const peopleById = React.useMemo(() => {
     const map = new Map<string, Person>();
     const source = isLoaded && people.length > 0 ? people : mockPeople;
@@ -690,12 +740,28 @@ export default function ReunionVieMinisterePage() {
       eldersAndServants: buildPersonOptions(eldersAndServants),
       brothers: buildPersonOptions(brothers),
       brothersAndChildren: buildPersonOptions(brothersAndChildren),
+      interlocutors: buildPersonOptions(interlocutors),
+      bibleReaders: buildPersonOptions(bibleReaders),
+      congregationBibleStudyReaders: buildPersonOptions(congregationBibleStudyReaders),
     }),
-    [activePeople, elders, eldersAndServants, brothers, brothersAndChildren, buildPersonOptions]
+    [activePeople, elders, eldersAndServants, brothers, brothersAndChildren, interlocutors, bibleReaders, congregationBibleStudyReaders, buildPersonOptions]
   );
 
   const songNumbers = generateSongNumbers();
 
+  // Configuration des rôles pour auto-assign
+  const autoAssignRoles = React.useMemo(() => [
+    { id: 'treasures_president', label: 'Président', maxCount: 3, defaultCount: 1 },
+    { id: 'treasures_opening_prayer', label: 'Prière d\'ouverture', maxCount: 3, defaultCount: 1 },
+    { id: 'treasures_discourse', label: 'Discours', maxCount: 3, defaultCount: 1 },
+    { id: 'treasures_gems', label: 'Joyaux', maxCount: 3, defaultCount: 1 },
+    { id: 'bible_reading', label: 'Lecture biblique', maxCount: 5, defaultCount: 1 },
+    { id: 'ministry_parts', label: 'Parties du ministère', maxCount: 10, defaultCount: 3 },
+    { id: 'life_parts', label: 'Vie chrétienne', maxCount: 5, defaultCount: 2 },
+    { id: 'study_conductor', label: 'Conducteur étude', maxCount: 3, defaultCount: 1 },
+    { id: 'study_reader', label: 'Lecteur étude', maxCount: 3, defaultCount: 1 },
+    { id: 'closing_prayer', label: 'Prière de fin', maxCount: 3, defaultCount: 1 },
+  ], []);
   const makeAssignmentKey = React.useCallback(
     (base: string, hallAware = true, hallValue: 1 | 2 = currentHall) =>
       hallAware ? `hall${hallValue}:${base}` : base,
@@ -797,10 +863,22 @@ export default function ReunionVieMinisterePage() {
   };
 
   // Fonctions d'action des boutons
-  const handleAutoAssign = React.useCallback(() => {
-    const hall = currentHall;
-    const hallPrefix = `hall${hall}:`;
+  // Fonctions d'action des boutons
+  const handleAutoAssign = React.useCallback((config: AutoAssignConfig) => {
+    // Obtenir les rôles activés
+    const enabledRoles = Object.entries(config.selectedRoles).filter(([_, v]) => v > 0);
+    
+    if (enabledRoles.length === 0) {
+      toast({ title: 'Saisie automatique', description: 'Aucun rôle sélectionné.' });
+      return;
+    }
 
+    const hall = currentHall;
+    let totalAssignments = 0;
+    const allNeededAssignments: Record<string, string> = {};
+
+    // Pour la semaine courante
+    const hallPrefix = `hall${hall}:`;
     const existingForHall = Object.entries(assignments).reduce<Record<string, string>>((acc, [key, value]) => {
       if (key.startsWith(hallPrefix) && value) {
         acc[key] = value;
@@ -812,57 +890,73 @@ export default function ReunionVieMinisterePage() {
 
     const chooseCandidate = (pool: Person[]) => {
       if (!pool.length) return null;
-      const available = pool.find(person => person?.id && !usedIds.has(person.id));
+      let sortedPool = [...pool];
+      if (config.sortCriteria === 'random') {
+        sortedPool = sortedPool.sort(() => Math.random() - 0.5);
+      } else if (config.sortCriteria === 'alphabetical') {
+        sortedPool = sortedPool.sort((a, b) => ((a as unknown as { name: string }).name || '').localeCompare((b as unknown as { name: string }).name || ''));
+      }
+      const available = sortedPool.find(person => person?.id && !usedIds.has(person.id));
       if (available?.id) {
         usedIds.add(available.id);
         return available.id;
       }
-      const fallback = pool[0];
-      if (fallback?.id) {
-        usedIds.add(fallback.id);
-        return fallback.id;
-      }
       return null;
     };
 
-    const neededAssignments: Record<string, string> = {};
-
     const assignIfEmpty = (slotKey: string, pool: Person[], hallAware = true) => {
       const fullKey = makeAssignmentKey(slotKey, hallAware, hall);
-      if (assignments[fullKey]) {
-        if (assignments[fullKey]) {
-          usedIds.add(assignments[fullKey]);
-        }
+      if (assignments[fullKey] || allNeededAssignments[fullKey]) {
+        if (assignments[fullKey]) usedIds.add(assignments[fullKey]);
         return;
       }
       const candidateId = chooseCandidate(pool);
       if (candidateId) {
-        neededAssignments[fullKey] = candidateId;
+        allNeededAssignments[fullKey] = candidateId;
+        totalAssignments++;
       }
     };
 
-    assignIfEmpty('treasures_president', eldersAndServants);
-    assignIfEmpty('treasures_opening_prayer', brothers);
-    assignIfEmpty('treasures_discourse', eldersAndServants);
-    assignIfEmpty('treasures_gems', eldersAndServants);
-    assignIfEmpty('bible_reading', brothersAndChildren);
-
-    vcmData.sections.ministry.forEach((_, index) => {
-      assignIfEmpty(`ministry_${index}_student`, activePeople);
-      assignIfEmpty(`ministry_${index}_assistant`, brothersAndChildren);
-    });
-
-    vcmData.sections.christianLife
-      .filter(part => part.type !== 'study' && part.type !== 'prayer')
-      .forEach((_, index) => {
-        assignIfEmpty(`life_${index}_participant`, eldersAndServants);
+    // Appliquer les rôles activés
+    if (config.selectedRoles.treasures_president > 0) {
+      assignIfEmpty('treasures_president', eldersAndServants);
+    }
+    if (config.selectedRoles.treasures_opening_prayer > 0) {
+      assignIfEmpty('treasures_opening_prayer', brothers);
+    }
+    if (config.selectedRoles.treasures_discourse > 0) {
+      assignIfEmpty('treasures_discourse', eldersAndServants);
+    }
+    if (config.selectedRoles.treasures_gems > 0) {
+      assignIfEmpty('treasures_gems', eldersAndServants);
+    }
+    if (config.selectedRoles.bible_reading > 0) {
+      assignIfEmpty('bible_reading', bibleReaders);
+    }
+    if (config.selectedRoles.ministry_parts > 0) {
+      vcmData.sections.ministry.forEach((_, index) => {
+        assignIfEmpty(`ministry_${index}_student`, activePeople);
+        assignIfEmpty(`ministry_${index}_assistant`, interlocutors);
       });
+    }
+    if (config.selectedRoles.life_parts > 0) {
+      vcmData.sections.christianLife
+        .filter(part => part.type !== 'study' && part.type !== 'prayer')
+        .forEach((_, index) => {
+          assignIfEmpty(`life_${index}_participant`, eldersAndServants);
+        });
+    }
+    if (config.selectedRoles.study_conductor > 0) {
+      assignIfEmpty('study_conductor', elders, false);
+    }
+    if (config.selectedRoles.study_reader > 0) {
+      assignIfEmpty('study_reader', congregationBibleStudyReaders, false);
+    }
+    if (config.selectedRoles.closing_prayer > 0) {
+      assignIfEmpty('closing_prayer', brothers, false);
+    }
 
-    assignIfEmpty('study_conductor', elders, false);
-    assignIfEmpty('study_reader', brothers, false);
-    assignIfEmpty('closing_prayer', brothers, false);
-
-    if (Object.keys(neededAssignments).length === 0) {
+    if (totalAssignments === 0) {
       toast({
         title: 'Saisie automatique',
         description: 'Aucune attribution supplémentaire à remplir pour cette salle.',
@@ -870,12 +964,13 @@ export default function ReunionVieMinisterePage() {
       return;
     }
 
-    setAssignments(prev => ({ ...prev, ...neededAssignments }));
+    setAssignments(prev => ({ ...prev, ...allNeededAssignments }));
     toast({
       title: 'Saisie automatique',
-      description: `${Object.keys(neededAssignments).length} attributions ont été complétées pour la salle ${hall}.`,
+      description: `${totalAssignments} attributions ont été complétées pour la salle ${hall}.`,
     });
   }, [activePeople, assignments, brothers, brothersAndChildren, currentHall, elders, eldersAndServants, makeAssignmentKey, toast, vcmData.sections.christianLife, vcmData.sections.ministry]);
+
 
   const handleClearAssignments = () => {
     setAssignments({});
@@ -947,6 +1042,189 @@ export default function ReunionVieMinisterePage() {
     }
   }, [assignments, songs, currentHall, ministryCategories, notes, selectedWeek, toast]);
 
+  const [isSaving, setIsSaving] = React.useState(false);
+
+  // Synchronisation automatique quand les données changent
+  const firstMount = React.useRef(true);
+  React.useEffect(() => {
+    if (firstMount.current) {
+      firstMount.current = false;
+      return;
+    }
+
+    // Ne pas synchroniser si pas de données
+    if (Object.keys(assignments).length === 0) return;
+
+    const timer = setTimeout(async () => {
+      // Sauvegarder localement d'abord
+      if (typeof window !== 'undefined') {
+        try {
+          const weekKey = format(selectedWeek, WEEK_FORMAT);
+          const existingRaw = window.localStorage.getItem(STORAGE_KEY);
+          const existing = existingRaw ? JSON.parse(existingRaw) : {};
+          existing[weekKey] = {
+            assignments,
+            songs,
+            hall: currentHall,
+            ministryCategories,
+            notes,
+            savedAt: new Date().toISOString()
+          };
+          window.localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        } catch (error) {
+          console.error('Erreur lors de la sauvegarde locale auto:', error);
+        }
+      }
+
+      // Synchroniser vers Flutter
+      const weekEndDate = addDays(selectedWeek, 6);
+      const participants: Array<{
+        personId: string;
+        personName: string;
+        role: string;
+        date: string;
+      }> = [];
+
+      Object.entries(assignments).forEach(([key, value]) => {
+        if (typeof value === 'string' && value) {
+          const person = people.find(p => p.id === value);
+          if (person) {
+            participants.push({
+              personId: person.id,
+              personName: person.displayName,
+              role: key,
+              date: selectedWeek.toISOString(),
+            });
+          }
+        }
+      });
+
+      await syncProgrammeWeek({
+        weekStart: selectedWeek.toISOString(),
+        weekEnd: weekEndDate.toISOString(),
+        weekLabel: `${format(selectedWeek, 'dd MMM', { locale: fr })} - ${format(weekEndDate, 'dd MMM yyyy', { locale: fr })}`,
+        assignments,
+        songs,
+        participants,
+        hall: currentHall.toString(),
+      });
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [assignments, songs, currentHall, ministryCategories, notes, selectedWeek, people, syncProgrammeWeek]);
+
+  // Fonction combinée: Enregistrer localement + Envoyer vers Flutter
+  const handleSaveAndSend = React.useCallback(async () => {
+    setIsSaving(true);
+    
+    // 1. Sauvegarder localement d'abord
+    if (typeof window !== 'undefined') {
+      try {
+        const weekKey = format(selectedWeek, WEEK_FORMAT);
+        const existingRaw = window.localStorage.getItem(STORAGE_KEY);
+        const existing = existingRaw ? JSON.parse(existingRaw) : {};
+        const categoriesSnapshot = { ...ministryCategories };
+        existing[weekKey] = {
+          assignments,
+          songs,
+          hall: currentHall,
+          ministryCategories: categoriesSnapshot,
+          notes,
+          savedAt: new Date().toISOString()
+        };
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(existing));
+        setMinistryCategoryCache(prev => ({
+          ...prev,
+          [weekKey]: categoriesSnapshot,
+        }));
+      } catch (error) {
+        console.error('Erreur lors de la sauvegarde locale :', error);
+        toast({ title: 'Erreur de sauvegarde', description: 'Impossible d\'enregistrer les données localement.', variant: 'destructive' });
+        setIsSaving(false);
+        return;
+      }
+    }
+
+    // 2. Envoyer vers Flutter
+    try {
+      const weekKey = format(selectedWeek, WEEK_FORMAT);
+      const weekEndDate = addDays(selectedWeek, 6);
+      
+      // Build participant list with their assignments
+      const participants: Array<{
+        personId: string;
+        personName: string;
+        role: string;
+        date: string;
+      }> = [];
+
+      // Helper to add participant
+      const addParticipant = (role: string, personId: string | null) => {
+        if (!personId) return;
+        const person = people.find(p => p.id === personId);
+        if (person) {
+          participants.push({
+            personId: person.id,
+            personName: person.displayName,
+            role,
+            date: selectedWeek.toISOString(),
+          });
+        }
+      };
+
+      // Add all assignments
+      Object.entries(assignments).forEach(([key, value]) => {
+        if (typeof value === 'string') {
+          addParticipant(key, value);
+        } else if (value && typeof value === 'object') {
+          const obj = value as Record<string, unknown>;
+          if ('studentId' in obj && typeof obj.studentId === 'string') {
+            addParticipant(`${key}_student`, obj.studentId);
+          }
+          if ('assistantId' in obj && typeof obj.assistantId === 'string') {
+            addParticipant(`${key}_assistant`, obj.assistantId);
+          }
+        }
+      });
+
+      const payload = {
+        weekStart: selectedWeek.toISOString(),
+        weekEnd: weekEndDate.toISOString(),
+        weekLabel: `${format(selectedWeek, 'dd MMM', { locale: fr })} - ${format(weekEndDate, 'dd MMM yyyy', { locale: fr })}`,
+        meetingType: 'vie_chretienne_ministere',
+        assignments,
+        songs,
+        participants,
+        hall: currentHall,
+      };
+
+      const response = await publisherSyncFetch('/api/publisher-app/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'programme_week', payload, notify: true }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: 'Enregistré et envoyé',
+          description: 'Le programme a été sauvegardé et envoyé vers Publisher App.',
+        });
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Erreur lors de l\'envoi');
+      }
+    } catch (error) {
+      console.error('Failed to send to Flutter', error);
+      toast({
+        title: 'Erreur d\'envoi',
+        description: error instanceof Error ? error.message : 'Données sauvegardées mais impossible d\'envoyer vers Publisher App.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  }, [assignments, songs, currentHall, ministryCategories, notes, selectedWeek, people, toast]);
+
   const treasuresPresidentBinding = createAssignmentBinding('treasures_president');
   const treasuresOpeningPrayerBinding = createAssignmentBinding('treasures_opening_prayer');
   const treasuresDiscourseBinding = createAssignmentBinding('treasures_discourse');
@@ -974,7 +1252,7 @@ export default function ReunionVieMinisterePage() {
                 <ChevronDown className="h-4 w-4 rotate-90" />
               </Button>
               <span className="text-xs font-medium min-w-[100px] text-center">
-                {format(selectedWeek, 'MMM dd', { locale: fr })} - {format(addDays(selectedWeek, 6), 'dd, yyyy', { locale: fr })}
+                {mounted ? `${format(selectedWeek, 'MMM dd', { locale: fr })} - ${format(addDays(selectedWeek, 6), 'dd, yyyy', { locale: fr })}` : '...'}
               </span>
               <Button
                 variant="outline"
@@ -987,12 +1265,27 @@ export default function ReunionVieMinisterePage() {
 
               {/* Boutons d'action avec icônes seulement */}
               <div className="flex items-center gap-1 ml-4">
-                <Button variant="outline" size="sm" onClick={handleSaveData} className="h-8 w-8 p-0" title="Sauvegarder">
-                  <Save className="h-4 w-4" />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleSaveAndSend} 
+                  disabled={isSaving}
+                  className="h-8 px-2 text-green-600 hover:text-green-700 hover:bg-green-50" 
+                  title="Enregistrer et envoyer vers Publisher App"
+                >
+                  {isSaving ? (
+                    <span className="animate-spin h-4 w-4 border-2 border-green-600 border-t-transparent rounded-full" />
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4" />
+                      <Send className="h-4 w-4 ml-1" />
+                    </>
+                  )}
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleAutoAssign} className="h-8 w-8 p-0" title="Saisie automatique">
-                  <Zap className="h-4 w-4" />
-                </Button>
+                <AutoAssignDialog 
+                  roles={autoAssignRoles}
+                  onConfirm={handleAutoAssign}
+                />
                 <Button variant="outline" size="sm" onClick={handleClearAssignments} className="h-8 w-8 p-0" title="Effacer attribution">
                   <Eraser className="h-4 w-4" />
                 </Button>
@@ -1006,7 +1299,7 @@ export default function ReunionVieMinisterePage() {
             <div className="text-center">
               <h1 className="text-xl font-bold">Vie chrétienne et ministère</h1>
               <h2 className="text-red-600 font-bold text-sm">
-                {format(selectedWeek, 'MMMM dd', { locale: fr })}-{format(addDays(selectedWeek, 6), 'dd', { locale: fr })}
+                {mounted ? `${format(selectedWeek, 'MMMM dd', { locale: fr })}-${format(addDays(selectedWeek, 6), 'dd', { locale: fr })}` : '...'}
               </h2>
               {/* Afficher "Assemblée de circonscription" seulement pour des semaines spéciales */}
               {(format(selectedWeek, 'MM-dd') === '10-06' || format(selectedWeek, 'MM-dd') === '04-06') && (
@@ -1184,9 +1477,9 @@ export default function ReunionVieMinisterePage() {
                   </span>
                   <PersonSelect
                     {...bibleReadingBinding}
-                    options={personOptions.brothersAndChildren}
+                    options={personOptions.bibleReaders}
                     placeholder="Lecteur"
-                    disabled={personOptions.brothersAndChildren.length === 0}
+                    disabled={personOptions.bibleReaders.length === 0}
                   />
                   <Button variant="outline" size="sm" className="h-6 w-6 p-0">
                     <span className="text-xs">📄</span>
@@ -1273,9 +1566,9 @@ export default function ReunionVieMinisterePage() {
                         <span className="text-xs w-20">Interlocuteur</span>
                         <PersonSelect
                           {...assistantBinding}
-                          options={personOptions.brothersAndChildren}
+                          options={personOptions.interlocutors}
                           placeholder="Interlocuteur"
-                          disabled={personOptions.brothersAndChildren.length === 0}
+                          disabled={personOptions.interlocutors.length === 0}
                         />
                       </>
                     )}
@@ -1302,8 +1595,8 @@ export default function ReunionVieMinisterePage() {
                 .map((part, idx) => {
                   const lifePart = vcmWeekData?.christianLifeParts?.[idx];
                   const participantBinding = createAssignmentBinding(`life_${idx}_participant`);
-                  const subjectBinding = createAssignmentBinding(`life_${idx}_subject`, part.title || '');
-                  const typeBinding = createAssignmentBinding(`life_${idx}_type`, '');
+                  const subjectBinding = createAssignmentBinding(`life_${idx}_subject`, false);
+                  const typeBinding = createAssignmentBinding(`life_${idx}_type`, false);
                   // Charger automatiquement le titre depuis le VCM
                   const vcmTitle = part.title || 'Partie vie chrétienne';
                   // Déterminer le type basé sur le contenu
@@ -1332,7 +1625,7 @@ export default function ReunionVieMinisterePage() {
                         <Input 
                           className="h-6 text-xs flex-1" 
                           placeholder={part.title || "Sujet..."} 
-                          value={subjectBinding.value || ''}
+                          value={subjectBinding.value ?? part.title ?? ''}
                           onChange={(e) => subjectBinding.onChange(e.target.value)}
                           readOnly={!isAssemblyNeed}
                           title={part.title || ''}
@@ -1400,9 +1693,9 @@ export default function ReunionVieMinisterePage() {
                 <span className="text-xs w-20">Lecteur</span>
                 <PersonSelect
                   {...studyReaderBinding}
-                  options={personOptions.brothers}
+                  options={personOptions.congregationBibleStudyReaders}
                   placeholder="Lecteur"
-                  disabled={personOptions.brothers.length === 0}
+                  disabled={personOptions.congregationBibleStudyReaders.length === 0}
                 />
               </div>
               <div key="priere_finale" className="flex items-center gap-1">

@@ -1,0 +1,472 @@
+{
+  "reports": [
+    {
+      "userId": "person-1762074610641-1",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 2,
+        "bibleStudies": 5,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-19": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        },
+        "2025-12-26": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        },
+        "2025-12-30": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        },
+        "2025-12-04": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        },
+        "2025-12-31": {
+          "hours": 2,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "meta": {
+        "auth": "pin"
+      },
+      "status": "validated",
+      "updatedAt": "2025-12-06T20:49:17.073Z"
+    },
+    {
+      "userId": "person-1762074610641-0",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 2,
+        "bibleStudies": 1,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 2,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "meta": {
+        "auth": "pin"
+      },
+      "updatedAt": "2025-12-06T20:28:50.292Z"
+    },
+    {
+      "userId": "person-1762074610641-7",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 4,
+        "bibleStudies": 3,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-06": {
+          "hours": 2,
+          "bibleStudies": 2,
+          "credit": 0
+        },
+        "2025-12-30": {
+          "hours": 2,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "meta": {
+        "auth": "pin"
+      },
+      "status": "validated",
+      "updatedAt": "2025-12-06T21:11:28.731Z"
+    },
+    {
+      "userId": "person-1762074610641-3",
+      "month": "2025-12",
+      "status": "validated",
+      "updatedAt": "2025-12-06T21:23:07.539Z"
+    },
+    {
+      "userId": "person-1765057139149",
+      "month": "2025-12",
+      "status": "validated",
+      "updatedAt": "2025-12-06T22:01:40.081Z",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 53,
+        "bibleStudies": 7,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-06": {
+          "hours": 8,
+          "bibleStudies": 0,
+          "credit": 0
+        },
+        "2025-12-13": {
+          "hours": 6,
+          "bibleStudies": 4,
+          "credit": 0
+        },
+        "2025-12-31": {
+          "hours": 28,
+          "bibleStudies": 3,
+          "credit": 0
+        },
+        "2025-12-27": {
+          "hours": 11,
+          "bibleStudies": 0,
+          "credit": 0
+        }
+      },
+      "meta": {
+        "auth": "pin"
+      }
+    },
+    {
+      "userId": "person-1762074610641-11",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 1,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "adminOverride": {
+        "actorId": "person-1762074610641-1",
+        "actorPin": "4271"
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1762074610641-1"
+      },
+      "updatedAt": "2025-12-07T00:28:05.615Z"
+    },
+    {
+      "userId": "person-1762074610641-4",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 15,
+        "bibleStudies": 2,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 15,
+          "bibleStudies": 2,
+          "credit": 0
+        }
+      },
+      "adminOverride": {
+        "actorId": "person-1762074610641-1",
+        "actorPin": "4271"
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1762074610641-1"
+      },
+      "updatedAt": "2025-12-07T00:43:52.051Z"
+    },
+    {
+      "userId": "person-1762074610641-13",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 3,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 3,
+          "credit": 0
+        }
+      },
+      "adminOverride": {
+        "actorId": "person-1762074610641-1",
+        "actorPin": "4271"
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1762074610641-1"
+      },
+      "updatedAt": "2025-12-07T00:59:41.292Z"
+    },
+    {
+      "userId": "person-1764632233872",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 2,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 2,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      },
+      "updatedAt": "2025-12-17T23:01:03.193Z"
+    },
+    {
+      "userId": "person-1764632658049",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 2,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 2,
+          "credit": 0
+        }
+      },
+      "adminOverride": {
+        "actorId": "person-1764632007249",
+        "actorPin": "2160"
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      },
+      "updatedAt": "2025-12-12T02:06:52.952Z"
+    },
+    {
+      "userId": "person-1764634262130",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 1,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "adminOverride": {
+        "actorId": "person-1764632007249",
+        "actorPin": "2160"
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      },
+      "updatedAt": "2025-12-12T02:06:50.531Z"
+    },
+    {
+      "userId": "person-1764632007249",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 4,
+        "bibleStudies": 3,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-12": {
+          "hours": 4,
+          "bibleStudies": 3,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "pin"
+      },
+      "updatedAt": "2025-12-12T02:06:44.475Z"
+    },
+    {
+      "userId": "person-1764632990055",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 2,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 2,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632424720"
+      },
+      "updatedAt": "2025-12-12T08:54:50.220Z"
+    },
+    {
+      "userId": "person-1764632850887",
+      "month": "2025-12",
+      "didPreach": true,
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 4,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 4,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      },
+      "updatedAt": "2025-12-17T23:21:02.469Z"
+    },
+    {
+      "userId": "person-1764634389569",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": false,
+      "updatedAt": "2025-12-12T09:26:41.616Z"
+    },
+    {
+      "userId": "person-1764634893639",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": true,
+      "updatedAt": "2025-12-17T23:01:02.846Z",
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 1,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      }
+    },
+    {
+      "userId": "person-1764632424720",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": true,
+      "updatedAt": "2025-12-17T23:21:02.790Z",
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 2,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 2,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      }
+    },
+    {
+      "userId": "person-1764635175062",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": false,
+      "updatedAt": "2025-12-12T09:26:41.616Z"
+    },
+    {
+      "userId": "person-1764634152042",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": false,
+      "updatedAt": "2025-12-12T09:26:41.616Z"
+    },
+    {
+      "userId": "person-1764635290238",
+      "month": "2025-12",
+      "isLate": false,
+      "didPreach": true,
+      "updatedAt": "2025-12-17T23:40:15.365Z",
+      "submitted": true,
+      "totals": {
+        "hours": 0,
+        "bibleStudies": 1,
+        "credit": 0
+      },
+      "entries": {
+        "2025-12-01": {
+          "hours": 0,
+          "bibleStudies": 1,
+          "credit": 0
+        }
+      },
+      "status": "validated",
+      "meta": {
+        "auth": "admin-override",
+        "actorId": "person-1764632007249"
+      }
+    }
+  ]
+}

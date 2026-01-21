@@ -133,13 +133,16 @@ fn start_next_server(app: &tauri::AppHandle) -> Result<(), Box<dyn std::error::E
 pub fn run() {
   tauri::Builder::default()
     .setup(|app| {
-      if cfg!(debug_assertions) {
+      #[cfg(debug_assertions)]
+      {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()
             .level(log::LevelFilter::Info)
             .build(),
         )?;
-      } else {
+      }
+      #[cfg(not(debug_assertions))]
+      {
         start_next_server(&app.handle())?;
       }
       Ok(())

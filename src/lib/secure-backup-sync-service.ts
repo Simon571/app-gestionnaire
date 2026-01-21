@@ -32,7 +32,7 @@ class SecureBackupSyncService {
   private static instance: SecureBackupSyncService;
   private syncStatus: SyncStatus = {
     lastSync: null,
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : false,
     pendingChanges: 0,
     syncing: false,
     error: null,
@@ -45,21 +45,21 @@ class SecureBackupSyncService {
     return this.instance;
   }
 
-  constructor() {
-    window.addEventListener('online', () => {
-      this.syncStatus.isOnline = true;
-      this.autoSync();
-    });
-
-    window.addEventListener('offline', () => {
-      this.syncStatus.isOnline = false;
-    });
-
-    setInterval(() => {
-      if (this.syncStatus.isOnline && this.syncStatus.pendingChanges > 0) {
+  public setupClientListeners() {
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        this.syncStatus.isOnline = true;
         this.autoSync();
-      }
-    }, 300000); // 5 minutes
+      });
+      window.addEventListener('offline', () => {
+        this.syncStatus.isOnline = false;
+      });
+      setInterval(() => {
+        if (this.syncStatus.isOnline && this.syncStatus.pendingChanges > 0) {
+          this.autoSync();
+        }
+      }, 300000); // 5 minutes
+    }
   }
 
   /**
@@ -324,13 +324,12 @@ class SecureBackupSyncService {
   }
 }
 
-/**
- * Hook personnalisé pour backup/sync sécurisé
- */
-export function useSecureBackupSync() {
+
+// Hook personnalisé pour backup/sync sécurisé
+export function useSecureBackupSyncService() {
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSync: null,
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : false,
     pendingChanges: 0,
     syncing: false,
     error: null,
@@ -343,10 +342,12 @@ export function useSecureBackupSync() {
   }, [service]);
 
   useEffect(() => {
+    service.setupClientListeners();
     refreshStatus();
     const interval = setInterval(refreshStatus, 5000);
     return () => clearInterval(interval);
-  }, [refreshStatus]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return {
     syncStatus,

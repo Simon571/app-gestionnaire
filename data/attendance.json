@@ -1,0 +1,64 @@
+{
+  "records": [
+    {
+      "meetingType": "weekend",
+      "date": "2025-12-22T10:14:10.014657",
+      "weekEndDate": "2025-12-27T00:00:00.000",
+      "inPerson": 77,
+      "online": 27,
+      "total": 104,
+      "initiator": "Simon Nzamba Malongi",
+      "id": "att-1766394875356",
+      "createdAt": "2025-12-22T09:14:35.356Z",
+      "updatedAt": "2025-12-22T09:14:35.356Z"
+    },
+    {
+      "meetingType": "vcm",
+      "date": "2025-12-22T10:16:04.519775",
+      "weekStart": "2025-12-22T00:00:00.000",
+      "inPerson": 65,
+      "online": 5,
+      "total": 70,
+      "initiator": "Simon Nzamba Malongi",
+      "id": "att-1766395002931",
+      "createdAt": "2025-12-22T09:16:42.931Z",
+      "updatedAt": "2025-12-22T09:16:42.931Z"
+    },
+    {
+      "meetingType": "vcm",
+      "date": "2026-01-16T14:04:20.303833",
+      "weekStart": "2026-01-12T00:00:00.000",
+      "inPerson": 99,
+      "online": 20,
+      "total": 119,
+      "initiator": "Simon NZAMBA",
+      "id": "att-1768568682576",
+      "createdAt": "2026-01-16T13:04:42.576Z",
+      "updatedAt": "2026-01-16T13:04:42.576Z"
+    },
+    {
+      "meetingType": "vcm",
+      "date": "2026-01-17T17:38:23.724471",
+      "weekStart": "2026-01-19T00:00:00.000",
+      "inPerson": 85,
+      "online": 15,
+      "total": 100,
+      "initiator": "Simon NZAMBA",
+      "id": "att-1768668009721",
+      "createdAt": "2026-01-17T16:40:09.721Z",
+      "updatedAt": "2026-01-17T16:40:09.721Z"
+    },
+    {
+      "meetingType": "weekend",
+      "date": "2026-01-17T17:42:38.552566",
+      "weekEndDate": "2026-01-24T00:00:00.000",
+      "inPerson": 100,
+      "online": 7,
+      "total": 107,
+      "initiator": "Simon NZAMBA",
+      "id": "att-1768668233181",
+      "createdAt": "2026-01-17T16:43:53.181Z",
+      "updatedAt": "2026-01-17T16:43:53.181Z"
+    }
+  ]
+}

@@ -15,6 +15,7 @@ interface PreachingGroup {
 }
 
 import { discourseList as initialDiscourseList, type Discourse } from '@/lib/discours-data';
+import { publisherSyncFetch } from '@/lib/publisher-sync-client';
 
 interface PeopleContextType {
   people: Person[];
@@ -25,9 +26,11 @@ interface PeopleContextType {
   replacePeople: (updatedPeople: Person[]) => void;
   families: Family[];
   addFamily: (name: string) => Family;
+  updateFamily: (familyId: string, newName: string) => void;
   deleteFamily: (familyId: string) => void;
   preachingGroups: PreachingGroup[];
   addPreachingGroup: (name: string) => PreachingGroup;
+  updatePreachingGroup: (groupId: string, newName: string) => void;
   deletePreachingGroup: (groupId: string) => void;
   discourseList: Discourse[];
   updateDiscourseList: (newList: Discourse[]) => void;
@@ -44,9 +47,11 @@ const PeopleContext = createContext<PeopleContextType>({
   replacePeople: () => { throw new Error('PeopleProvider not found'); },
   families: [],
   addFamily: () => { throw new Error('PeopleProvider not found'); },
+  updateFamily: () => { throw new Error('PeopleProvider not found'); },
   deleteFamily: () => { throw new Error('PeopleProvider not found'); },
   preachingGroups: [],
   addPreachingGroup: () => { throw new Error('PeopleProvider not found'); },
+  updatePreachingGroup: () => { throw new Error('PeopleProvider not found'); },
   deletePreachingGroup: () => { throw new Error('PeopleProvider not found'); },
   discourseList: [],
   updateDiscourseList: () => { throw new Error('PeopleProvider not found'); },
@@ -129,6 +134,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   const [discourseList, setDiscourseList] = useState<Discourse[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [devices, setDevices] = useState<PublisherDeviceRecord[]>([]);
+  const [isSyncingUsers, setIsSyncingUsers] = useState(false);
 
   // Load data from localStorage on initial mount
   useEffect(() => {
@@ -183,6 +189,44 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     setIsLoaded(true); // Mark as loaded
   }, []);
 
+  // Charger la liste depuis l'API (fichier publisher-users) pour intégrer les mises à jour importées
+  useEffect(() => {
+    if (!isLoaded) return;
+    const loadFromApi = async () => {
+      try {
+        // Load people
+        const usersResponse = await fetch('/api/publisher-app/users/export');
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          if (Array.isArray(usersData.users) && usersData.users.length > 0) {
+            setPeople(usersData.users.map(reviveDates));
+          }
+        }
+        
+        // Load families from API
+        const familiesResponse = await fetch('/api/families');
+        if (familiesResponse.ok) {
+          const familiesData = await familiesResponse.json();
+          if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
+            setFamilies(familiesData.families);
+          }
+        }
+        
+        // Load preaching groups from API
+        const groupsResponse = await fetch('/api/preaching-groups');
+        if (groupsResponse.ok) {
+          const groupsData = await groupsResponse.json();
+          if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
+            setPreachingGroups(groupsData.groups);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load data from API', error);
+      }
+    };
+    loadFromApi();
+  }, [isLoaded]);
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     if (isLoaded) { // Only save after initial data has been loaded
@@ -198,6 +242,72 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [people, families, preachingGroups, discourseList, devices, isLoaded]);
 
+  // DÉSACTIVÉ: Synchroniser la liste vers l'API (pour Flutter) dès que les personnes changent
+  // ATTENTION: Ceci écrasait publisher-users.json avec les données du localStorage
+  // qui n'étaient pas complètes, causant la perte de données
+  /*
+  useEffect(() => {
+    if (!isLoaded) return;
+    const sync = async () => {
+      try {
+        setIsSyncingUsers(true);
+        // Utiliser auto-sync pour créer automatiquement les jobs desktop_to_mobile
+        const response = await fetch('/api/publisher-app/auto-sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ users: people }),
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Auto-sync success:', data.message);
+        } else {
+          console.error('Auto-sync failed:', response.status);
+        }
+      } catch (error) {
+        console.error('Sync users to Flutter failed', error);
+      } finally {
+        setIsSyncingUsers(false);
+      }
+    };
+    sync();
+  }, [people, isLoaded]);
+  */
+
+  // Synchroniser les familles vers l'API dès qu'elles changent
+  useEffect(() => {
+    if (!isLoaded || families.length === 0) return;
+    const syncFamilies = async () => {
+      try {
+        await fetch('/api/families', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ families }),
+        });
+      } catch (error) {
+        console.error('Sync families to API failed', error);
+      }
+    };
+    syncFamilies();
+  }, [families, isLoaded]);
+
+  // Synchroniser les groupes de prédication vers l'API dès qu'ils changent
+  useEffect(() => {
+    if (!isLoaded || preachingGroups.length === 0) return;
+    const syncGroups = async () => {
+      try {
+        await fetch('/api/preaching-groups', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ groups: preachingGroups }),
+        });
+      } catch (error) {
+        console.error('Sync preaching groups to API failed', error);
+      }
+    };
+    syncGroups();
+  }, [preachingGroups, isLoaded]);
+
   const addPerson = (personData: Omit<Person, 'id'>): Person => {
     const newPerson: Person = {
       ...personData,
@@ -205,6 +315,10 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
       pin: Math.floor(1000 + Math.random() * 9000).toString(), // Generate a random 4-digit PIN
     };
     setPeople(prevPeople => [...prevPeople, reviveDates(newPerson)]);
+    
+    // Créer un job de sync si la personne a des données importantes
+    createSyncJobForPerson(newPerson);
+    
     return newPerson;
   };
 
@@ -212,6 +326,45 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     setPeople(prevPeople =>
       prevPeople.map(p => (p.id === updatedPerson.id ? reviveDates(updatedPerson) : p))
     );
+    
+    // Synchroniser l'activité vers publisher-preaching.json pour que la page "Activité de prédication" voie les modifications
+    if (updatedPerson.activity && updatedPerson.activity.length > 0) {
+      syncActivityToPreaching(updatedPerson.id, updatedPerson.activity);
+    }
+    
+    // Créer un job de sync si la personne a des données importantes
+    createSyncJobForPerson(updatedPerson);
+  };
+  
+  // Fonction pour synchroniser l'activité vers publisher-preaching.json
+  const syncActivityToPreaching = async (userId: string, activity: Person['activity']) => {
+    try {
+      await fetch('/api/sync-activity', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, activity }),
+      });
+    } catch (error) {
+      console.error('Failed to sync activity to preaching:', error);
+    }
+  };
+  
+  // Fonction pour créer un job de synchronisation
+  const createSyncJobForPerson = async (person: Person) => {
+    try {
+      const hasActivity = person.activity && person.activity.length > 0;
+      const hasEmergencyContacts = person.emergency?.contacts && person.emergency.contacts.length > 0;
+      
+      if (hasActivity || hasEmergencyContacts) {
+        await fetch('/api/publisher-app/create-sync-job', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ person }),
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create sync job:', error);
+    }
   };
   
   const deletePerson = (personId: string) => {
@@ -250,6 +403,10 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     return newFamily;
   };
 
+  const updateFamily = (familyId: string, newName: string) => {
+    setFamilies(prev => prev.map(f => f.id === familyId ? { ...f, name: newName } : f));
+  };
+
   const deleteFamily = (familyId: string) => {
     // Keep people intact; just remove family associations and the family itself
     setPeople(prev => prev.map(p => p.familyId === familyId ? { ...p, familyId: null } : p));
@@ -260,6 +417,19 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     const newGroup = { id: `group-${Date.now()}`, name };
     setPreachingGroups(prev => [...prev, newGroup]);
     return newGroup;
+  };
+
+  const updatePreachingGroup = (groupId: string, newName: string) => {
+    setPreachingGroups(prev => prev.map(g => g.id === groupId ? { ...g, name: newName } : g));
+    // Mettre à jour aussi le groupName dans les personnes assignées à ce groupe
+    setPeople(prevPeople => 
+      prevPeople.map(p => {
+        if (p.spiritual.group === groupId) {
+          return { ...p, spiritual: { ...p.spiritual, groupName: newName } };
+        }
+        return p;
+      })
+    );
   };
 
   const deletePreachingGroup = (groupId: string) => {
@@ -285,7 +455,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
 
 
   return (
-    <PeopleContext.Provider value={{ people, isLoaded, addPerson, updatePerson, deletePerson, replacePeople, families, addFamily, deleteFamily, preachingGroups, addPreachingGroup, deletePreachingGroup, discourseList, updateDiscourseList, devices, replaceDevices }}>
+    <PeopleContext.Provider value={{ people, isLoaded, addPerson, updatePerson, deletePerson, replacePeople, families, addFamily, updateFamily, deleteFamily, preachingGroups, addPreachingGroup, updatePreachingGroup, deletePreachingGroup, discourseList, updateDiscourseList, devices, replaceDevices }}>
       {children}
     </PeopleContext.Provider>
   );

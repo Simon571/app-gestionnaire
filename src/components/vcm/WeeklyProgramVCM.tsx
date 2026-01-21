@@ -16,6 +16,14 @@ const NONE = "__none__";
 type AssignmentPayload = { itemId: string; personId: string | null; role: string; override?: { duration?: number | null; songNumber?: number | null }; };
 type Assignments = { [itemId: string]: Partial<AssignmentPayload> };
 
+const personLabel = (person: Partial<Person> & { displayName?: string }) => {
+    const fallback = [person.firstName, person.middleName, person.lastName, person.suffix]
+        .filter(Boolean)
+        .join(' ')
+        .trim();
+    return (person.displayName && person.displayName.trim()) || fallback || 'Sans nom';
+};
+
 function jwLinkFor(ref?: string): string | null { if (!ref) return null; const q = String(ref).split(/[;,]/)[0].trim(); if (!q) return null; return `https://wol.jw.org/fr/wol/s?q=${encodeURIComponent(q)}&wtlocale=F`; }
 const normalize = (s?: string) => (s ?? "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
 function bucketForSectionTitle(title: string): "joyaux" | "ministere" | "vie" { const t = normalize(title); if (t.includes("perles spirituelles") || t.includes("lecture de la bible") || t.includes("joyaux")) return "joyaux"; if (t.includes("engage la conversation") || t.includes("entretiens l’interet") || t.includes("explique tes croyances")) return "ministere"; if (t.includes("etude biblique de l’assemblee") || t.includes("paroles de conclusion") || t.includes("cantique")) return "vie"; return "joyaux"; }
@@ -29,7 +37,7 @@ function BigBlock({ title, color, children }: { title: string; color: "teal" | "
 
 function PeopleSelect({ value, onChange, placeholder = "— Assigner —", people }: { value: string | null | undefined; onChange: (id: string | null) => void; placeholder?: string; people: Person[]; }) {
     return (
-        <Select value={value ?? NONE} onValueChange={(v) => onChange(v === NONE ? null : v)}><SelectTrigger className="w-full"><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent><SelectItem value={NONE}>— Aucun —</SelectItem>{people.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>))}</SelectContent></Select>
+        <Select value={value ?? NONE} onValueChange={(v) => onChange(v === NONE ? null : v)}><SelectTrigger className="w-full"><SelectValue placeholder={placeholder} /></SelectTrigger><SelectContent><SelectItem value={NONE}>— Aucun —</SelectItem>{people.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{personLabel(p)}</SelectItem>))}</SelectContent></Select>
     );
 }
 
@@ -95,24 +103,57 @@ export default function WeeklyProgramVCM(props: { weekStartIso: string; people: 
         <BigBlock title="Joyaux de la Parole de Dieu" color="teal">
             <div className="p-2 space-y-4">
                 <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                    <div className="space-y-1"><Label>Président</Label><PeopleSelect people={people} value={null} onChange={() => {}} /></div>
-                    {priereDebut && <div className="space-y-1"><Label>{priereDebut.title}</Label><PeopleSelect people={people} value={null} onChange={() => {}} /></div>}
+                                        <div className="space-y-1">
+                                            <Label>Président</Label>
+                                            <PeopleSelect people={people} value={discours?.personId ?? null} onChange={() => {}} />
+                                            {discours?.personId && (
+                                                <span className="text-xs text-muted-foreground ml-2">
+                                                    {personLabel(people.find(p => String(p.id) === String(discours.personId)) ?? {displayName: '—'})}
+                                                </span>
+                                            )}
+                                        </div>
+                                        {priereDebut && (
+                                            <div className="space-y-1">
+                                                <Label>{priereDebut.title}</Label>
+                                                <PeopleSelect people={people} value={priereDebut.personId ?? null} onChange={() => {}} />
+                                                {priereDebut.personId && (
+                                                    <span className="text-xs text-muted-foreground ml-2">
+                                                        {personLabel(people.find(p => String(p.id) === String(priereDebut.personId)) ?? {displayName: '—'})}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                 </div>
                 <hr className="my-4"/>
-                {discours && <div className="space-y-1">
-                    <Label>Discours ({discours.duration} min)</Label>
-                    <p className="text-sm text-muted-foreground italic">{discours.theme}</p>
-                    <PeopleSelect people={people} value={null} onChange={() => {}} />
-                </div>}
-                {perles && <div className="space-y-1">
-                    <Label>Perles spirituelles ({perles.duration} min)</Label>
-                    <PeopleSelect people={people} value={null} onChange={() => {}} />
-                </div>}
-                {lecture && <div className="space-y-1">
-                    <Label>Lecture de la Bible ({lecture.duration} min)</Label>
-                    <p className="text-sm text-muted-foreground">{lecture.theme}</p>
-                    <PeopleSelect people={people} value={null} onChange={() => {}} />
-                </div>}
+                                {discours && <div className="space-y-1">
+                                        <Label>Discours ({discours.duration} min)</Label>
+                                        <p className="text-sm text-muted-foreground italic">{discours.theme}</p>
+                                        <PeopleSelect people={people} value={discours.personId ?? null} onChange={() => {}} />
+                                        {discours.personId && (
+                                            <span className="text-xs text-muted-foreground ml-2">
+                                                {personLabel(people.find(p => String(p.id) === String(discours.personId)) ?? {displayName: '—'})}
+                                            </span>
+                                        )}
+                                </div>}
+                                {perles && <div className="space-y-1">
+                                        <Label>Perles spirituelles ({perles.duration} min)</Label>
+                                        <PeopleSelect people={people} value={perles.personId ?? null} onChange={() => {}} />
+                                        {perles.personId && (
+                                            <span className="text-xs text-muted-foreground ml-2">
+                                                {personLabel(people.find(p => String(p.id) === String(perles.personId)) ?? {displayName: '—'})}
+                                            </span>
+                                        )}
+                                </div>}
+                                {lecture && <div className="space-y-1">
+                                        <Label>Lecture de la Bible ({lecture.duration} min)</Label>
+                                        <p className="text-sm text-muted-foreground">{lecture.theme}</p>
+                                        <PeopleSelect people={people} value={lecture.personId ?? null} onChange={() => {}} />
+                                        {lecture.personId && (
+                                            <span className="text-xs text-muted-foreground ml-2">
+                                                {personLabel(people.find(p => String(p.id) === String(lecture.personId)) ?? {displayName: '—'})}
+                                            </span>
+                                        )}
+                                </div>}
             </div>
         </BigBlock>
     </div>

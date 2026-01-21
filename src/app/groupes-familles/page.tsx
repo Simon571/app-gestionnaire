@@ -17,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Trash2, Mail, Printer, HelpCircle, Users, Home, UsersRound, PersonStanding } from 'lucide-react';
+import { Plus, Trash2, Mail, Printer, HelpCircle, Users, Home, UsersRound, PersonStanding, Edit } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -29,8 +29,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const GroupForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCancel: () => void }) => {
-    const [name, setName] = React.useState('');
+const GroupForm = ({ onSave, onCancel, initialName = '' }: { onSave: (name: string) => void, onCancel: () => void, initialName?: string }) => {
+    const [name, setName] = React.useState(initialName);
+    
+    React.useEffect(() => {
+        setName(initialName);
+    }, [initialName]);
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -58,7 +62,7 @@ const GroupForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCan
             </div>
             <DialogFooter>
                 <Button type="button" variant="ghost" onClick={onCancel}>Annuler</Button>
-                <Button type="submit">Sauvegarder</Button>
+                <Button type="submit">{initialName ? 'Modifier' : 'Sauvegarder'}</Button>
             </DialogFooter>
         </form>
     );
@@ -82,8 +86,9 @@ const getRoleAbbreviation = (person: Person) => {
 }
 
 const PreachingGroupsView = () => {
-    const { people, preachingGroups, addPreachingGroup, deletePreachingGroup, isLoaded } = usePeople();
+    const { people, preachingGroups, addPreachingGroup, updatePreachingGroup, deletePreachingGroup, isLoaded } = usePeople();
     const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+    const [editingGroup, setEditingGroup] = React.useState<{ id: string, name: string } | null>(null);
     const [selectedGroupIds, setSelectedGroupIds] = React.useState<string[]>([]);
     const [groupsPerPage, setGroupsPerPage] = React.useState(10);
     const [currentPage, setCurrentPage] = React.useState(1);
@@ -95,6 +100,13 @@ const PreachingGroupsView = () => {
     const handleAddGroup = (name: string) => {
         addPreachingGroup(name);
         setIsAddDialogOpen(false);
+    };
+
+    const handleEditGroup = (name: string) => {
+        if (editingGroup) {
+            updatePreachingGroup(editingGroup.id, name);
+            setEditingGroup(null);
+        }
     };
 
     const handleSelectionChange = (groupId: string, isSelected: boolean) => {
@@ -255,14 +267,24 @@ const PreachingGroupsView = () => {
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {paginatedGroups.map(group => (
                      <Card key={group.id} className="flex flex-col">
-                        <CardHeader className="p-2 border-b bg-muted/30 flex-row items-center gap-2">
-                           <Checkbox 
-                                id={`select-${group.id}`}
-                                className="no-print"
-                                onCheckedChange={(checked) => handleSelectionChange(group.id, Boolean(checked))}
-                                checked={selectedGroupIds.includes(group.id)}
-                           />
-                           <CardTitle className="text-base">{group.name}</CardTitle>
+                        <CardHeader className="p-2 border-b bg-muted/30 flex-row items-center justify-between gap-2">
+                           <div className="flex items-center gap-2">
+                               <Checkbox 
+                                    id={`select-${group.id}`}
+                                    className="no-print"
+                                    onCheckedChange={(checked) => handleSelectionChange(group.id, Boolean(checked))}
+                                    checked={selectedGroupIds.includes(group.id)}
+                               />
+                               <CardTitle className="text-base">{group.name}</CardTitle>
+                           </div>
+                           <Button 
+                               variant="ghost" 
+                               size="icon" 
+                               className="h-6 w-6 no-print"
+                               onClick={() => setEditingGroup({ id: group.id, name: group.name })}
+                           >
+                               <Edit className="h-3 w-3" />
+                           </Button>
                         </CardHeader>
 
                         <CardContent className="p-0 flex-grow">
@@ -301,12 +323,30 @@ const PreachingGroupsView = () => {
                     </Card>
                 ))}
             </CardContent>
+
+            {/* Dialog de modification de groupe */}
+            <Dialog open={editingGroup !== null} onOpenChange={(open) => !open && setEditingGroup(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Modifier le groupe</DialogTitle>
+                    </DialogHeader>
+                    <GroupForm 
+                        onSave={handleEditGroup} 
+                        onCancel={() => setEditingGroup(null)}
+                        initialName={editingGroup?.name || ''}
+                    />
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }
 
-const FamilyForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCancel: () => void }) => {
-    const [name, setName] = React.useState('');
+const FamilyForm = ({ onSave, onCancel, initialName = '' }: { onSave: (name: string) => void, onCancel: () => void, initialName?: string }) => {
+    const [name, setName] = React.useState(initialName);
+    
+    React.useEffect(() => {
+        setName(initialName);
+    }, [initialName]);
     
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -334,7 +374,7 @@ const FamilyForm = ({ onSave, onCancel }: { onSave: (name: string) => void, onCa
             </div>
             <DialogFooter>
                 <Button type="button" variant="ghost" onClick={onCancel}>Annuler</Button>
-                <Button type="submit">Sauvegarder</Button>
+                <Button type="submit">{initialName ? 'Modifier' : 'Sauvegarder'}</Button>
             </DialogFooter>
         </form>
     );
@@ -381,8 +421,9 @@ const mainFilters = {
 };
 
 const FamiliesView = () => {
-    const { families, people, addFamily, deleteFamily, preachingGroups, isLoaded } = usePeople();
+    const { families, people, addFamily, updateFamily, deleteFamily, preachingGroups, isLoaded } = usePeople();
     const [isAddDialogOpen, setIsAddDialogOpen] = React.useState(false);
+    const [editingFamily, setEditingFamily] = React.useState<{ id: string, name: string } | null>(null);
     const [selectedFamilyIds, setSelectedFamilyIds] = React.useState<string[]>([]);
     const [activeFilter, setActiveFilter] = React.useState('all');
     const [selectedGroupId, setSelectedGroupId] = React.useState('all-groups');
@@ -394,6 +435,13 @@ const FamiliesView = () => {
     const handleAddFamily = (name: string) => {
         addFamily(name);
         setIsAddDialogOpen(false);
+    };
+
+    const handleEditFamily = (name: string) => {
+        if (editingFamily) {
+            updateFamily(editingFamily.id, name);
+            setEditingFamily(null);
+        }
     };
 
     const handleSelectionChange = (familyId: string, isSelected: boolean) => {
@@ -545,17 +593,30 @@ const FamiliesView = () => {
                                         <TableHead>Prénom</TableHead>
                                         <TableHead className="w-8 p-1"><Home className="w-4 h-4" /></TableHead>
                                         <TableHead className="w-8 p-1"><Users className="w-4 h-4" /></TableHead>
+                                        <TableHead className="w-8 p-1 no-print">Actions</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {familiesWithMembers.flatMap(family => 
-                                        family.members.map(member => (
+                                        family.members.map((member, memberIndex) => (
                                             <TableRow key={member.id}>
                                                 <TableCell className="p-1 font-bold">{family.name}</TableCell>
                                                 <TableCell className="p-1 font-medium">{member.lastName}</TableCell>
                                                 <TableCell className="p-1">{member.firstName}</TableCell>
                                                 <TableCell className="p-1 text-center">{member.isHeadOfFamily && <Home className="w-4 h-4 inline-block" />}</TableCell>
                                                 <TableCell className="p-1 text-center"><PublisherIcon gender={member.gender} /></TableCell>
+                                                <TableCell className="p-1 text-center no-print">
+                                                    {memberIndex === 0 && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6"
+                                                            onClick={() => setEditingFamily({ id: family.id, name: family.name })}
+                                                        >
+                                                            <Edit className="h-3 w-3" />
+                                                        </Button>
+                                                    )}
+                                                </TableCell>
                                             </TableRow>
                                         ))
                                     )}
@@ -567,14 +628,24 @@ const FamiliesView = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {familiesWithMembers.map(family => (
                             <Card key={family.id}>
-                                <CardHeader className="p-2 border-b bg-muted/30 flex-row items-center gap-2">
-                                    <Checkbox 
-                                        id={`select-family-${family.id}`}
-                                        className="no-print"
-                                        onCheckedChange={(checked) => handleSelectionChange(family.id, Boolean(checked))}
-                                        checked={selectedFamilyIds.includes(family.id)}
-                                   />
-                                    <CardTitle className="text-base">{family.name}</CardTitle>
+                                <CardHeader className="p-2 border-b bg-muted/30 flex-row items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <Checkbox 
+                                            id={`select-family-${family.id}`}
+                                            className="no-print"
+                                            onCheckedChange={(checked) => handleSelectionChange(family.id, Boolean(checked))}
+                                            checked={selectedFamilyIds.includes(family.id)}
+                                       />
+                                        <CardTitle className="text-base">{family.name}</CardTitle>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6 no-print"
+                                        onClick={() => setEditingFamily({ id: family.id, name: family.name })}
+                                    >
+                                        <Edit className="h-3 w-3" />
+                                    </Button>
                                 </CardHeader>
                                 <CardContent className="p-0">
                                      <Table>
@@ -603,6 +674,20 @@ const FamiliesView = () => {
                     </div>
                 )}
             </CardContent>
+
+            {/* Dialog de modification de famille */}
+            <Dialog open={editingFamily !== null} onOpenChange={(open) => !open && setEditingFamily(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Modifier la famille</DialogTitle>
+                    </DialogHeader>
+                    <FamilyForm 
+                        onSave={handleEditFamily} 
+                        onCancel={() => setEditingFamily(null)}
+                        initialName={editingFamily?.name || ''}
+                    />
+                </DialogContent>
+            </Dialog>
         </Card>
     )
 }

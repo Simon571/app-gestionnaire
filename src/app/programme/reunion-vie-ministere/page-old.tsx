@@ -562,129 +562,82 @@ export default function ReunionVieMinisterePage() {
             </CardContent>
         </Card>
 
-        <div className="flex-1">
-          {/* Bouton pour basculer vers la nouvelle vue */}
-          <div className="mb-4 flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Vue Classique</h1>
-            <Button variant="outline" onClick={toggleVcmView}>
-              Nouvelle interface VCM
-            </Button>
+        <div className="flex-1 overflow-auto min-w-0">
+          <div className="sticky top-2 z-10 no-print rounded-xl border bg-white/90 backdrop-blur p-3 shadow mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="font-semibold text-lg">
+                {selectedWeek ? `Programme : ${format(selectedWeek, 'dd MMMM yyyy', { locale: fr })}` : 'Programme'}
+              </div>
+              <div className="ml-auto flex flex-wrap gap-2">
+                <Button variant="outline" onClick={handlePrint} disabled={!selectedWeek}>
+                  <Printer className="h-4 w-4 mr-2" /> Imprimer
+                </Button>
+                <Button variant="secondary" onClick={handleLoadVcm} disabled={!selectedWeek || busy}>
+                  <Download className="h-4 w-4 mr-2" /> Charger le cahier
+                </Button>
+                <Button onClick={handleAutofill} disabled={!selectedWeek || busy || !people.length}>
+                  <Zap className="h-4 w-4 mr-2" /> Attribuer auto
+                </Button>
+                <Button variant="default" onClick={handleManualSave} disabled={!selectedWeek || busy}>
+                  <Save className="h-4 w-4 mr-2" /> Sauvegarder
+                </Button>
+                <Button variant="outline" onClick={handleClearAssignments} disabled={!selectedWeek || busy}>
+                  <Eraser className="h-4 w-4 mr-2" /> Effacer
+                </Button>
+                <Button variant="destructive" onClick={handleDeleteWeek} disabled={!selectedWeek || busy}>
+                  <Trash2 className="h-4 w-4 mr-2" /> Supprimer
+                </Button>
+                <a
+                  href={wolUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={buttonVariants({ variant: "secondary" }) + " inline-flex items-center"}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  <span>wol.jw.org</span>
+                </a>
+              </div>
+            </div>
           </div>
 
-          {/* Interface classique existante continue ici... */}
-          {selectedWeek ? (
-            <FullMeetingBlock
-              key={weekKey}
-              people={people}
-              room={room}
-              onChangeRoom={setRoom}
-              disabled={busy}
-              joyeauxData={joyeauxData}
-              onChangeJoyeaux={setJoyeauxData}
-              ministryAssignments={ministryAssignments}
-              ministryAssignments2={ministryAssignments2}
-              onChangeMinistry={setMinistryAssignments}
-              onChangeMinistry2={setMinistryAssignments2}
-              christianLifeParts={christianLifeParts}
-              onChangeChristianLifeParts={setChristianLifeParts}
-              bibleStudy={bibleStudy}
-              onChangeBibleStudy={setBibleStudy}
-              finalPrayer={finalPrayer}
-              onChangeFinalPrayer={setFinalPrayer}
-              mwbWeek={mwbWeek}
-            />
+          {!isLoaded ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-lg text-muted-foreground">Chargement des données...</p>
+            </div>
+          ) : selectedWeek ? (
+            <>
+              <div className="print-only hidden my-4 text-center">
+                <h2 className="text-xl font-bold">{settings.congregationName || ""}</h2>
+                <div className="text-sm text-muted-foreground">Programme — Réunion Vie et ministère</div>
+                <h3 className="text-base">Semaine du {format(selectedWeek, 'dd MMMM yyyy', { locale: fr })}</h3>
+              </div>
+              <FullMeetingBlock
+                people={people}
+                room={room}
+                onChangeRoom={setRoom}
+                joyeauxData={joyeauxData}
+                onChangeJoyeaux={(patch) => setJoyeauxData((prev) => ({ ...prev, ...patch }))}
+                ministryAssignments={ministryAssignments}
+                onChangeMinistry={setMinistryAssignments}
+                ministryAssignments2={ministryAssignments2}
+                onChangeMinistry2={setMinistryAssignments2}
+                christianLifeParts={christianLifeParts}
+                onChangeChristianLifeParts={setChristianLifeParts}
+                bibleStudy={bibleStudy}
+                onChangeBibleStudy={(patch) => setBibleStudy((prev) => ({ ...prev, ...patch }))}
+                finalPrayer={finalPrayer}
+                onChangeFinalPrayer={setFinalPrayer}
+                mwbWeek={mwbWeek}
+              />
+            </>
           ) : (
-            <div className="text-center py-12">
-              <Calendar className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground">
-                Sélectionnez une semaine
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">
-                Choisissez une semaine dans le calendrier pour voir le programme
-              </p>
+            <div className="flex items-center justify-center h-full">
+              <p className="text-lg text-muted-foreground">Veuillez sélectionner une semaine.</p>
             </div>
           )}
         </div>
         </>
       )}
-    </div>
-                                        
-                                        return (
-                                             <Button 
-                                                key={weekIndex}
-                                                variant={selectedWeek?.getTime() === week.getTime() ? "default" : "ghost"}
-                                                size="sm"
-                                                className="w-full justify-start font-normal h-8"
-                                                onClick={() => setSelectedWeek(week)}
-                                             >
-                                                {weekLabel}
-                                             </Button>
-                                        )
-                                    })}
-                                </div>
-                            </CollapsibleContent>
-                       </Collapsible>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-
-        <div className="flex-1 overflow-auto min-w-0">
-            <div className="sticky top-2 z-10 no-print rounded-xl border bg-white/90 backdrop-blur p-3 shadow mb-4">
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="font-semibold text-lg">
-                        {selectedWeek ? `Programme : ${format(selectedWeek, 'dd MMMM yyyy', {locale: fr})}` : 'Programme'}
-                    </div>
-                    <div className="ml-auto flex flex-wrap gap-2">
-                        <Button variant="outline" onClick={handlePrint} disabled={!selectedWeek}><Printer className="h-4 w-4 mr-2" /> Imprimer</Button>
-                        <Button variant="secondary" onClick={handleLoadVcm} disabled={!selectedWeek || busy}><Download className="h-4 w-4 mr-2" /> Charger le cahier</Button>
-                        <Button onClick={handleAutofill} disabled={!selectedWeek || busy || !people.length}><Zap className="h-4 w-4 mr-2" /> Attribuer auto</Button>
-            <Button variant="default" onClick={handleManualSave} disabled={!selectedWeek || busy}><Save className="h-4 w-4 mr-2" /> Sauvegarder</Button>
-                        <Button variant="outline" onClick={handleClearAssignments} disabled={!selectedWeek || busy}><Eraser className="h-4 w-4 mr-2" /> Effacer</Button>
-                        <Button variant="destructive" onClick={handleDeleteWeek} disabled={!selectedWeek || busy}><Trash2 className="h-4 w-4 mr-2" /> Supprimer</Button>
-                        <a href={wolUrl} target="_blank" rel="noreferrer" className={buttonVariants({ variant: "secondary" }) + " inline-flex items-center"}>
-                            <BookOpen className="h-4 w-4 mr-2" /><span>wol.jw.org</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            {!isLoaded ? (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-lg text-muted-foreground">Chargement des données...</p>
-                </div>
-      ) : selectedWeek ? (
-        <>
-        <div className="print-only hidden my-4 text-center">
-          <h2 className="text-xl font-bold">{settings.congregationName || ""}</h2>
-          <div className="text-sm text-muted-foreground">Programme — Réunion Vie et ministère</div>
-          <h3 className="text-base">Semaine du {format(selectedWeek, 'dd MMMM yyyy', { locale: fr })}</h3>
-        </div>
-        <FullMeetingBlock
-                    people={people}
-                    room={room}
-                    onChangeRoom={setRoom}
-                    joyeauxData={joyeauxData}
-                    onChangeJoyeaux={(patch) => setJoyeauxData((prev) => ({ ...prev, ...patch }))}
-                    ministryAssignments={ministryAssignments}
-                    onChangeMinistry={setMinistryAssignments}
-                    ministryAssignments2={ministryAssignments2}
-                    onChangeMinistry2={setMinistryAssignments2}
-                    christianLifeParts={christianLifeParts}
-                    onChangeChristianLifeParts={setChristianLifeParts}
-                    bibleStudy={bibleStudy}
-                    onChangeBibleStudy={(patch) => setBibleStudy((prev) => ({ ...prev, ...patch }))}
-                    finalPrayer={finalPrayer}
-                    onChangeFinalPrayer={setFinalPrayer}
-                    mwbWeek={mwbWeek}
-        />
-        </>
-            ) : (
-                <div className="flex items-center justify-center h-full">
-                    <p className="text-lg text-muted-foreground">Veuillez sélectionner une semaine.</p>
-                </div>
-            )}
-        </div>
     </div>
   );
 }

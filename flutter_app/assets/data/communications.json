@@ -1,0 +1,96 @@
+{
+  "updatedAt": "2026-01-17T18:59:45.717Z",
+  "items": [
+    {
+      "id": "comm-1765142401439",
+      "title": "Reponse",
+      "type": "communication",
+      "displayAfter": "2025-12-07T21:20:01.439Z",
+      "displayAfterTime": "22:24",
+      "expirationDate": "2025-12-07T23:00:00.000Z",
+      "attachment": "Accusé de réception des offrandes – Juillet 2025.pdf",
+      "link": "",
+      "content": "",
+      "order": 1,
+      "boardType": "assembly"
+    },
+    {
+      "id": "comm-1768056000331",
+      "title": "Nous aurons notre assemblée de circonscription ce dimanche",
+      "type": "communication",
+      "displayAfter": "2026-01-10T14:40:00.331Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-16T23:00:00.000Z",
+      "attachment": null,
+      "link": "",
+      "content": "",
+      "order": 2,
+      "boardType": "assembly"
+    },
+    {
+      "id": "comm-1768234736770",
+      "title": "<Communication>",
+      "type": "document",
+      "displayAfter": "2026-01-12T16:18:56.770Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-23T23:00:00.000Z",
+      "attachment": "Liste des orateurs extérieurs de la circonscription KN -14.docx",
+      "link": "",
+      "content": "",
+      "order": 3,
+      "boardType": "assembly"
+    },
+    {
+      "id": "comm-1768665731025",
+      "title": "ASSEMBLEE DE CIRCONSCRIPTION",
+      "type": "communication",
+      "displayAfter": "2026-01-17T16:02:11.025Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-23T23:00:00.000Z",
+      "attachment": null,
+      "link": "",
+      "content": "Nous vous informons que nous aurons une assemblée de circonscription le mois prochain",
+      "order": 1,
+      "boardType": "elders"
+    },
+    {
+      "id": "comm-1768670997547",
+      "title": "<Communication>",
+      "type": "communication",
+      "displayAfter": "2026-01-17T17:29:57.547Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-30T23:00:00.000Z",
+      "attachment": "Liste des orateurs extérieurs de la circonscription KN -14.docx",
+      "link": "",
+      "content": "",
+      "order": 2,
+      "boardType": "elders"
+    },
+    {
+      "id": "comm-1768671262526",
+      "title": "<Communication>",
+      "type": "communication",
+      "displayAfter": "2026-01-17T17:34:22.526Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-30T23:00:00.000Z",
+      "attachment": "Liste des orateurs extérieurs de la circonscription KN -14.docx",
+      "link": "",
+      "content": "",
+      "order": 3,
+      "boardType": "elders"
+    },
+    {
+      "id": "comm-1768676157616",
+      "title": "<Communication>",
+      "type": "communication",
+      "displayAfter": "2026-01-17T18:55:57.616Z",
+      "displayAfterTime": "09:30",
+      "expirationDate": "2026-01-30T23:00:00.000Z",
+      "attachment": "S-289_F.jwpub",
+      "link": "",
+      "content": "",
+      "order": 2,
+      "boardType": "elders-assistants"
+    }
+  ]
+}

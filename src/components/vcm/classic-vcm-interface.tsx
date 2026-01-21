@@ -220,6 +220,12 @@ export function ClassicVcmInterface({ selectedWeek, people, onDataLoaded }: Clas
                         <SelectItem value="unassigned">Non assigné</SelectItem>
                         {people
                           .filter(p => p.spiritual.active)
+                          .filter(p => {
+                            if (part.type === 'lecture_bible') {
+                              return (p as any).gender === 'male' && Boolean((p as any)?.assignments?.gems?.bibleReading);
+                            }
+                            return true;
+                          })
                           .map(person => (
                             <SelectItem key={person.id} value={person.id}>
                               {person.firstName} {person.lastName}
@@ -322,6 +328,7 @@ export function ClassicVcmInterface({ selectedWeek, people, onDataLoaded }: Clas
                             <SelectItem value="unassigned">Non assigné</SelectItem>
                             {people
                               .filter(p => p.spiritual.active)
+                              .filter(p => (p as any).gender === 'male' && Boolean((p as any)?.assignments?.christianLife?.reader))
                               .map(person => (
                                 <SelectItem key={person.id} value={person.id}>
                                   {person.firstName} {person.lastName}

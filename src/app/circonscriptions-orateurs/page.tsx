@@ -236,10 +236,10 @@ export default function CircuitsSpeakersPage() {
                                 <SelectValue placeholder="Toutes les circonscriptions" />
                             </SelectTrigger>
                             <SelectContent>
-                                {circuits.map(circuit => (
+                                {circuits.filter(circuit => circuit.id && circuit.id.trim() !== '').map(circuit => (
                                     <SelectItem key={circuit.id} value={circuit.id}>{circuit.id} - {circuit.name}</SelectItem>
                                 ))}
-                                {circuits.length === 0 && <SelectItem value="none" disabled>Aucune circonscription trouvée</SelectItem>}
+                                {circuits.length === 0 && <SelectItem value="__none__" disabled>Aucune circonscription trouvée</SelectItem>}
                             </SelectContent>
                         </Select>
                         {selectedCircuit && (

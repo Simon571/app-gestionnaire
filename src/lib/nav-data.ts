@@ -62,7 +62,9 @@ export const navItems: NavItem[] = [
       subItems: [
         { id: 'assembly-info', label: 'Information de l’assemblée', icon: Info, href: '/parametres' },
         { id: 'assembly-sharing', label: 'Partage de l’assemblée', icon: Share2, href: '/partage' },
-        { id: 'bulletin', label: 'Tableau d’affichage', icon: ClipboardList, href: '/communications' },
+        { id: 'bulletin-assembly', label: "Tableau d'affichage assemblée", icon: ClipboardList, href: '/communications?board=assembly' },
+        { id: 'bulletin-elders', label: "Tableau d'affichage anciens", icon: ClipboardList, href: '/communications?board=elders' },
+        { id: 'bulletin-elders-assistants', label: "Tableau d'affichage anciens et assistants", icon: ClipboardList, href: '/communications?board=elders-assistants' },
         { id: 'events', label: 'Evénements de l’assemblée', icon: Calendar, href: '/evenements' },
         { id: 'preaching-activity', label: 'Activité de prédication (S-1)', icon: FileText, href: '/activite-predication' },
         { id: 'groups-families', label: 'Groupes et familles', icon: Users, href: '/groupes-familles' },

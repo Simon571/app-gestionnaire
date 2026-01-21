@@ -1,0 +1,80 @@
+{
+  "devices": [
+    {
+      "id": "desktop-admin",
+      "label": "Poste gestionnaire",
+      "role": "desktop",
+      "status": "active",
+      "apiKeyHash": "d44298d0cfba599b19f6b0d5359dc4de12506d8a2e14b380bf53979fec764058",
+      "lastRotatedAt": null,
+      "revokedAt": null,
+      "permissions": [
+        "send",
+        "queue",
+        "notifications",
+        "import",
+        "incoming",
+        "updates",
+        "ack"
+      ]
+    },
+    {
+      "id": "mobile-field",
+      "label": "App mobile",
+      "role": "mobile",
+      "status": "active",
+      "apiKeyHash": "d5cdeec346a4598d911d924bd91912879c81b9f3915ebf5ca3c8c907633d56b7",
+      "lastRotatedAt": null,
+      "revokedAt": null,
+      "permissions": [
+        "updates",
+        "ack",
+        "incoming"
+      ]
+    },
+    {
+      "id": "server-ops",
+      "label": "Serveur supervision",
+      "role": "server",
+      "status": "active",
+      "apiKeyHash": "bfd13f9d5191edbfa16b3aab83dcb55cf93c37cf1de44de0f63de8b12ec59b19",
+      "lastRotatedAt": null,
+      "revokedAt": null,
+      "permissions": [
+        "*"
+      ]
+    },
+    {
+      "id": "desktop-main",
+      "label": "Ordinateur",
+      "role": "desktop",
+      "status": "active",
+      "apiKeyHash": "447597f0e4cd89525ba4184571a896cfc7f1a466c34f20607862fa67b1d5b82f",
+      "permissions": [
+        "send",
+        "queue",
+        "notifications",
+        "import",
+        "incoming",
+        "updates",
+        "ack"
+      ],
+      "lastRotatedAt": "2025-12-05T12:26:08.083Z",
+      "revokedAt": null
+    },
+    {
+      "id": "mobile-main",
+      "label": "Téléphone",
+      "role": "mobile",
+      "status": "active",
+      "apiKeyHash": "587b2175b3df1f8e06e85c909f6989f1fcd0dfecde58a6bfd27190ef6bf3738c",
+      "permissions": [
+        "updates",
+        "incoming",
+        "ack"
+      ],
+      "lastRotatedAt": "2025-12-05T12:26:34.248Z",
+      "revokedAt": null
+    }
+  ]
+}

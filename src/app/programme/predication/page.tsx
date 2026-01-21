@@ -2,12 +2,13 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import LinkToPublisher from '@/components/publisher/link-to-publisher';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronLeft, ChevronRight, Plus, Copy, Trash2, Archive, Edit3 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Copy, Trash2, Archive, Edit3, Send, Loader2 } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePeople } from '@/context/people-context';
+import { useSyncToFlutter } from '@/hooks/use-sync-to-flutter';
 
 interface Meeting {
   id: string;
@@ -36,6 +38,7 @@ interface Meeting {
 
 export default function PredicationPage() {
   const { preachingGroups, isLoaded } = usePeople();
+  const { syncPredication, isSyncing } = useSyncToFlutter();
   const [currentDate, setCurrentDate] = useState(new Date(2025, 10, 5)); // November 5, 2025
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -71,7 +74,7 @@ export default function PredicationPage() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
-  const handleAddMeeting = () => {
+  const handleAddMeeting = async () => {
     if (!selectedDate) return;
     
     const newMeeting: Meeting = {
@@ -80,7 +83,25 @@ export default function PredicationPage() {
       ...formData,
     };
     
-    setMeetings([...meetings, newMeeting]);
+    const updatedMeetings = [...meetings, newMeeting];
+    setMeetings(updatedMeetings);
+    
+    // Sync to Flutter
+    await syncPredication({
+      date: selectedDate.toISOString(),
+      time: formData.time,
+      location: formData.location,
+      groups: formData.territories,
+      assignments: updatedMeetings.map(m => ({
+        id: m.id,
+        date: m.date.toISOString(),
+        time: m.time,
+        conductor: m.conductor,
+        location: m.location,
+        territories: m.territories,
+      })),
+    });
+    
     setFormData({
       time: '12:00',
       conductor: '',
@@ -92,8 +113,22 @@ export default function PredicationPage() {
     setSelectedDate(null);
   };
 
-  const handleDeleteMeeting = (id: string) => {
-    setMeetings(meetings.filter(m => m.id !== id));
+  const handleDeleteMeeting = async (id: string) => {
+    const updatedMeetings = meetings.filter(m => m.id !== id);
+    setMeetings(updatedMeetings);
+    
+    // Sync deletion to Flutter
+    await syncPredication({
+      date: new Date().toISOString(),
+      assignments: updatedMeetings.map(m => ({
+        id: m.id,
+        date: m.date.toISOString(),
+        time: m.time,
+        conductor: m.conductor,
+        location: m.location,
+        territories: m.territories,
+      })),
+    });
   };
 
   const daysInMonth = getDaysInMonth(currentDate);
@@ -169,6 +204,19 @@ export default function PredicationPage() {
                   </TooltipTrigger>
                   <TooltipContent>Modifier</TooltipContent>
                 </Tooltip>
+                <div className="w-full mt-2">
+                  <LinkToPublisher
+                    type={'predication'}
+                    getPayload={() => ({ generatedAt: new Date().toISOString(), meetings })}
+                    save={() => {
+                      try {
+                        localStorage.setItem('programme-predication', JSON.stringify({ meetings, savedAt: new Date().toISOString() }));
+                      } catch (e) {
+                        // ignore
+                      }
+                    }}
+                  />
+                </div>
               </div>
 
               {/* Time Selection */}

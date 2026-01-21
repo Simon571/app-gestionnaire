@@ -155,11 +155,17 @@ export default function FullMeetingBlock(props: Props) {
   const orateurs = React.useMemo(() => people.filter((p: any) => p.spiritual?.function === 'elder' || p.spiritual?.function === 'servant'), [people]);
   const prayerBrothers = React.useMemo(() => people.filter((p: any) => p.gender === 'male' && p.assignments?.preaching?.meetingPrayers), [people]);
   const gemsConductors = React.useMemo(() => people.filter((p: any) => (p.spiritual?.function === 'elder' || p.spiritual?.function === 'servant') && p.assignments?.gems?.spiritualGems), [people]);
-  const bibleReaders = React.useMemo(() => people.filter((p: any) => p.assignments?.gems?.bibleReading), [people]);
+  const bibleReaders = React.useMemo(
+    () => people.filter((p: any) => p.gender === 'male' && p.assignments?.gems?.bibleReading),
+    [people]
+  );
   const students = React.useMemo(() => people.filter((p: any) => p.assignments?.ministry?.student), [people]);
   const christianLifeParticipants = React.useMemo(() => people.filter((p: any) => p.assignments?.christianLife?.interventions), [people]);
   const bibleStudyConductors = React.useMemo(() => people.filter((p: any) => p.assignments?.christianLife?.congregationBibleStudy), [people]);
-  const bibleStudyReaders = React.useMemo(() => people.filter((p: any) => p.assignments?.christianLife?.reader), [people]);
+  const bibleStudyReaders = React.useMemo(
+    () => people.filter((p: any) => p.gender === 'male' && p.assignments?.christianLife?.reader),
+    [people]
+  );
   const secondaryRoomCounselors = React.useMemo(() => people.filter((p: any) => p.assignments?.gems?.secondaryRoomCounselor), [people]);
 
   const handleMinistryAssignmentChange = (id: string, patch: Partial<Omit<MinistryAssignment, 'id'>>, isRoom2 = false) => {

@@ -31,6 +31,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { usePeople } from '@/context/people-context';
 import type { Person } from '@/app/personnes/page';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const generateMonths = () => {
   const months = [];
@@ -49,6 +50,7 @@ type PublisherReport = {
   id: string;
   lastName: string;
   firstName: string;
+    status?: 'received' | 'validated';
   participated: boolean;
   studies: number | null;
   isAuxiliary: boolean;
@@ -59,7 +61,24 @@ type PublisherReport = {
   pioneerStatus?: 'aux-permanent' | 'permanent' | 'special' | 'missionary' | null;
 };
 
-const getProductionData = (monthKey: string, people: Person[]) => {
+type IncomingReportLite = {
+    status?: 'received' | 'validated';
+    totals?: { hours?: number; bibleStudies?: number; credit?: number };
+    didPreach?: boolean;
+    isLate?: boolean;
+};
+
+type MonthSubmission = {
+    month: string;
+    sentAt: string;
+    lateUserIds: string[];
+};
+
+const getProductionData = (
+        monthKey: string,
+        people: Person[],
+        incoming: Record<string, IncomingReportLite> = {},
+) => {
     const reportData = {
         publishers: { reports: 0, studies: 0, hours: null },
         auxiliary_pioneers: { reports: 0, studies: 0, hours: 0 },
@@ -71,24 +90,41 @@ const getProductionData = (monthKey: string, people: Person[]) => {
         publisherReports: [] as PublisherReport[],
     };
 
-    const publisherReports: PublisherReport[] = people
-        .filter(p => p.spiritual.function) // Include anyone with a spiritual function
-        .map(p => {
-            const activity = p.activity?.find(a => a.month === monthKey);
-            return {
-                id: p.id,
-                lastName: p.lastName,
-                firstName: p.firstName,
-                participated: activity?.participated ?? false,
-                studies: activity?.bibleStudies ?? null,
-                isAuxiliary: activity?.isAuxiliaryPioneer ?? false,
-                hours: activity?.hours ?? null,
-                credit: activity?.credit ?? null,
-                isLate: activity?.isLate ?? false,
-                remarks: activity?.remarks ?? null,
-                pioneerStatus: p.spiritual.pioneer.status,
-            };
-        });
+        const publisherReports: PublisherReport[] = people.map(p => {
+                const activity = p.activity?.find(a => a.month === monthKey);
+                const incomingData = incoming[`${p.id}_${monthKey}`];
+                const useIncoming = !!incomingData; // affiche les chiffres dès réception, et a fortiori après validation
+
+                const hours = useIncoming
+                    ? incomingData?.totals?.hours ?? 0
+                    : activity?.hours ?? null;
+                const bibleStudies = useIncoming
+                    ? incomingData?.totals?.bibleStudies ?? 0
+                    : activity?.bibleStudies ?? null;
+                const credit = useIncoming ? incomingData?.totals?.credit ?? 0 : activity?.credit ?? null;
+                const participated = useIncoming
+                    ? (incomingData?.didPreach ?? ((hours !== null && hours > 0) || (bibleStudies !== null && bibleStudies > 0)))
+                    : activity?.participated ?? false;
+
+                return {
+                        id: p.id,
+                        lastName: p.lastName,
+                        firstName: p.firstName,
+                        status: incomingData?.status,
+                        participated,
+                        studies: bibleStudies,
+                        isAuxiliary: activity?.isAuxiliaryPioneer ?? false,
+                        hours,
+                        credit,
+                        isLate: activity?.isLate ?? false,
+                        remarks: activity?.remarks ?? null,
+                        pioneerStatus: p.spiritual.pioneer.status,
+                };
+            }).sort((a, b) => {
+                const ln = a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' });
+                if (ln !== 0) return ln;
+                return a.firstName.localeCompare(b.firstName, 'fr', { sensitivity: 'base' });
+            });
 
     publisherReports.forEach(report => {
         if (report.participated) {
@@ -141,16 +177,66 @@ export default function PreachingActivityPage() {
   const months = React.useMemo(() => generateMonths(), []);
   const [selectedMonth, setSelectedMonth] = React.useState(months[0].key);
   const [activeTab, setActiveTab] = React.useState('assembly');
-  const [reportData, setReportData] = React.useState<ReportData>(() => getProductionData(selectedMonth, people));
+    const [reportData, setReportData] = React.useState<ReportData>(() => getProductionData(selectedMonth, people));
+    const [incomingReports, setIncomingReports] = React.useState<Record<string, IncomingReportLite>>({});
   const [status, setStatus] = React.useState<'sent' | 'not_sent'>('not_sent');
   const [publisherFilter, setPublisherFilter] = React.useState('all');
   const [selectedGroup, setSelectedGroup] = React.useState('all-groups');
+  const [monthSubmissions, setMonthSubmissions] = React.useState<MonthSubmission[]>([]);
   const { toast } = useToast();
 
+  // Determine if current month was already sent
+  const currentMonthSubmission = React.useMemo(() => {
+    return monthSubmissions.find(s => s.month === selectedMonth);
+  }, [monthSubmissions, selectedMonth]);
+
   React.useEffect(() => {
-    setReportData(getProductionData(selectedMonth, people));
-    setStatus('not_sent');
-  }, [selectedMonth, people]);
+        setReportData(getProductionData(selectedMonth, people, incomingReports));
+        setStatus(currentMonthSubmission ? 'sent' : 'not_sent');
+    }, [selectedMonth, people, incomingReports, currentMonthSubmission]);
+
+    // Charge les rapports reçus/validés pour afficher des badges et totaux issus de l'app mobile.
+    React.useEffect(() => {
+        const fetchReports = async () => {
+            try {
+                const res = await fetch('/api/publisher-app/activity');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data?.reports) return;
+                const map: Record<string, IncomingReportLite> = {};
+                for (const r of data.reports as any[]) {
+                    if (r.userId && r.month) {
+                        map[`${r.userId}_${r.month}`] = {
+                            status: r.status,
+                            totals: r.totals,
+                            didPreach: r.didPreach,
+                        };
+                    }
+                }
+                setIncomingReports(map);
+            } catch (err) {
+                console.error('Failed to load preaching activity statuses', err);
+            }
+        };
+        fetchReports();
+    }, []);
+
+    // Charge les soumissions de mois (envoyé à la filiale)
+    React.useEffect(() => {
+        const fetchSubmissions = async () => {
+            try {
+                const res = await fetch('/api/publisher-app/activity/submit-to-branch');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data?.submissions) {
+                    setMonthSubmissions(data.submissions);
+                }
+            } catch (err) {
+                console.error('Failed to load month submissions', err);
+            }
+        };
+        fetchSubmissions();
+    }, []);
 
   const filteredPublisherReports = React.useMemo(() => {
     return reportData.publisherReports.filter(report => {
@@ -215,26 +301,169 @@ export default function PreachingActivityPage() {
 
   const selectedMonthLabel = months.find(m => m.key === selectedMonth)?.label;
 
-  const handleSendReport = () => {
-      setStatus('sent');
-      toast({
-          title: "Rapport envoyé",
-          description: `Le rapport pour ${selectedMonthLabel} a été marqué comme envoyé.`
-      });
+  const handleSendReport = async () => {
+      // Find users who haven't submitted a report (no status or not validated/received)
+      const lateUserIds = reportData.publisherReports
+          .filter(r => !r.participated && !incomingReports[`${r.id}_${selectedMonth}`]?.status)
+          .map(r => r.id);
+      
+      try {
+          const res = await fetch('/api/publisher-app/activity/submit-to-branch', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ month: selectedMonth, lateUserIds }),
+          });
+          
+          if (!res.ok) throw new Error('submit failed');
+          
+          const data = await res.json();
+          
+          // Update submissions state
+          setMonthSubmissions(prev => {
+              const filtered = prev.filter(s => s.month !== selectedMonth);
+              return [...filtered, data.submission];
+          });
+          
+          // Update incoming reports to mark late users
+          setIncomingReports(prev => {
+              const updated = { ...prev };
+              for (const userId of lateUserIds) {
+                  const key = `${userId}_${selectedMonth}`;
+                  updated[key] = { ...updated[key], isLate: true };
+              }
+              return updated;
+          });
+          
+          setStatus('sent');
+          toast({
+              title: "Rapport envoyé à la filiale",
+              description: `Le rapport pour ${selectedMonthLabel} a été envoyé. ${lateUserIds.length} proclamateur(s) marqué(s) en retard.`
+          });
+      } catch (err) {
+          console.error(err);
+          toast({
+              title: "Erreur",
+              description: "Impossible d'envoyer le rapport à la filiale.",
+              variant: "destructive"
+          });
+      }
   }
 
-  const handleCancelSend = () => {
-      setStatus('not_sent');
-      toast({
-          title: "Envoi annulé",
-          description: `Le rapport pour ${selectedMonthLabel} a été marqué comme non envoyé.`,
-          variant: "destructive"
-      });
+  const handleCancelSend = async () => {
+      try {
+          const res = await fetch('/api/publisher-app/activity/submit-to-branch', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ month: selectedMonth }),
+          });
+          
+          if (!res.ok) throw new Error('cancel failed');
+          
+          // Get the submission to restore late flags
+          const submission = monthSubmissions.find(s => s.month === selectedMonth);
+          
+          // Update submissions state
+          setMonthSubmissions(prev => prev.filter(s => s.month !== selectedMonth));
+          
+          // Remove late flags from incoming reports
+          if (submission) {
+              setIncomingReports(prev => {
+                  const updated = { ...prev };
+                  for (const userId of submission.lateUserIds) {
+                      const key = `${userId}_${selectedMonth}`;
+                      if (updated[key]) {
+                          updated[key] = { ...updated[key], isLate: false };
+                      }
+                  }
+                  return updated;
+              });
+          }
+          
+          setStatus('not_sent');
+          toast({
+              title: "Envoi annulé",
+              description: `Le rapport pour ${selectedMonthLabel} a été marqué comme non envoyé.`,
+              variant: "destructive"
+          });
+      } catch (err) {
+          console.error(err);
+          toast({
+              title: "Erreur",
+              description: "Impossible d'annuler l'envoi.",
+              variant: "destructive"
+          });
+      }
   }
 
   const handlePrint = () => {
     window.print();
   }
+
+    const handleValidateReport = async (userId: string) => {
+        try {
+            const res = await fetch('/api/publisher-app/activity', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, month: selectedMonth, status: 'validated' }),
+            });
+            if (!res.ok) throw new Error('validate');
+            const data = await res.json().catch(() => null);
+            const totals = data?.report?.totals ?? incomingReports[`${userId}_${selectedMonth}`]?.totals;
+            setIncomingReports((prev) => ({
+                ...prev,
+                [`${userId}_${selectedMonth}`]: {
+                    ...(prev[`${userId}_${selectedMonth}`] ?? {}),
+                    status: 'validated',
+                    totals,
+                    didPreach: true,
+                },
+            }));
+            toast({ 
+                title: 'Rapport validé', 
+                description: 'Le rapport est maintenant marqué comme validé et synchronisé dans la page Personnes.' 
+            });
+        } catch (err) {
+            console.error(err);
+            toast({ title: 'Validation impossible', description: 'Réessayez ou vérifiez la connexion.', variant: 'destructive' });
+        }
+    };
+
+    const handleValidateAll = async () => {
+        const pendingIds = filteredPublisherReports
+            .filter((r) => incomingReports[`${r.id}_${selectedMonth}`]?.status === 'received')
+            .map((r) => r.id);
+        if (!pendingIds.length) {
+            toast({ title: 'Rien à valider', description: 'Aucun rapport reçu en attente pour ce mois.' });
+            return;
+        }
+        try {
+            await Promise.all(
+                pendingIds.map(async (id) => {
+                    const res = await fetch('/api/publisher-app/activity', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: id, month: selectedMonth, status: 'validated' }),
+                    });
+                    if (!res.ok) throw new Error('validate-all');
+                    const data = await res.json().catch(() => null);
+                    const totals = data?.report?.totals;
+                    setIncomingReports((prev) => ({
+                        ...prev,
+                        [`${id}_${selectedMonth}`]: {
+                            ...(prev[`${id}_${selectedMonth}`] ?? {}),
+                            status: 'validated',
+                            totals,
+                            didPreach: true,
+                        },
+                    }));
+                })
+            );
+            toast({ title: 'Validation groupée', description: `${pendingIds.length} rapport(s) validé(s).` });
+        } catch (err) {
+            console.error(err);
+            toast({ title: 'Validation groupée impossible', description: 'Réessayez ou vérifiez la connexion.', variant: 'destructive' });
+        }
+    };
 
   if (!isLoaded) {
     return (
@@ -277,6 +506,11 @@ export default function PreachingActivityPage() {
                     <TabsTrigger value="publishers">Proclamateurs</TabsTrigger>
                 </TabsList>
                  <div className="flex items-center gap-2">
+                                        {activeTab === 'publishers' && (
+                                            <Button size="sm" variant="secondary" onClick={handleValidateAll}>
+                                                Valider tous les reçus
+                                            </Button>
+                                        )}
                     <Button variant="ghost" size="icon" onClick={handlePrint}>
                     <Printer className="h-5 w-5" />
                     </Button>
@@ -363,7 +597,12 @@ export default function PreachingActivityPage() {
                                         </Button>
                                     </>
                                 ) : (
-                                    <p className="text-green-600 font-semibold">Envoyé</p>
+                                    <div className="text-right">
+                                        <p className="text-green-600 font-semibold">Envoyé</p>
+                                        <Button variant="link" className="text-destructive hover:text-destructive p-0 h-auto" onClick={handleCancelSend}>
+                                            Annuler l'envoi
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
                         </div>
@@ -490,6 +729,7 @@ export default function PreachingActivityPage() {
                                 <TableRow>
                                     <TableHead>Nom de famille</TableHead>
                                     <TableHead>Prénom</TableHead>
+                                    <TableHead>Statut</TableHead>
                                     <TableHead>A participé</TableHead>
                                     <TableHead>Cours bibl.</TableHead>
                                     <TableHead>Pion. aux.</TableHead>
@@ -504,12 +744,28 @@ export default function PreachingActivityPage() {
                                 <TableRow key={report.id}>
                                     <TableCell className="font-medium">{report.lastName}</TableCell>
                                     <TableCell>{report.firstName}</TableCell>
+                                    <TableCell className="space-y-1">
+                                        {report.status === 'validated' && (
+                                            <Badge className="bg-green-600 text-white">Validé</Badge>
+                                        )}
+                                        {report.status === 'received' && (
+                                            <div className="flex items-center gap-2">
+                                                <Badge className="bg-amber-500 text-white">Reçu</Badge>
+                                                <Button size="sm" variant="secondary" onClick={() => handleValidateReport(report.id)}>
+                                                    Valider
+                                                </Button>
+                                            </div>
+                                        )}
+                                        {!report.status && (
+                                            <span className="text-xs text-muted-foreground">—</span>
+                                        )}
+                                    </TableCell>
                                     <TableCell><Checkbox checked={report.participated} /></TableCell>
                                     <TableCell>{report.studies}</TableCell>
                                     <TableCell><Checkbox checked={report.isAuxiliary} /></TableCell>
                                     <TableCell>{report.hours !== null ? report.hours.toFixed(0) : ''}</TableCell>
                                     <TableCell>{report.credit}</TableCell>
-                                    <TableCell><Checkbox checked={report.isLate} /></TableCell>
+                                    <TableCell><Checkbox checked={report.isLate || incomingReports[`${report.id}_${selectedMonth}`]?.isLate} /></TableCell>
                                     <TableCell>{report.remarks}</TableCell>
                                 </TableRow>
                                 ))}
@@ -523,3 +779,12 @@ export default function PreachingActivityPage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
