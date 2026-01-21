@@ -3,10 +3,10 @@ import { ReactNode } from 'react';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function ConfidentialiteSecuriteLayout({ 
-  children 
-}: { 
+type Props = {
   children: ReactNode;
-}) {
-	return <>{children}</>;
+};
+
+export default async function ConfidentialiteSecuriteLayout({ children }: Props) {
+  return <>{children}</>;
 }
