@@ -78,6 +78,35 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
               <p>{t.footerLine2}</p>
             </div>
           </div>
+
+          {/* Installer info for non-technical users */}
+          <div className="mt-4 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm">
+            <strong>Fichier :</strong> <a className="underline" href={downloadUrl} target="_blank" rel="noreferrer">Télécharger l'installateur</a>
+            <div className="mt-2 text-xs text-muted-foreground">
+              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE && (
+                <div>📦 Taille approximative : {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE}</div>
+              )}
+              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
+                <div>🔒 SHA‑256 : <code className="break-all">{process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256}</code></div>
+              )}
+              {process.env.NEXT_PUBLIC_WINDOWS_SIGNED === 'true' ? (
+                <div className="mt-1 text-green-700">✅ Installateur signé numériquement</div>
+              ) : (
+                <div className="mt-1 text-amber-700">⚠️ Installateur non signé — Windows peut afficher un avertissement</div>
+              )}
+            </div>
+            <div className="mt-3 rounded-md bg-white p-3 text-xs">
+              <strong>Vérification rapide (Windows) :</strong>
+              <ol className="mt-2 list-decimal list-inside text-muted-foreground">
+                <li>Double‑cliquez le fichier téléchargé.</li>
+                <li>Si Windows affiche un avertissement, cliquez sur "Plus d'infos" → "Exécuter quand même" (si vous faites confiance à l'auteur).</li>
+                <li>Après installation : ouvrez le menu Démarrer → cherchez « Gestionnaire d'Assemblée ».</li>
+              </ol>
+              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
+                <div className="mt-3">Pour vérifier la somme : ouvrez PowerShell et collez <code>Get-FileHash .\Downloads\nom-fichier.msi -Algorithm SHA256</code></div>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-slate-100 p-6 shadow-sm">

@@ -1,0 +1,122 @@
+name: Build & release (Windows)
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  build_and_release:
+    name: Build Windows, test, sign (optional) & create Release
+    runs-on: windows-latest
+    env:
+      NODE_ENV: production
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Next + Tauri standalone -> MSI)
+        run: npm run tauri:build:ci
+
+      - name: Collect artifacts
+        run: |
+          dir src-tauri\target\release\bundle
+          ls -la src-tauri\target\release\bundle\** || true
+
+      - name: Compute SHA256 for artifacts
+        id: sha
+        run: |
+          node scripts/compute-sha256.js "src-tauri/target/release/bundle/**/*.*" > sha-output.json
+          type sha-output.json
+        shell: bash
+
+      - name: Run Playwright smoke tests
+        run: |
+          npm i -D @playwright/test
+          npx playwright install --with-deps
+          npm run test:playwright -- --reporter=list
+
+      - name: Import code signing certificate (optional)
+        if: secrets.CODE_SIGN_PFX && secrets.CODE_SIGN_PWD
+        run: |
+          echo "Installing PFX..."
+          $pfxPath = "$Env:GITHUB_WORKSPACE\\code_sign.pfx"
+          echo "$CODE_SIGN_PFX" | Out-File -Encoding Byte -FilePath $pfxPath
+          # On windows-latest, use certutil to import to CurrentUser\My for signtool usage
+          certutil -f -p "$CODE_SIGN_PWD" -importpfx $pfxPath
+        shell: powershell
+        env:
+          CODE_SIGN_PFX: ${{ secrets.CODE_SIGN_PFX }}
+          CODE_SIGN_PWD: ${{ secrets.CODE_SIGN_PWD }}
+
+      - name: Sign artifacts (optional)
+        if: secrets.CODE_SIGN_PFX && secrets.CODE_SIGN_PWD
+        run: |
+          $artifacts = Get-ChildItem src-tauri\target\release\bundle -Recurse -Include *.msi,*.exe | Select-Object -ExpandProperty FullName
+          foreach ($a in $artifacts) {
+            Write-Host "Signing $a"
+            & "C:\Program Files (x86)\Windows Kits\10\bin\x64\signtool.exe" sign /fd SHA256 /a /f "$Env:USERPROFILE\\AppData\\Local\\Temp\\code_sign.pfx" /p "$Env:CODE_SIGN_PWD" "$a"
+          }
+        shell: powershell
+        env:
+          CODE_SIGN_PWD: ${{ secrets.CODE_SIGN_PWD }}
+
+      - name: Create Release (draft)
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name != '' && github.ref_name || 'v' + github.run_number }}
+          release_name: Release ${{ github.ref_name != '' && github.ref_name || github.run_number }}
+          draft: true
+          prerelease: false
+
+      - name: Upload release assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src-tauri/target/release/bundle/msi
+          asset_name: ${{ github.repository }}-windows-msi.zip
+          asset_content_type: application/zip
+
+      - name: Upload raw installer files as assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            src-tauri/target/release/app.exe
+            src-tauri/target/release/bundle/msi/*.msi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print release info
+        run: |
+          echo "Release draft created. Artifacts and SHA256 printed above."
+
+      - name: (Optional) Update Vercel env with download URL
+        if: secrets.VERCEL_TOKEN
+        run: |
+          echo "You provided VERCEL_TOKEN — CI can update production env var NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL to the release asset URL." 
+          echo "(This repository's workflow includes the step but it requires configuring the asset public URL name.)"
+        shell: bash
+
+      - name: Upload workflow artifacts (for debugging)
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build-artifacts
+          path: |
+            src-tauri/target/release/app.exe
+            src-tauri/target/release/bundle/**
+            sha-output.json

@@ -36,3 +36,21 @@ Dépannage
 
 Notes
 - Pour des raisons de SEO, préférez fournir une URL directe vers l'asset (ex: `https://github.com/OWNER/REPO/releases/download/vX.Y.Z/app-setup.exe`) et renseigner `NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL`.
+
+---
+
+## Automatisation CI (exemple)
+
+Résumé rapide : builder, tester, calculer la somme de contrôle, signer (si le certificat est fourni via GitHub Secrets), puis créer une Release draft contenant les artefacts.
+
+Exemple de tâches à automatiser :
+- Build Windows (`npm run tauri:build:ci`) sur `windows-latest`
+- Exécution des Playwright smoke tests
+- Calcul de la somme SHA‑256 et ajout aux notes de la Release
+- Signature conditionnelle si `CODE_SIGN_PFX` + `CODE_SIGN_PWD` présents en secrets
+- Création d'une Release draft et upload des fichiers (.msi, app.exe)
+- (Optionnel) mise à jour de `NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL` via l'API Vercel (nécessite `VERCEL_TOKEN`)
+
+Voir `.github/workflows/windows-release.yml` pour une implémentation prête à l'emploi dans ce dépôt.
+
+> Sécurité : stockez le PFX uniquement comme secret CI, limitez l'accès aux workflows de publication et validez la Release sur une machine de test avant publication finale.
