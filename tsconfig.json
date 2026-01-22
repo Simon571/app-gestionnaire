@@ -29,6 +29,7 @@
     "src-tauri/target/**",
     "target",
     "Pajo-Pharma",
-    "Pajo-Pharma/**"
+    "Pajo-Pharma/**",
+    "tests/**"
   ]
 }
