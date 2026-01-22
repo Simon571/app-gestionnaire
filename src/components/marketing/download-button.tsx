@@ -36,17 +36,11 @@ export function DownloadButton({ locale }: { locale?: string }) {
   const isReady = isWindows !== null;
   const isSupported = isWindows === true;
 
-  const handleDownload = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.preventDefault();
-    window.location.href = releasesUrl;
-  };
-
   return (
     <div className="flex flex-col gap-3">
       <Button asChild disabled={!isReady || !isSupported} className="h-12 px-6 text-base">
         <a
           href={releasesUrl}
-          onClick={handleDownload}
           aria-label={L.download}
         >
           {isReady ? L.download : L.detecting}
