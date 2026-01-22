@@ -79,32 +79,57 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
             </div>
           </div>
 
-          {/* Installer info for non-technical users */}
+          {/* Installer info for non-technical users (enhanced) */}
           <div className="mt-4 rounded-lg border border-slate-100 bg-slate-50 p-4 text-sm">
-            <strong>Fichier :</strong> <a className="underline" href={downloadUrl} target="_blank" rel="noreferrer">Télécharger l'installateur</a>
-            <div className="mt-2 text-xs text-muted-foreground">
-              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE && (
-                <div>📦 Taille approximative : {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE}</div>
-              )}
-              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
-                <div>🔒 SHA‑256 : <code className="break-all">{process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256}</code></div>
-              )}
-              {process.env.NEXT_PUBLIC_WINDOWS_SIGNED === 'true' ? (
-                <div className="mt-1 text-green-700">✅ Installateur signé numériquement</div>
-              ) : (
-                <div className="mt-1 text-amber-700">⚠️ Installateur non signé — Windows peut afficher un avertissement</div>
-              )}
-            </div>
-            <div className="mt-3 rounded-md bg-white p-3 text-xs">
-              <strong>Vérification rapide (Windows) :</strong>
-              <ol className="mt-2 list-decimal list-inside text-muted-foreground">
-                <li>Double‑cliquez le fichier téléchargé.</li>
-                <li>Si Windows affiche un avertissement, cliquez sur "Plus d'infos" → "Exécuter quand même" (si vous faites confiance à l'auteur).</li>
-                <li>Après installation : ouvrez le menu Démarrer → cherchez « Gestionnaire d'Assemblée ».</li>
-              </ol>
-              {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
-                <div className="mt-3">Pour vérifier la somme : ouvrez PowerShell et collez <code>Get-FileHash .\Downloads\nom-fichier.msi -Algorithm SHA256</code></div>
-              )}
+            <div className="flex gap-4 items-start">
+              <div className="w-40 shrink-0">
+                <img src="/download-demo.svg" alt="Aperçu : installation en 3 étapes" className="w-full rounded-md border" />
+              </div>
+
+              <div className="flex-1">
+                <div className="mb-2">
+                  <strong>Fichier :</strong> <a className="underline" href={downloadUrl} target="_blank" rel="noreferrer">Télécharger l'installateur</a>
+                </div>
+
+                <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-2">
+                  {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE && (
+                    <div>📦 Taille : {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SIZE}</div>
+                  )}
+                  {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
+                    <div>🔒 SHA‑256 : <code className="break-all">{process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256}</code></div>
+                  )}
+                  <div>
+                    {process.env.NEXT_PUBLIC_WINDOWS_SIGNED === 'true' ? (
+                      <span className="text-green-700">✅ Installateur signé numériquement</span>
+                    ) : (
+                      <span className="text-amber-700">⚠️ Installateur non signé — Windows peut afficher un avertissement</span>
+                    )}
+                  </div>
+
+                  <div className="text-right">
+                    <a className="text-sm underline" href="/docs/INSTALL-WINDOWS-FOR-USERS.md" target="_blank" rel="noreferrer">Fiche d'installation (imprimable)</a>
+                  </div>
+                </div>
+
+                <div className="mt-3 rounded-md bg-white p-3 text-xs">
+                  <strong>Installation en 3 clics :</strong>
+                  <ol className="mt-2 list-decimal list-inside text-muted-foreground">
+                    <li>Télécharger le fichier `.msi` depuis ce bouton.</li>
+                    <li>Double‑cliquer et suivre l'assistant d'installation.</li>
+                    <li>Ouvrir le menu Démarrer → lancer "Gestionnaire d'Assemblée".</li>
+                  </ol>
+
+                  {process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_SHA256 && (
+                    <div className="mt-3">Pour vérifier la somme (optionnel) : <code>Get-FileHash $HOME\Downloads\nom-fichier.msi -Algorithm SHA256</code></div>
+                  )}
+
+                  <div className="mt-3 flex gap-2">
+                    <a className="rounded-md bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-sm" href={downloadUrl} target="_blank" rel="noreferrer">Télécharger l'installateur</a>
+                    <a className="rounded-md border px-3 py-2 text-xs" href="mailto:mainteneur@example.org?subject=Problème%20-%20Installation%20Gestionnaire%20d'Assembl%C3%A9e&body=Bonjour%2C%0A%0AJ'ai%20rencontr%C3%A9%20un%20probl%C3%A8me%20avec%20la%20version%20v0.1.0-rc1.%20Merci%20de%20pr%C3%A9ciser%20%3A%0A-%20Windows%20version%20%3A%20%0A-%20Nom%20du%20fichier%20t%C3%A9l%C3%A9charg%C3%A9%20%3A%0A-%20SHA256%20(obligatoire%20si%20possible)%20%3A%0A-%20Capture%20d'%C3%A9cran%20%3A%0A%0ADescription%20du%20probl%C3%A8me%20%3A%0A" title="Contacter le support">Signaler un problème</a>
+                    <a className="rounded-md border px-3 py-2 text-xs" href="https://github.com/Simon571/app-gestionnaire/issues/new?template=tester-report.md&title=Retour%20test%20v0.1.0-rc1" target="_blank" rel="noreferrer">Ouvrir un rapport de test</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
