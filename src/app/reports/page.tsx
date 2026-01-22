@@ -27,6 +27,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { apiFetch } from '@/lib/api-client';
 
 interface AttendanceRecord {
   id: string;
@@ -105,7 +106,7 @@ export default function MeetingAttendancePage() {
     const loadAttendance = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/attendance?year=${year}&month=${month}`);
+        const response = await apiFetch(`api/attendance?year=${year}&month=${month}`);
         if (response.ok) {
           const data = await response.json();
           setReceivedRecords(data.records || []);

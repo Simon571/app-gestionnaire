@@ -16,6 +16,7 @@ import {
 import { Plus, Trash2, AlertCircle, HelpCircle } from 'lucide-react';
 import { usePeople } from '@/context/people-context';
 import { syncToFlutter } from '@/lib/sync-to-flutter';
+import { apiFetch } from '@/lib/api-client';
 
 type TacheStatus = 'todo' | 'in_progress' | 'done';
 
@@ -65,7 +66,7 @@ export default function TachesPage() {
     const load = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch('/api/taches');
+        const res = await apiFetch('api/taches');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const taches = Array.isArray(data.taches) ? (data.taches as UserTask[]) : [];
@@ -119,7 +120,7 @@ export default function TachesPage() {
   const saveAll = async (nextTasks: UserTask[]) => {
     try {
       setIsSaving(true);
-      await fetch('/api/taches', {
+      await apiFetch('api/taches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ taches: nextTasks }),

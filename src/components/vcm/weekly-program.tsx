@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Person } from '@/app/personnes/page';
+import { apiFetch } from '@/lib/api-client';
 
 const log = (...a: any[]) => console.log("[VCM-Component]", ...a);
 
@@ -57,7 +58,7 @@ export function WeeklyProgramVCM({ weekId }: WeeklyProgramVCMProps) {
 
     const debouncedSave = React.useCallback(
         (partKey: string, personId: string | null) => {
-            fetch(`/api/vcm/${weekId}/assignments`, {
+            apiFetch(`api/vcm/${weekId}/assignments`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ partKey, personId }),
@@ -93,7 +94,7 @@ export function WeeklyProgramVCM({ weekId }: WeeklyProgramVCMProps) {
                 setSections(mapped);
 
                 // 3. Charger les assignations pour cette semaine
-                const assignmentsRes = await fetch(`/api/vcm/${weekId}/assignments`);
+                const assignmentsRes = await apiFetch(`api/vcm/${weekId}/assignments`);
                 const weekAssignments = await assignmentsRes.json();
                 setAssignments(weekAssignments);
 

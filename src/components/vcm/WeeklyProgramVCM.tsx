@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePeople } from "@/context/people-context";
 import { Person } from "@/app/personnes/page";
 import { WolButton } from "@/components/vcm/WolButton";
+import { apiFetch } from "@/lib/api-client";
 
 const NONE = "__none__";
 type AssignmentPayload = { itemId: string; personId: string | null; role: string; override?: { duration?: number | null; songNumber?: number | null }; };
@@ -71,8 +72,8 @@ export default function WeeklyProgramVCM(props: { weekStartIso: string; people: 
   const onAssign = (payload: any) => console.log("Assign:", payload);
   const wolUrl = React.useMemo(() => (week ? buildWolUrlForWeek(week) : null), [week]);
   const handlePrint = React.useCallback(() => { if (typeof window !== "undefined") window.print(); }, []);
-  const handleClearAssignments = React.useCallback(async () => { if (!week) return; setSaving(true); try { await fetch(`/api/vcm/${week.startDate}/assign/clear`, { method: "POST" }); toast({description: 'Assignations effacées'}); } catch(e){toast({description: 'Erreur', variant: 'destructive'})} finally { setSaving(false); } }, [week, toast]);
-  const handleDeleteWeek = React.useCallback(async () => { if (!week) return; if(!confirm('Supprimer?')) return; setSaving(true); try { await fetch(`/api/vcm/${week.startDate}`, { method: "DELETE" }); setWeek(null); toast({description: 'Réunion supprimée'}); } catch(e){toast({description: 'Erreur', variant: 'destructive'})} finally { setSaving(false); } }, [week, toast]);
+  const handleClearAssignments = React.useCallback(async () => { if (!week) return; setSaving(true); try { await apiFetch(`api/vcm/${week.startDate}/assign/clear`, { method: "POST" }); toast({description: 'Assignations effacées'}); } catch(e){toast({description: 'Erreur', variant: 'destructive'})} finally { setSaving(false); } }, [week, toast]);
+  const handleDeleteWeek = React.useCallback(async () => { if (!week) return; if(!confirm('Supprimer?')) return; setSaving(true); try { await apiFetch(`api/vcm/${week.startDate}`, { method: "DELETE" }); setWeek(null); toast({description: 'Réunion supprimée'}); } catch(e){toast({description: 'Erreur', variant: 'destructive'})} finally { setSaving(false); } }, [week, toast]);
   const handleAutofill = React.useCallback(async () => { /* ... */ }, [week, people]);
 
   if (loading) return <div>Chargement...</div>;

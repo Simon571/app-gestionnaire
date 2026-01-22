@@ -1,5 +1,6 @@
 import SHA256 from 'crypto-js/sha256';
 import HmacSHA256 from 'crypto-js/hmac-sha256';
+import { getApiUrl } from './api-client';
 
 interface PublisherSyncFetchOptions extends RequestInit {
   rawBody?: string;
@@ -25,6 +26,9 @@ export const publisherSyncFetch = async (
   input: string,
   init: PublisherSyncFetchOptions = {}
 ): Promise<Response> => {
+  // ✨ TAURI FIX: Convertir le chemin relatif en URL complète pour Vercel
+  const fullUrl = getApiUrl(input);
+  
   const cfg = getDeviceConfig();
   if (!cfg) {
     // Best-effort fallback for local usage: proceed without device auth headers.
@@ -33,7 +37,7 @@ export const publisherSyncFetch = async (
       // eslint-disable-next-line no-console
       console.warn('publisherSyncFetch: missing NEXT_PUBLIC_PUBLISHER_SYNC_DEVICE_*. Sending request without auth headers.');
     }
-    return fetch(input, init);
+    return fetch(fullUrl, init);
   }
 
   const { deviceId, apiKey } = cfg;
@@ -47,7 +51,7 @@ export const publisherSyncFetch = async (
   headers.set('X-Timestamp', timestamp);
   headers.set('X-Signature', signature);
 
-  return fetch(input, {
+  return fetch(fullUrl, {
     ...init,
     headers,
   });

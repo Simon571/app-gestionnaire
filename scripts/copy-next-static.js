@@ -5,11 +5,15 @@ const projectRoot = process.cwd();
 const staticSrc = path.join(projectRoot, '.next', 'static');
 const staticDest = path.join(projectRoot, '.next', 'standalone', '.next', 'static');
 const standaloneSrc = path.join(projectRoot, '.next', 'standalone');
-const archiveDest = path.join(projectRoot, 'src-tauri', 'next-dist.tar.gz');
-const resourcesRoot = path.join(projectRoot, 'src-tauri', 'resources');
-const nodeDir = path.join(resourcesRoot, 'node');
-const nodeBinaryName = process.platform === 'win32' ? 'node.exe' : 'node';
-const nodeDest = path.join(nodeDir, nodeBinaryName);
+
+// Nouveau: créer dist-tauri pour Tauri
+const distTauriDir = path.join(projectRoot, 'dist-tauri');
+const distTauriStandalone = path.join(distTauriDir, 'standalone');
+const serverEntryPath = path.join(projectRoot, 'server-entry.js');
+
+const archiveDest = path.join(projectRoot, 'next-dist.tar.gz');
+const nodeSrc = process.execPath;
+const nodeDest = path.join(projectRoot, 'node.exe');
 const { spawnSync } = require('child_process');
 
 function copyRecursive(srcDir, destDir) {
@@ -57,12 +61,86 @@ if (tarResult.status !== 0) {
 
 console.log(`Archive Next.js créée: ${path.relative(projectRoot, archiveDest)}`);
 
-try {
-  fs.mkdirSync(resourcesRoot, { recursive: true });
-  fs.mkdirSync(nodeDir, { recursive: true });
-  fs.copyFileSync(process.execPath, nodeDest);
-  console.log(`Binaire Node.js copié vers ${path.relative(projectRoot, nodeDest)}`);
-} catch (err) {
-  console.warn('Avertissement: impossible de copier le binaire Node.js.', err);
-  console.warn('L\'application installée exigera que Node.js soit présent sur la machine cible.');
+// Créer dist-tauri avec le serveur et les fichiers standalone
+console.log('\n📦 Préparation de dist-tauri...');
+fs.rmSync(distTauriDir, { recursive: true, force: true });
+fs.mkdirSync(distTauriDir, { recursive: true });
+
+// Copier le standalone complet
+console.log('Copie du standalone...');
+copyRecursive(standaloneSrc, distTauriStandalone);
+
+// Créer le fichier server.js directement
+console.log('Création de server.js...');
+const serverJs = `const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+
+const dev = false;
+const hostname = process.env.HOSTNAME || '127.0.0.1';
+const port = parseInt(process.env.PORT, 10) || 1420;
+
+console.log('Démarrage du serveur Next.js...');
+console.log('Répertoire:', __dirname);
+
+const app = next({ 
+  dev, 
+  hostname, 
+  port,
+  dir: __dirname,
+  conf: {
+    distDir: '.next'
+  }
+});
+
+const handle = app.getRequestHandler();
+
+app.prepare()
+  .then(() => {
+    createServer(async (req, res) => {
+      try {
+        const parsedUrl = parse(req.url, true);
+        await handle(req, res, parsedUrl);
+      } catch (err) {
+        console.error('Erreur:', req.url, err);
+        res.statusCode = 500;
+        res.end('internal server error');
+      }
+    })
+      .once('error', (err) => {
+        console.error('Erreur serveur:', err);
+        process.exit(1);
+      })
+      .listen(port, hostname, () => {
+        console.log(\`✅ Serveur prêt sur http://\${hostname}:\${port}\`);
+      });
+  })
+  .catch((err) => {
+    console.error('Erreur préparation Next.js:', err);
+    process.exit(1);
+  });
+`;
+
+fs.writeFileSync(path.join(distTauriStandalone, 'server.js'), serverJs, 'utf8');
+console.log(`✅ server.js créé dans dist-tauri/standalone/`);
+
+// Créer l'archive tar.gz pour Tauri
+console.log('\nCréation de l\'archive tar.gz...');
+const tarArgs2 = ['-czf', archiveDest, '-C', distTauriStandalone, '.'];
+const tarResult2 = spawnSync(tarBinary, tarArgs2, { stdio: 'inherit' });
+
+if (tarResult2.status !== 0) {
+  console.error('❌ Erreur: impossible de créer l\'archive tar.gz.');
+  process.exit(tarResult2.status ?? 1);
 }
+console.log(`✅ Archive créée: ${path.relative(projectRoot, archiveDest)}`);
+
+// Copier node.exe au root du projet (pour Tauri resources)
+try {
+  fs.copyFileSync(nodeSrc, nodeDest);
+  console.log(`✅ Binaire Node.js copié: ${path.relative(projectRoot, nodeDest)}`);
+} catch (err) {
+  console.warn('⚠️ Avertissement: impossible de copier le binaire Node.js.', err);
+}
+
+console.log('\n✅ Build Tauri prêt!\n');

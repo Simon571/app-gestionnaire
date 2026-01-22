@@ -23,6 +23,7 @@ import { Trash2, PlusCircle, Printer, Save, Loader2 } from "lucide-react";
 import { usePeople } from '@/context/people-context';
 import { useToast } from '@/hooks/use-toast';
 import type { Person } from '@/app/personnes/page';
+import { apiFetch } from '@/lib/api-client';
 
 interface ResponsibilityAssignment {
   id: string;
@@ -247,7 +248,7 @@ export default function ResponsibilitiesPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch('/api/responsibilities');
+        const response = await apiFetch('api/responsibilities');
         if (response.ok) {
           const data = await response.json();
           setAssignments(data.assignments || []);
@@ -300,7 +301,7 @@ export default function ResponsibilitiesPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/responsibilities', {
+      const response = await apiFetch('api/responsibilities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

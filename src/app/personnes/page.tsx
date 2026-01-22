@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Upload, RefreshCw } from 'lucide-react';
 import React from 'react';
+import { apiFetch } from '@/lib/api-client';
 
 export type ActivityReport = {
   month: string; // "YYYY-MM"
@@ -520,7 +521,7 @@ export default function PeoplePage() {
 
     const handleSyncFromPublisherApp = async () => {
         try {
-            const response = await fetch('/api/sync-publisher-users-to-people');
+            const response = await apiFetch('api/sync-publisher-users-to-people');
             if (!response.ok) {
                 throw new Error('Échec de la synchronisation');
             }
@@ -558,7 +559,7 @@ export default function PeoplePage() {
     const handleRepairPublisherApp = async () => {
         try {
             // Envoyer les données du localStorage vers publisher-users.json
-            const response = await fetch('/api/repair-publisher-users', {
+            const response = await apiFetch('api/repair-publisher-users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ people: peopleList }),

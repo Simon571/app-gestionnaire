@@ -16,6 +16,7 @@ interface PreachingGroup {
 
 import { discourseList as initialDiscourseList, type Discourse } from '@/lib/discours-data';
 import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+import { apiFetch } from '@/lib/api-client';
 
 interface PeopleContextType {
   people: Person[];
@@ -195,7 +196,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     const loadFromApi = async () => {
       try {
         // Load people
-        const usersResponse = await fetch('/api/publisher-app/users/export');
+        const usersResponse = await apiFetch('api/publisher-app/users/export');
         if (usersResponse.ok) {
           const usersData = await usersResponse.json();
           if (Array.isArray(usersData.users) && usersData.users.length > 0) {
@@ -204,7 +205,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         
         // Load families from API
-        const familiesResponse = await fetch('/api/families');
+        const familiesResponse = await apiFetch('api/families');
         if (familiesResponse.ok) {
           const familiesData = await familiesResponse.json();
           if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
@@ -213,7 +214,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         
         // Load preaching groups from API
-        const groupsResponse = await fetch('/api/preaching-groups');
+        const groupsResponse = await apiFetch('api/preaching-groups');
         if (groupsResponse.ok) {
           const groupsData = await groupsResponse.json();
           if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
@@ -252,7 +253,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
       try {
         setIsSyncingUsers(true);
         // Utiliser auto-sync pour créer automatiquement les jobs desktop_to_mobile
-        const response = await fetch('/api/publisher-app/auto-sync', {
+        const response = await apiFetch('api/publisher-app/auto-sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ users: people }),
@@ -279,7 +280,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     if (!isLoaded || families.length === 0) return;
     const syncFamilies = async () => {
       try {
-        await fetch('/api/families', {
+        await apiFetch('api/families', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ families }),
@@ -296,7 +297,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     if (!isLoaded || preachingGroups.length === 0) return;
     const syncGroups = async () => {
       try {
-        await fetch('/api/preaching-groups', {
+        await apiFetch('api/preaching-groups', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ groups: preachingGroups }),
@@ -339,7 +340,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   // Fonction pour synchroniser l'activité vers publisher-preaching.json
   const syncActivityToPreaching = async (userId: string, activity: Person['activity']) => {
     try {
-      await fetch('/api/sync-activity', {
+      await apiFetch('api/sync-activity', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, activity }),
@@ -356,7 +357,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
       const hasEmergencyContacts = person.emergency?.contacts && person.emergency.contacts.length > 0;
       
       if (hasActivity || hasEmergencyContacts) {
-        await fetch('/api/publisher-app/create-sync-job', {
+        await apiFetch('api/publisher-app/create-sync-job', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ person }),

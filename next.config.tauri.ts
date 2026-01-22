@@ -4,10 +4,12 @@ import withNextIntl from 'next-intl/plugin';
 const withNextIntlConfig = withNextIntl('./src/i18n.ts');
 
 const nextConfig: NextConfig = {
-  /* Configuration pour build Tauri - standalone (server) */
-  output: 'standalone',
+  /* Configuration pour build Tauri - export (frontend statique) */
+  output: 'export',
   
-  // Images non optimisées pour build standalone
+  // L'app desktop communique avec le backend Vercel pour les API
+  // Pas besoin de serveur local car tout passe par NEXT_PUBLIC_API_URL
+  
   images: {
     unoptimized: true,
   },
