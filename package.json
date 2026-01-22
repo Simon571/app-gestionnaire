@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack -H 0.0.0.0",
     "dev:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts next dev --turbopack -H 0.0.0.0",
     "build": "next build",
-    "build:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts NEXT_EXPORT=true next build",
+    "build:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts next build",
     "build:vercel": "next build",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
@@ -28,7 +28,8 @@
     "postinstall": "patch-package",
     "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit",
     "sync:keys": "ts-node --project scripts/tsconfig.json scripts/publisher-sync-keys.ts",
-    "test:writer": "vitest run src/lib/__tests__/publisher-sync-flutter-writer.test.ts"
+    "test:writer": "vitest run src/lib/__tests__/publisher-sync-flutter-writer.test.ts",
+    "test:playwright": "playwright test tests/seo/download-windows.spec.ts"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.13.0",
@@ -72,7 +73,7 @@
     "genkit": "^1.13.0",
     "lucide-react": "^0.475.0",
     "meeting-schedules-parser": "^4.2.0",
-    "next": "^16.1.4",
+    "next": "^15.5.9",
     "next-intl": "^4.3.4",
     "patch-package": "^8.0.0",
     "react": "^18.3.1",

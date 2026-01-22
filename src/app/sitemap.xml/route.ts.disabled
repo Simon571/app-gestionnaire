@@ -1,0 +1,21 @@
+export const dynamic = "force-static";
+export const revalidate = false;
+
+const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://app-gestionnaire.vercel.app";
+const LOCALES = ["fr", "en"];
+
+function urlEntry(loc: string, path: string, priority = 0.7, freq = "monthly") {
+  const full = `${SITE}/${loc}${path.startsWith("/") ? path : `/${path}`}`;
+  return `  <url>\n    <loc>${full}</loc>\n    <changefreq>${freq}</changefreq>\n    <priority>${priority}</priority>\n  </url>`;
+}
+
+export async function GET() {
+  const entries = [
+    ...LOCALES.map((l) => urlEntry(l, "/", 0.9, "daily")),
+    ...LOCALES.map((l) => urlEntry(l, "/download", 0.9, "monthly")),
+  ].join("\n");
+
+  const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>`;
+
+  return new Response(xml, { headers: { "Content-Type": "application/xml" } });
+}

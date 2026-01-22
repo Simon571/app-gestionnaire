@@ -4,10 +4,10 @@ import withNextIntl from 'next-intl/plugin';
 const withNextIntlConfig = withNextIntl('./src/i18n.ts');
 
 const nextConfig: NextConfig = {
-  /* Configuration pour build Tauri - export statique */
-  output: 'export',
+  /* Configuration pour build Tauri - standalone (server) */
+  output: 'standalone',
   
-  // Images non optimisées pour export statique
+  // Images non optimisées pour build standalone
   images: {
     unoptimized: true,
   },

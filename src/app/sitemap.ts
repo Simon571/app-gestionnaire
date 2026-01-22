@@ -1,5 +1,7 @@
 import type { MetadataRoute } from 'next';
 
+export const revalidate = false;
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app-gestionnaire.vercel.app';
 

@@ -1,3 +1,6 @@
+export const dynamic = "force-static";
+export const revalidate = 0;
+
 export default function robots() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app-gestionnaire.vercel.app';
   

@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://votre-domaine.vercel.app/</loc>
+    <loc>https://app-gestionnaire.vercel.app/fr/</loc>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
+    <priority>0.9</priority>
   </url>
-  <!-- Ajouter dynamiquement les autres URLs importantes ici -->
+  <url>
+    <loc>https://app-gestionnaire.vercel.app/en/</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://app-gestionnaire.vercel.app/fr/download</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://app-gestionnaire.vercel.app/en/download</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
 </urlset>

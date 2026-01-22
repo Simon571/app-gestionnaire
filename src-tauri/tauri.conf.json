@@ -4,10 +4,10 @@
   "version": "1.0.0",
   "identifier": "com.appgestionnaire.app",
   "build": {
-    "frontendDist": "../out",
+    "frontendDist": "../.next/standalone",
     "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev:tauri",
-    "beforeBuildCommand": "npm run build:tauri"
+    "beforeBuildCommand": "npm run build"
   },
   "app": {
     "windows": [
