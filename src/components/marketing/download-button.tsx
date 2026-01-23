@@ -3,10 +3,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 
-const DEFAULT_RELEASES =
-  process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL ||
-  process.env.NEXT_PUBLIC_RELEASES_URL ||
-  "https://github.com/Simon571/app-gestionnaire/releases/download/v0.1.0-rc1/Gestionnaire.d.Assemblee_1.0.0_x64_en-US.msi";
+const DEFAULT_RELEASES = "https://github.com/Simon571/app-gestionnaire/releases/download/v0.1.0-rc1/Gestionnaire.d.Assemblee_1.0.0_x64_en-US.msi";
 
 const LABELS: Record<string, { download: string; detecting: string; reserved: string; releases: string; view_releases: string }> = {
   fr: {
