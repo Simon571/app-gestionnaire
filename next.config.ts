@@ -21,8 +21,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: false,
   },
   
-  // Trailing slash pour cohérence
-  trailingSlash: true,
+  // Désactivé pour éviter les problèmes avec les API routes
+  // trailingSlash: true,
 };
 
 export default withNextIntlConfig(nextConfig);
