@@ -7,8 +7,11 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   // URL de téléchargement depuis les variables d'environnement
   // Fallback vers le fichier existant sur v0.1.0-rc1 en attendant l'upload de Gestionnaire-setup.msi
-  const downloadUrl = process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL || 
-    'https://github.com/Simon571/app-gestionnaire/releases/download/v0.1.0-rc1/Gestionnaire.d.Assemblee_1.0.0_x64_en-US.msi';
+  const downloadUrl = (process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL || 
+    'https://github.com/Simon571/app-gestionnaire/releases/download/v0.1.0-rc1/Gestionnaire.d.Assemblee_1.0.0_x64_en-US.msi').trim();
+
+  // Log pour debug
+  console.log('Download URL:', downloadUrl);
 
   // Redirection permanente vers le fichier
   return NextResponse.redirect(downloadUrl, {
