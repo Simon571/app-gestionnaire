@@ -48,3 +48,4 @@ yarn-error.log*
 *.dmg
 *.deb
 *.AppImage
+.env*.local
