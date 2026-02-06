@@ -11,21 +11,48 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app-gestionnaire.ve
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: 'Admin d\'Assemblée - Gestionnaire de Réunions',
-  description: 'Application de gestion complète pour les assemblées de Témoins de Jéhovah',
+  title: {
+    default: 'Gestionnaire d\'Assemblée - Application de Gestion pour Congrégations',
+    template: '%s | Gestionnaire d\'Assemblée',
+  },
+  description: 'Application complète de gestion pour les assemblées de Témoins de Jéhovah : organisation des réunions, gestion des territoires, prédication, rapports et communication. Gratuit et disponible sur Windows.',
+  keywords: ['gestionnaire assemblée', 'témoin jéhovah', 'gestion congrégation', 'organisation réunions', 'territoires prédication', 'application windows', 'software témoins', 'meeting scheduler', 'congregation manager'],
+  authors: [{ name: 'Simon Nzamba' }],
+  creator: 'Simon Nzamba',
+  publisher: 'Simon Nzamba',
   manifest: '/manifest.webmanifest',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   openGraph: {
     type: 'website',
     locale: 'fr_FR',
+    alternateLocale: ['en_US'],
     url: siteUrl,
     siteName: 'Gestionnaire d\'Assemblée',
-    title: 'Gestionnaire d\'Assemblée',
-    description: 'Application de gestion complète pour les assemblées de Témoins de Jéhovah',
+    title: 'Gestionnaire d\'Assemblée - Application de Gestion pour Congrégations',
+    description: 'Application complète de gestion pour les assemblées : réunions, territoires, prédication, rapports. Gratuit sur Windows.',
+    images: [
+      {
+        url: '/icons/icon-512x512.png',
+        width: 512,
+        height: 512,
+        alt: 'Gestionnaire d\'Assemblée Logo',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Gestionnaire d\'Assemblée',
-    description: 'Application de gestion complète pour les assemblées de Témoins de Jéhovah',
+    description: 'Application complète de gestion pour les assemblées : réunions, territoires, prédication, rapports. Gratuit sur Windows.',
   },
   icons: {
     icon: [
@@ -57,13 +84,41 @@ export default function RootLayout({
     <html lang="fr" suppressHydrationWarning className={ptSans.variable}>
       <head>
         <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="canonical" href={siteUrl} />
         <meta name="theme-color" content="#1E40AF" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Admin d'Assemblée" />
+        <meta name="apple-mobile-web-app-title" content="Gestionnaire d'Assemblée" />
         <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
         {/* ✅ Police PT Sans maintenant chargée via next/font (plus rapide, pas de connexion Google) */}
+        {/* Structured Data for Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Gestionnaire d'Assemblée",
+              "applicationCategory": "BusinessApplication",
+              "operatingSystem": "Windows",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": "Application complète de gestion pour les assemblées : réunions, territoires, prédication, rapports.",
+              "url": siteUrl,
+              "downloadUrl": `${siteUrl}/fr/download`,
+              "screenshot": `${siteUrl}/icons/icon-512x512.png`,
+              "author": {
+                "@type": "Person",
+                "name": "Simon Nzamba"
+              },
+              "inLanguage": ["fr-FR", "en-US"]
+            })
+          }}
+        />
       </head>
       <body className={ptSans.className}>
           <RouteProgress />

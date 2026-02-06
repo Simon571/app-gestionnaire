@@ -1,0 +1,25 @@
+# Gestionnaire d'Assemblée - Robots.txt
+
+User-agent: *
+Allow: /
+Allow: /fr/
+Allow: /en/
+Allow: /fr/download
+Allow: /en/download
+
+# Pages privées - Ne pas indexer
+Disallow: /api/
+Disallow: /personnes
+Disallow: /programme
+Disallow: /territoires
+Disallow: /rapports
+Disallow: /assembly
+Disallow: /circonscriptions-orateurs
+Disallow: /vcm
+
+# Fichiers et dossiers techniques
+Disallow: *.json$
+Disallow: /downloads/
+
+# Sitemap
+Sitemap: https://app-gestionnaire.vercel.app/sitemap.xml
