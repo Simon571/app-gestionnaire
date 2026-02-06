@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack -H 0.0.0.0",
     "dev:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts next dev --turbopack -H 0.0.0.0",
-    "build": "next build",
+    "build": "next build --no-turbopack",
     "build:tauri": "cross-env NEXT_CONFIG=next.config.tauri.ts NEXT_EXPORT=true next build",
-    "build:vercel": "next build",
+    "build:vercel": "next build --no-turbopack",
     "start": "next start -H 0.0.0.0",
     "lint": "next lint",
     "scrape-vcm": "ts-node --project scripts/tsconfig.json scripts/scrape-vcm.ts",
