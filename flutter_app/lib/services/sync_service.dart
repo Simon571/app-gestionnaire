@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'storage_service.dart';
 
-const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'http://192.168.169.152:3000'); // ✅ URL correcte - Mise à jour Jan 2026
+const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app'); // ✅ URL Vercel - Mise à jour Fév 2026
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();

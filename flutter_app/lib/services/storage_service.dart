@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import '../models/person.dart';
 
-const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'http://192.168.169.152:3000');
+const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app');
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();
