@@ -57,14 +57,15 @@ export default function SettingsPage() {
       const newPin = settings.assemblyPin || generatePin();
       if (!settings.assemblyId || !settings.assemblyPin) {
         updateSettings({ assemblyId: newId, assemblyPin: newPin });
-        setShowGeneratedCredentials({ id: newId, pin: newPin });
-        toast({
-          title: "✅ Identifiants générés !",
-          description: `ID : ${newId} — PIN : ${newPin}`,
-          duration: 15000,
-        });
-        return;
       }
+      // Toujours afficher les identifiants après enregistrement
+      setShowGeneratedCredentials({ id: newId, pin: newPin });
+      toast({
+        title: "✅ Enregistré !",
+        description: `ID : ${newId} — PIN : ${newPin}`,
+        duration: 15000,
+      });
+      return;
     }
     toast({
       title: "Succès",
