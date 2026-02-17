@@ -9,10 +9,14 @@ export interface Family {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const FAMILIES_FILE = path.join(DATA_DIR, 'families.json');
 
-// Ensure data directory exists
+// Ensure data directory exists (silently fail on read-only filesystems like Vercel)
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem (Vercel serverless) – directory may already exist in bundle
   }
 }
 

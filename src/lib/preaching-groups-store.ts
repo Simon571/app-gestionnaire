@@ -9,10 +9,14 @@ export interface PreachingGroup {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const GROUPS_FILE = path.join(DATA_DIR, 'preaching-groups.json');
 
-// Ensure data directory exists
+// Ensure data directory exists (silently fail on read-only filesystems like Vercel)
 function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+  } catch {
+    // Read-only filesystem (Vercel serverless) – directory may already exist in bundle
   }
 }
 
