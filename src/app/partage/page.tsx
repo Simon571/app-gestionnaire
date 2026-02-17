@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PlusCircle, Trash2, Pencil, Eye, X } from 'lucide-react';
+import { PlusCircle, Trash2, Pencil, Eye, X, Copy, Check, AlertCircle } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { usePeople } from '@/context/people-context';
+import { useAppSettings } from '@/context/app-settings-context';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast'; // Import du hook pour les toasts
 
@@ -57,10 +58,19 @@ export default function SharingPage() {
   const [users, setUsers] = React.useState<User[]>([]);
   const [isFormOpen, setIsFormOpen] = React.useState(false);
   const [selectedUserId, setSelectedUserId] = React.useState<number | null>(null);
-  const { toast } = useToast(); // Initialisation du hook
+  const [copiedField, setCopiedField] = React.useState<string | null>(null);
+  const { toast } = useToast();
+  const { settings, updateSetting } = useAppSettings();
 
   const { people } = usePeople();
   const admins = people.filter(p => p.spiritual.function === 'elder');
+
+  const copyToClipboard = (value: string, field: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+    toast({ description: `${field} copié dans le presse-papiers.` });
+  };
 
   React.useEffect(() => {
     const savedUsers = localStorage.getItem('sharing-users');
@@ -139,17 +149,67 @@ export default function SharingPage() {
             <CardDescription>Gérez les identifiants de connexion pour le partage.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
+            {!settings.assemblyId || !settings.assemblyPin ? (
+              <div className="flex items-start gap-3 p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+                <div className="text-sm">
+                  <p className="font-medium text-amber-800 dark:text-amber-200">Identifiants non générés</p>
+                  <p className="text-amber-700 dark:text-amber-300 mt-1">
+                    Allez dans <strong>Assemblée → Information de l'assemblée</strong>, remplissez le nom de votre assemblée, puis cliquez « Enregistrer ». L'ID et le PIN seront générés automatiquement.
+                  </p>
+                </div>
+              </div>
+            ) : null}
             <div className="space-y-2">
-              <Label htmlFor="assembly-id">ID de l’assemblée</Label>
-              <Input id="assembly-id" />
+              <Label htmlFor="assembly-id">ID de l'assemblée</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="assembly-id"
+                  value={settings.assemblyId}
+                  readOnly
+                  className="bg-muted font-mono"
+                  placeholder="Non encore généré"
+                />
+                {settings.assemblyId && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(settings.assemblyId, 'ID')}
+                    title="Copier l'ID"
+                  >
+                    {copiedField === 'ID' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="connection-password">Mot de passe de connexion</Label>
-              <Input id="connection-password" type="password" />
+              <Label htmlFor="connection-password">PIN de connexion</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="connection-password"
+                  value={settings.assemblyPin}
+                  readOnly
+                  className="bg-muted font-mono"
+                  placeholder="Non encore généré"
+                />
+                {settings.assemblyPin && (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(settings.assemblyPin, 'PIN')}
+                    title="Copier le PIN"
+                  >
+                    {copiedField === 'PIN' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                  </Button>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="sharing-region">Région de partage</Label>
-              <Select>
+              <Select
+                value={settings.sharingRegion}
+                onValueChange={(value) => updateSetting('sharingRegion', value)}
+              >
                 <SelectTrigger id="sharing-region">
                   <SelectValue placeholder="Sélectionner un continent" />
                 </SelectTrigger>

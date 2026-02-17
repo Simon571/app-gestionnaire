@@ -1,0 +1,16 @@
+{
+  "id": null,
+  "assemblyId": null,
+  "name": null,
+  "assemblyName": null,
+  "pin": null,
+  "assemblyPin": null,
+  "region": null,
+  "country": null,
+  "zoomId": null,
+  "zoomPassword": null,
+  "zoomUrl": null,
+  "weekdayMeeting": null,
+  "weekendMeeting": null,
+  "autoLogin": false
+}

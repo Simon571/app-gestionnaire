@@ -281,7 +281,7 @@ String _resolveVcmProgramUrl() {
   if (_envVcmProgramUrl.isNotEmpty) {
     return _envVcmProgramUrl;
   }
-  final base = kDebugMode ? 'http://localhost:3000' : 'http://127.0.0.1:1420';
+  final base = 'https://app-gestionnaire.vercel.app';
   return '$base/vcm/$_vcmLocale/vcm-program.normalized.json';
 }
 

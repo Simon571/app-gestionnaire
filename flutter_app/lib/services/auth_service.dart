@@ -94,16 +94,11 @@ class AuthService {
       // Vérifier si des utilisateurs avec PIN existent
       final usersWithPin = people.where((p) => p.pin != null && p.pin!.isNotEmpty).toList();
 
-      // Si aucun utilisateur avec PIN, ajouter les données de test
+      // Si aucun utilisateur avec PIN, informer l'utilisateur
       if (usersWithPin.isEmpty) {
         AppLogger.log('⚠️ Aucun utilisateur avec PIN trouvé (${people.length} utilisateurs chargés)');
-        AppLogger.log('⏳ Ajout automatique des utilisateurs de test...');
-        
-        await _addTestUsers();
-        
-        // Recharger la liste complète après ajout
-        people = await storageService.getPeople();
-        AppLogger.log('✓ Liste rechargée: ${people.length} utilisateurs');
+        AppLogger.log('ℹ️ L\'utilisateur doit d\'abord configurer son assemblée et synchroniser les données');
+        return false;
       }
 
       // Continuer avec la liste (existante ou mise à jour)
@@ -174,91 +169,6 @@ class AuthService {
   }
 
   // ===== HELPERS =====
-  
-  Future<void> _addTestUsers() async {
-    AppLogger.log('⏳ Ajout des utilisateurs de test avec PIN dans auth_service...');
-    final testUsers = [
-      {
-        'id': 'test_001',
-        'firstName': 'Jean',
-        'lastName': 'Dupont',
-        'displayName': 'J. Dupont',
-        'pin': '1234',
-        'gender': 'male',
-        'spiritual': {
-          'function': 'Pioneer auxiliaire',
-          'active': true,
-          'group': 1
-        },
-        'assignments': {
-          'services': {
-            'doorAttendant': true,
-            'soundSystem': true,
-            'rovingMic': true,
-          },
-          'ministry': {
-            'returnVisit': true,
-            'firstContact': true,
-          },
-          'gems': {},
-          'christianLife': {},
-          'weekendMeeting': {},
-        },
-      },
-      {
-        'id': 'test_002',
-        'firstName': 'Marie',
-        'lastName': 'Martin',
-        'displayName': 'M. Martin',
-        'pin': '5678',
-        'gender': 'female',
-        'spiritual': {
-          'function': 'Proclamatrice',
-          'active': true,
-          'group': 2
-        },
-        'assignments': {
-          'services': {},
-          'ministry': {
-            'returnVisit': true,
-          },
-          'gems': {},
-          'christianLife': {},
-          'weekendMeeting': {},
-        },
-      },
-      {
-        'id': 'test_003',
-        'firstName': 'Paul',
-        'lastName': 'Leblanc',
-        'displayName': 'P. Leblanc',
-        'pin': '9012',
-        'gender': 'male',
-        'spiritual': {
-          'function': 'Proclamateur régulier',
-          'active': true,
-          'group': 1
-        },
-        'assignments': {
-          'services': {
-            'attendanceCount': true,
-          },
-          'ministry': {
-            'returnVisit': true,
-            'bibleStudy': true,
-          },
-          'gems': {},
-          'christianLife': {},
-          'weekendMeeting': {},
-        },
-      }
-    ];
-    
-    await storageService.savePeople(
-      testUsers.map((json) => Person.fromJson(json)).toList()
-    );
-    AppLogger.log('✓ 3 utilisateurs de test ajoutés');
-  }
   
   String _generateToken() {
     const uuid = Uuid();

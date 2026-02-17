@@ -4,16 +4,63 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, Download, Save } from "lucide-react"
+import { Upload, Download, Save, RefreshCw, Copy, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAppSettings } from "@/context/app-settings-context";
+import { useState } from "react";
+
+// Génère un ID d'assemblée unique basé sur le nom
+function generateAssemblyId(name: string): string {
+  const prefix = name
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .replace(/[^a-zA-Z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)
+    .map(w => w.substring(0, 3).toUpperCase())
+    .join('')
+    .substring(0, 6);
+  const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix || 'ASM'}-${suffix}`;
+}
+
+// Génère un PIN à 6 chiffres
+function generatePin(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { settings, updateSetting } = useAppSettings();
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  const copyToClipboard = (value: string, field: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+    toast({ description: `${field} copié dans le presse-papiers.` });
+  };
 
   const handleSave = (section: string) => {
+    // Si c'est la section assemblée et qu'il n'y a pas encore d'ID/PIN, les générer automatiquement
+    if (section === "Information de l'assemblée") {
+      let changed = false;
+      if (!settings.assemblyId && settings.congregationName) {
+        updateSetting('assemblyId', generateAssemblyId(settings.congregationName));
+        changed = true;
+      }
+      if (!settings.assemblyPin) {
+        updateSetting('assemblyPin', generatePin());
+        changed = true;
+      }
+      if (changed) {
+        toast({
+          title: "Identifiants générés",
+          description: "Un ID et un PIN ont été générés automatiquement. Consultez l'onglet « Partage de l'assemblée » pour les voir et les partager.",
+        });
+        return;
+      }
+    }
     toast({
       title: "Succès",
       description: `Les informations de la section "${section}" ont été sauvegardées.`,
@@ -51,9 +98,74 @@ export default function SettingsPage() {
                     />
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="assembly-number">Numéro de l'assemblée</Label>
-                    <Input id="assembly-number" placeholder="Ex: 12345" />
+                    <Label htmlFor="assembly-id">ID de l'assemblée</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="assembly-id"
+                        placeholder="Généré automatiquement à l'enregistrement"
+                        value={settings.assemblyId}
+                        readOnly={!!settings.assemblyId}
+                        className={settings.assemblyId ? "bg-muted font-mono" : ""}
+                        onChange={(e) => !settings.assemblyId && updateSetting('assemblyId', e.target.value)}
+                      />
+                      {settings.assemblyId && (
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => copyToClipboard(settings.assemblyId, 'ID')}
+                          title="Copier l'ID"
+                        >
+                          {copiedField === 'ID' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                      )}
+                    </div>
+                    {!settings.assemblyId && (
+                      <p className="text-xs text-muted-foreground">Sera généré automatiquement lors de l'enregistrement</p>
+                    )}
                 </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="assembly-pin">PIN de connexion</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="assembly-pin"
+                    type="text"
+                    placeholder="Généré automatiquement à l'enregistrement"
+                    value={settings.assemblyPin}
+                    readOnly={!!settings.assemblyPin}
+                    className={settings.assemblyPin ? "bg-muted font-mono" : ""}
+                    onChange={(e) => !settings.assemblyPin && updateSetting('assemblyPin', e.target.value)}
+                  />
+                  {settings.assemblyPin && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => copyToClipboard(settings.assemblyPin, 'PIN')}
+                        title="Copier le PIN"
+                      >
+                        {copiedField === 'PIN' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const newPin = generatePin();
+                          updateSetting('assemblyPin', newPin);
+                          toast({ description: `Nouveau PIN généré : ${newPin}` });
+                        }}
+                        title="Régénérer le PIN"
+                      >
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+                {!settings.assemblyPin && (
+                  <p className="text-xs text-muted-foreground">Sera généré automatiquement lors de l'enregistrement</p>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Adresse de la Salle du Royaume</Label>

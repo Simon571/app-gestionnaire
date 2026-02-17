@@ -6,8 +6,8 @@ import 'package:dio/dio.dart';
 import '../utils/logger.dart';
 
 class UpdateService {
-  // URL de votre serveur (à modifier avec votre domaine réel)
-  static const String updateCheckUrl = 'http://localhost:3001/api/app/version';
+  // URL du serveur de production
+  static const String updateCheckUrl = 'https://app-gestionnaire.vercel.app/api/app/version';
   
   /// Vérifie s'il existe une nouvelle version disponible
   static Future<UpdateInfo?> checkForUpdate() async {
