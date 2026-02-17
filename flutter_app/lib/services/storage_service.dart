@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../models/person.dart';
 
 const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app');
+const String _prodApiBase = 'https://app-gestionnaire.vercel.app';
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();
@@ -70,13 +71,22 @@ class StorageService {
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    // Clear any non-production API base override.
+    final legacyApiBase = _prefs.getString('api_base');
+    if (legacyApiBase != null && _normalizeApiBase(legacyApiBase) != _prodApiBase) {
+      await _prefs.remove('api_base');
+    }
     // Retenter d'envoyer les rapports en attente au démarrage
     await retryPendingReports();
   }
 
   Future<String> getEffectiveApiBase() async {
     final fromPrefs = _prefs.getString('api_base');
-    return _normalizeApiBase(fromPrefs ?? _defaultApiBase);
+    final normalized = _normalizeApiBase(fromPrefs ?? _defaultApiBase);
+    if (normalized != _prodApiBase) {
+      return _prodApiBase;
+    }
+    return normalized;
   }
 
   // Append a small timestamped debug line into /sdcard/Download/gestionnaire_debug.txt
@@ -122,112 +132,29 @@ class StorageService {
       await _appendDebug('getPeople', 'remote failed: $e');
     }
 
-    // Always prefer a local file when present (useful for dev/QA to sync from web list)
-    try {
-      // Try project-relative path (useful for desktop)
-      final file = File('config/local_users.json');
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        final List<dynamic> jsonList = jsonDecode(content);
-        final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
-        if (kDebugMode) {
-          print('StorageService: loaded people from config/local_users.json');
-        }
-        _lastPeopleSource = 'local_config';
-        _lastPeopleCount = people.length;
-        try { await savePeople(people); } catch (_) {}
-        await _appendDebug('getPeople', 'local_config count=${people.length}');
-        return people;
-      }
-
-      // Try application documents directory (mobile)
-      final docDir = await getApplicationDocumentsDirectory();
-      final docFile = File('${docDir.path}/config/local_users.json');
-      if (await docFile.exists()) {
-        final content = await docFile.readAsString();
-        final List<dynamic> jsonList = jsonDecode(content);
-        final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
-        if (kDebugMode) {
-          print('StorageService: loaded people from ${docFile.path}');
-        }
-        _lastPeopleSource = 'app_documents';
-        _lastPeopleCount = people.length;
-        try { await savePeople(people); } catch (_) {}
-        await _appendDebug('getPeople', 'app_documents count=${people.length} path=${docFile.path}');
-        return people;
-      }
-
-      // Try common Download folder on Android (/sdcard/Download/config)
-      final sdFile = File('/sdcard/Download/config/local_users.json');
-      if (await sdFile.exists()) {
-        final content = await sdFile.readAsString();
-        final List<dynamic> jsonList = jsonDecode(content);
-        final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
-        if (kDebugMode) {
-          print('StorageService: loaded people from ${sdFile.path}');
-        }
-        _lastPeopleSource = 'sdcard';
-        _lastPeopleCount = people.length;
-        try { await savePeople(people); } catch (_) {}
-        await _appendDebug('getPeople', 'sdcard count=${people.length} path=${sdFile.path}');
-        return people;
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('StorageService: failed to read local_users.json: $e');
-      }
-    }
-
-    // Try parent directory publisher-users.json (useful for Windows dev where app runs from flutter_app/)
-    try {
-      final parentFile = File('../data/publisher-users.json');
-      if (await parentFile.exists()) {
-        final content = await parentFile.readAsString();
-        final List<dynamic> jsonList = jsonDecode(content);
-        final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
-        if (kDebugMode) {
-          print('StorageService: loaded people from parent ../data/publisher-users.json (${people.length})');
-        }
-        _lastPeopleSource = 'parent_data';
-        _lastPeopleCount = people.length;
-        try { await savePeople(people); } catch (_) {}
-        await _appendDebug('getPeople', 'parent_data count=${people.length}');
-        return people;
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('StorageService: failed to read parent ../data/publisher-users.json: $e');
-      }
-    }
-
-    // Next fallback: packaged asset (useful for release builds where no local file exists)
-    try {
-      await _appendDebug('getPeople', 'trying asset assets/data/publisher-users.json');
-      // Import via rootBundle so this works in release mode
-      final content = await rootBundle.loadString('assets/data/publisher-users.json');
-      await _appendDebug('getPeople', 'asset loaded, decoding...');
-      final List<dynamic> jsonList = jsonDecode(content);
-      final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
-      if (kDebugMode) {
-        print('StorageService: loaded people from asset assets/data/publisher-users.json (${people.length})');
-      }
-      _lastPeopleSource = 'asset';
-      _lastPeopleCount = people.length;
-      // Persist to SharedPreferences so subsequent runs pick it up reliably
+    // En mode RELEASE : ne pas charger depuis les fichiers locaux/assets
+    // Les utilisateurs réels viendront uniquement de l'API après configuration de l'assemblée
+    // En mode DEBUG : autoriser le chargement depuis les fichiers locaux pour le développement
+    if (kDebugMode) {
+      // Fichiers locaux uniquement en mode debug
       try {
-        await savePeople(people);
-        if (kDebugMode) print('StorageService: saved people to SharedPreferences from asset');
-        await _appendDebug('getPeople', 'asset loaded and saved count=${people.length}');
+        final file = File('config/local_users.json');
+        if (await file.exists()) {
+          final content = await file.readAsString();
+          final List<dynamic> jsonList = jsonDecode(content);
+          if (jsonList.isNotEmpty) {
+            final people = _applyOverridesToPeople(jsonList.map((e) => Person.fromJson(Map<String, dynamic>.from(e as Map))).toList());
+            print('StorageService: [DEBUG] loaded people from config/local_users.json');
+            _lastPeopleSource = 'local_config';
+            _lastPeopleCount = people.length;
+            try { await savePeople(people); } catch (_) {}
+            await _appendDebug('getPeople', 'local_config count=${people.length}');
+            return people;
+          }
+        }
       } catch (e) {
-        if (kDebugMode) print('StorageService: failed to save people to prefs: $e');
-        await _appendDebug('getPeople', 'asset loaded but save failed: $e');
+        print('StorageService: [DEBUG] failed to read local_users.json: $e');
       }
-      return people;
-    } catch (e) {
-      if (kDebugMode) {
-        print('StorageService: failed to read asset publisher-users.json: $e');
-      }
-      await _appendDebug('getPeople', 'asset load failed: $e');
     }
 
     // Fallback to SharedPreferences
@@ -449,29 +376,34 @@ class StorageService {
     final jsonString = _prefs.getString(_assemblyKey);
     if (jsonString != null) {
       try {
-        return Assembly.fromJson(Map<String, dynamic>.from(jsonDecode(jsonString) as Map));
+        final assembly = Assembly.fromJson(Map<String, dynamic>.from(jsonDecode(jsonString) as Map));
+        // Vérifier que l'assemblée a des données valides (pas un placeholder vide)
+        if (assembly.id.isNotEmpty && assembly.pin.isNotEmpty) {
+          return assembly;
+        }
       } catch (e) {
         if (kDebugMode) print('StorageService: error decoding assembly from prefs: $e');
       }
     }
 
-    // Fallback: charger depuis config/local_assembly.json (dev/QA)
-    try {
-      final file = File('config/local_assembly.json');
-      if (await file.exists()) {
-        final content = await file.readAsString();
-        final json = jsonDecode(content) as Map<String, dynamic>;
-        final assembly = Assembly.fromJson(json);
-        // Sauvegarder dans prefs pour les prochaines fois
-        await saveAssembly(assembly);
-        if (kDebugMode) {
-          print('StorageService: loaded assembly from config/local_assembly.json');
+    // Fallback: charger depuis config/local_assembly.json (dev/QA uniquement)
+    if (kDebugMode) {
+      try {
+        final file = File('config/local_assembly.json');
+        if (await file.exists()) {
+          final content = await file.readAsString();
+          final json = jsonDecode(content) as Map<String, dynamic>;
+          // Ne charger que si les champs essentiels sont renseignés
+          if (json['id'] != null && json['id'].toString().isNotEmpty &&
+              json['pin'] != null && json['pin'].toString().isNotEmpty) {
+            final assembly = Assembly.fromJson(json);
+            await saveAssembly(assembly);
+            print('StorageService: [DEBUG] loaded assembly from config/local_assembly.json');
+            return assembly;
+          }
         }
-        return assembly;
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('StorageService: failed to read local_assembly.json: $e');
+      } catch (e) {
+        print('StorageService: [DEBUG] failed to read local_assembly.json: $e');
       }
     }
 
@@ -523,6 +455,9 @@ class StorageService {
     final normalized = _normalizeApiBase(apiBase);
     if (normalized.isEmpty) {
       await _prefs.remove('api_base');
+      return;
+    }
+    if (normalized != _prodApiBase) {
       return;
     }
     await _prefs.setString('api_base', normalized);
