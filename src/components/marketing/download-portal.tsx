@@ -124,8 +124,8 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
 
                   <div className="mt-3 flex gap-2">
                     <a className="rounded-md bg-sky-600 px-3 py-2 text-xs font-semibold text-white shadow-sm" href={downloadUrl} target="_blank" rel="noreferrer">Télécharger l'installateur</a>
-                    <a className="rounded-md border px-3 py-2 text-xs" href="mailto:mainteneur@example.org?subject=Problème%20-%20Installation%20Gestionnaire%20d'Assembl%C3%A9e&body=Bonjour%2C%0A%0AJ'ai%20rencontr%C3%A9%20un%20probl%C3%A8me%20avec%20la%20version%20v0.1.0-rc1.%20Merci%20de%20pr%C3%A9ciser%20%3A%0A-%20Windows%20version%20%3A%20%0A-%20Nom%20du%20fichier%20t%C3%A9l%C3%A9charg%C3%A9%20%3A%0A-%20SHA256%20(obligatoire%20si%20possible)%20%3A%0A-%20Capture%20d'%C3%A9cran%20%3A%0A%0ADescription%20du%20probl%C3%A8me%20%3A%0A" title="Contacter le support">Signaler un problème</a>
-                    <a className="rounded-md border px-3 py-2 text-xs" href="https://github.com/Simon571/app-gestionnaire/issues/new?template=tester-report.md&title=Retour%20test%20v0.1.0-rc1" target="_blank" rel="noreferrer">Ouvrir un rapport de test</a>
+                    <a className="rounded-md border px-3 py-2 text-xs" href="mailto:mainteneur@example.org?subject=Problème%20-%20Installation%20Gestionnaire%20d'Assembl%C3%A9e&body=Bonjour%2C%0A%0AJ'ai%20rencontr%C3%A9%20un%20probl%C3%A8me%20avec%20la%20version%20v1.0.1.%20Merci%20de%20pr%C3%A9ciser%20%3A%0A-%20Windows%20version%20%3A%20%0A-%20Nom%20du%20fichier%20t%C3%A9l%C3%A9charg%C3%A9%20%3A%0A-%20SHA256%20(obligatoire%20si%20possible)%20%3A%0A-%20Capture%20d'%C3%A9cran%20%3A%0A%0ADescription%20du%20probl%C3%A8me%20%3A%0A" title="Contacter le support">Signaler un problème</a>
+                    <a className="rounded-md border px-3 py-2 text-xs" href="https://github.com/Simon571/app-gestionnaire/issues/new?template=tester-report.md&title=Retour%20test%20v1.0.1" target="_blank" rel="noreferrer">Ouvrir un rapport de test</a>
                   </div>
                 </div>
               </div>
