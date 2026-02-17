@@ -31,7 +31,7 @@ function generatePin(): string {
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { settings, updateSetting } = useAppSettings();
+  const { settings, updateSetting, updateSettings } = useAppSettings();
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [showGeneratedCredentials, setShowGeneratedCredentials] = useState<{ id: string; pin: string } | null>(null);
 
@@ -56,8 +56,7 @@ export default function SettingsPage() {
       const newId = settings.assemblyId || generateAssemblyId(settings.congregationName);
       const newPin = settings.assemblyPin || generatePin();
       if (!settings.assemblyId || !settings.assemblyPin) {
-        updateSetting('assemblyId', newId);
-        updateSetting('assemblyPin', newPin);
+        updateSettings({ assemblyId: newId, assemblyPin: newPin });
         setShowGeneratedCredentials({ id: newId, pin: newPin });
         toast({
           title: "✅ Identifiants générés !",

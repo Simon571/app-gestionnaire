@@ -7,6 +7,7 @@ import { AppSettings, defaultAppSettings } from '@/lib/app-settings';
 interface AppSettingsContextType {
   settings: AppSettings;
   updateSetting: (key: keyof AppSettings, value: AppSettings[typeof key]) => void;
+  updateSettings: (updates: Partial<AppSettings>) => void;
 }
 
 const AppSettingsContext = createContext<AppSettingsContextType | undefined>(undefined);
@@ -48,8 +49,15 @@ export const AppSettingsProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const updateSettings = (updates: Partial<AppSettings>) => {
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      ...updates,
+    }));
+  };
+
   return (
-    <AppSettingsContext.Provider value={{ settings, updateSetting }}>
+    <AppSettingsContext.Provider value={{ settings, updateSetting, updateSettings }}>
       {children}
     </AppSettingsContext.Provider>
   );
