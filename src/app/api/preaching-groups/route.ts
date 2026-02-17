@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = "force-static";
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
 import { readPreachingGroups, writePreachingGroups, addPreachingGroup, deletePreachingGroup, type PreachingGroup } from '@/lib/preaching-groups-store';
 
 export async function GET() {
