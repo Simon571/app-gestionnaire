@@ -33,6 +33,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { settings, updateSetting } = useAppSettings();
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showGeneratedCredentials, setShowGeneratedCredentials] = useState<{ id: string; pin: string } | null>(null);
 
   const copyToClipboard = (value: string, field: string) => {
     navigator.clipboard.writeText(value);
@@ -44,19 +45,24 @@ export default function SettingsPage() {
   const handleSave = (section: string) => {
     // Si c'est la section assemblée et qu'il n'y a pas encore d'ID/PIN, les générer automatiquement
     if (section === "Information de l'assemblée") {
-      let changed = false;
-      if (!settings.assemblyId && settings.congregationName) {
-        updateSetting('assemblyId', generateAssemblyId(settings.congregationName));
-        changed = true;
-      }
-      if (!settings.assemblyPin) {
-        updateSetting('assemblyPin', generatePin());
-        changed = true;
-      }
-      if (changed) {
+      if (!settings.congregationName?.trim()) {
         toast({
-          title: "Identifiants générés",
-          description: "Un ID et un PIN ont été générés automatiquement. Consultez l'onglet « Partage de l'assemblée » pour les voir et les partager.",
+          title: "Nom requis",
+          description: "Veuillez saisir le nom de l'assemblée avant d'enregistrer.",
+          variant: "destructive",
+        });
+        return;
+      }
+      const newId = settings.assemblyId || generateAssemblyId(settings.congregationName);
+      const newPin = settings.assemblyPin || generatePin();
+      if (!settings.assemblyId || !settings.assemblyPin) {
+        updateSetting('assemblyId', newId);
+        updateSetting('assemblyPin', newPin);
+        setShowGeneratedCredentials({ id: newId, pin: newPin });
+        toast({
+          title: "✅ Identifiants générés !",
+          description: `ID : ${newId} — PIN : ${newPin}`,
+          duration: 15000,
         });
         return;
       }
@@ -192,10 +198,32 @@ export default function SettingsPage() {
                 </div>
             </div>
           </CardContent>
-          <CardFooter>
-            <Button onClick={() => handleSave("Information de l’assemblée")}>
+          <CardFooter className="flex flex-col items-start gap-4">
+            <Button onClick={() => handleSave("Information de l'assemblée")}>
                 <Save className="mr-2 h-4 w-4" /> Enregistrer les modifications
             </Button>
+            {(showGeneratedCredentials || (settings.assemblyId && settings.assemblyPin)) && (
+              <div className="w-full rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-950 p-4 space-y-3">
+                <h3 className="font-bold text-green-800 dark:text-green-200 text-lg">🔑 Identifiants de l'assemblée</h3>
+                <p className="text-sm text-green-700 dark:text-green-300">Communiquez ces identifiants aux proclamateurs pour qu'ils se connectent sur l'app mobile :</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded p-3 border">
+                    <span className="text-sm font-medium text-muted-foreground">ID :</span>
+                    <span className="font-mono font-bold text-lg">{showGeneratedCredentials?.id || settings.assemblyId}</span>
+                    <Button variant="ghost" size="icon" className="ml-auto h-8 w-8" onClick={() => copyToClipboard(showGeneratedCredentials?.id || settings.assemblyId, 'ID')}>
+                      {copiedField === 'ID' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  <div className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded p-3 border">
+                    <span className="text-sm font-medium text-muted-foreground">PIN :</span>
+                    <span className="font-mono font-bold text-lg">{showGeneratedCredentials?.pin || settings.assemblyPin}</span>
+                    <Button variant="ghost" size="icon" className="ml-auto h-8 w-8" onClick={() => copyToClipboard(showGeneratedCredentials?.pin || settings.assemblyPin, 'PIN')}>
+                      {copiedField === 'PIN' ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardFooter>
         </Card>
       </TabsContent>
