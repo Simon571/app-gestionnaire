@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { readPreachingGroups, writePreachingGroups, addPreachingGroup, deletePreachingGroup, type PreachingGroup } from '@/lib/preaching-groups-store';
+
+const noCacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
 
 export async function GET() {
   try {
     const groups = await readPreachingGroups();
-    return NextResponse.json({ groups });
+    return NextResponse.json({ groups }, { headers: noCacheHeaders });
   } catch (error) {
     console.error('Error reading preaching groups:', error);
     return NextResponse.json({ error: 'Failed to read preaching groups' }, { status: 500 });

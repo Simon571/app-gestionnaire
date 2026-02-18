@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { authenticateDevice, handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
@@ -66,7 +66,9 @@ export async function GET(request: NextRequest) {
     };
   });
   
-  return NextResponse.json({ users: usersWithActivity });
+  return NextResponse.json({ users: usersWithActivity }, {
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+  });
 }
 
 // POST: remplace la liste, réservé aux appareils desktop/server avec permission 'updates'

@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
-
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 import { readFamilies, writeFamilies, addFamily, deleteFamily, type Family } from '@/lib/families-store';
+
+const noCacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
 
 export async function GET() {
   try {
     const families = await readFamilies();
-    return NextResponse.json({ families });
+    return NextResponse.json({ families }, { headers: noCacheHeaders });
   } catch (error) {
     console.error('Error reading families:', error);
     return NextResponse.json({ error: 'Failed to read families' }, { status: 500 });
