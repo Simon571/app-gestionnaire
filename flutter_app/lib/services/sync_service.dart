@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'storage_service.dart';
 
 const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app'); // ✅ URL Vercel - Mise à jour Fév 2026
+const String _prodApiBase = 'https://app-gestionnaire.vercel.app';
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();
@@ -140,8 +141,11 @@ class SyncCredentials {
 
     // 5) Apply apiBase override from prefs (if any)
     if (apiBasePref != null) {
-      if (kDebugMode) print('SyncCredentials: overriding apiBase from prefs: $apiBasePref');
-      loaded = loaded.copyWith(apiBase: _normalizeApiBase(apiBasePref));
+      final normalized = _normalizeApiBase(apiBasePref);
+      if (normalized == _prodApiBase) {
+        if (kDebugMode) print('SyncCredentials: overriding apiBase from prefs: $apiBasePref');
+        loaded = loaded.copyWith(apiBase: normalized);
+      }
     }
 
     return loaded;

@@ -20,53 +20,35 @@ class AuthService {
     required String assemblyPin,
   }) async {
     try {
+      // Nettoyer les entrées (espaces invisibles, retours à la ligne)
+      final cleanRegion = region.trim();
+      final cleanId = assemblyId.trim();
+      final cleanPin = assemblyPin.trim();
+
       // Vérifier que les champs ne sont pas vides
-      if (region.isEmpty || assemblyId.isEmpty || assemblyPin.isEmpty) {
-        AppLogger.error('Erreur: champs vides');
+      if (cleanRegion.isEmpty || cleanId.isEmpty || cleanPin.isEmpty) {
+        AppLogger.error('Erreur: champs vides après nettoyage');
         return false;
       }
 
-      AppLogger.log('Tentative connexion: region=$region, id=$assemblyId, pin=$assemblyPin');
+      AppLogger.log('Tentative connexion: region=$cleanRegion, id=$cleanId, pin=$cleanPin');
 
-      // Récupérer l'assemblée stockée pour vérification
-      final storedAssembly = await storageService.getAssembly();
-      AppLogger.log('Assemblée stockée: $storedAssembly');
-      
-      if (storedAssembly == null) {
-        // Première utilisation (mobile/émulateur): aucune assemblée n'est encore enregistrée.
-        // On considère les identifiants saisis comme une configuration initiale.
-        final bootstrap = Assembly(
-          id: assemblyId,
-          name: 'Assemblée',
-          pin: assemblyPin,
-          region: region,
-          country: '',
-        );
-        _currentAssembly = bootstrap;
-        await storageService.saveAssembly(bootstrap);
-        AppLogger.log('Assemblé bootstrap enregistrée (première utilisation)');
-        return true;
-      }
-
-      AppLogger.log('Vérification: stored.region=${storedAssembly.region} vs input=$region');
-      AppLogger.log('Vérification: stored.id=${storedAssembly.id} vs input=$assemblyId');
-      AppLogger.log('Vérification: stored.pin=${storedAssembly.pin} vs input=$assemblyPin');
-
-      // Vérifier les identifiants exactement
-      final regionMatch = storedAssembly.region.toLowerCase() == region.toLowerCase();
-      final idMatch = storedAssembly.id == assemblyId;
-      final pinMatch = storedAssembly.pin == assemblyPin;
-
-      AppLogger.log('Résultats: region=$regionMatch, id=$idMatch, pin=$pinMatch');
-
-      if (!regionMatch || !idMatch || !pinMatch) {
-        AppLogger.error('Validation échouée');
-        return false;
-      }
-      
-      _currentAssembly = storedAssembly;
-      await storageService.saveAssembly(_currentAssembly!);
-      AppLogger.log('Validation réussie!');
+      // Toujours accepter et sauvegarder les identifiants assemblée.
+      // L'assemblée ID + PIN sont un "code de rejoindre" (join code),
+      // pas un mécanisme de sécurité. La vraie authentification est à
+      // l'étape 2 (nom + PIN personnel de l'utilisateur).
+      // Cela résout le problème lors de la mise à jour de l'APK quand
+      // les anciens identifiants stockés bloquent les nouveaux.
+      final assembly = Assembly(
+        id: cleanId,
+        name: 'Assemblée',
+        pin: cleanPin,
+        region: cleanRegion,
+        country: '',
+      );
+      _currentAssembly = assembly;
+      await storageService.saveAssembly(assembly);
+      AppLogger.log('Assemblée enregistrée: id=$cleanId, region=$cleanRegion');
       return true;
     } catch (e, st) {
       AppLogger.error('Erreur validation assembly', e, st);

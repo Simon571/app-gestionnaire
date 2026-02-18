@@ -318,22 +318,6 @@ class _AssemblyLoginPageState extends ConsumerState<AssemblyLoginPage> {
                       try {
                         context.go('/admin/import-users');
                       } catch (_) {}
-                    } else {
-                      // In release, open a small prompt to go to dev-settings if user confirms
-                      showDialog(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Developer options'),
-                          content: const Text('Ouvrir les paramètres de développement ?'),
-                          actions: [
-                            TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Annuler')),
-                            TextButton(onPressed: () {
-                              Navigator.of(ctx).pop();
-                              try { context.go('/admin/dev-settings'); } catch (_) {}
-                            }, child: const Text('Oui')),
-                          ],
-                        ),
-                      );
                     }
                   },
                   child: const Icon(

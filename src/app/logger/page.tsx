@@ -7,7 +7,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Wand2, Send, User, Bot } from "lucide-react"
 import { useState, useRef, useEffect } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
-import { askAssistant } from "@/ai/flows/assistant-flow"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
@@ -49,7 +48,10 @@ export default function AssistantPage() {
 
     try {
         const history = messages.map(m => ({role: m.role, text: m.content}));
-        const response = await askAssistant(userInput, history);
+                const { askAssistant } = process.env.NEXT_EXPORT === 'true'
+                    ? await import('@/ai/flows/assistant-flow.export')
+                    : await import('@/ai/flows/assistant-flow');
+                const response = await askAssistant(userInput, history);
         const assistantMessage: Message = { role: 'assistant', content: response };
         setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {

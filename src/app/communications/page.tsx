@@ -29,7 +29,6 @@ import { Calendar } from '@/components/ui/calendar';
 import { Calendar as CalendarIcon, Plus, Trash2, ChevronUp, ChevronDown, Upload, Loader2, Volume2, Send } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-import { textToSpeech } from '@/ai/flows/tts-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { publisherSyncFetch } from '@/lib/publisher-sync-client';
@@ -310,6 +309,9 @@ function BulletinBoardContent() {
     if (!comm.content) return;
     setAudioState(prev => ({...prev, [comm.id]: { loading: true, data: null }}));
     try {
+        const { textToSpeech } = process.env.NEXT_EXPORT === 'true'
+          ? await import('@/ai/flows/tts-flow.export')
+          : await import('@/ai/flows/tts-flow');
         const result = await textToSpeech(comm.content);
         if (result?.media) {
             setAudioState(prev => ({...prev, [comm.id]: { loading: false, data: result.media }}));

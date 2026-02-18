@@ -16,6 +16,7 @@ npm install
 # Étape 3: Build Next.js en mode export
 Write-Host "⚙️  Étape 3/4: Build de l'interface (Next.js export)..." -ForegroundColor Yellow
 $env:NEXT_CONFIG = "next.config.tauri.ts"
+$env:NEXT_PUBLIC_PORTAL_MODE = "0"
 npm run build:tauri
 
 if ($LASTEXITCODE -ne 0) {
@@ -25,7 +26,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Étape 4: Build Tauri
 Write-Host "🔨 Étape 4/4: Build de l'application Windows..." -ForegroundColor Yellow
-npm run tauri build -- --bundles msi nsis
+npx tauri build --bundles msi
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
@@ -36,7 +37,6 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "Formats disponibles:" -ForegroundColor Cyan
     Write-Host "   • .msi (Windows Installer)" -ForegroundColor White
-    Write-Host "   • .exe (NSIS Installer)" -ForegroundColor White
 } else {
     Write-Host ""
     Write-Host "❌ Erreur lors du build Tauri" -ForegroundColor Red

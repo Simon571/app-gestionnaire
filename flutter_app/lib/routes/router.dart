@@ -19,8 +19,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       final isAuthenticated = authState.isFullyAuthenticated;
       final isOnLogin = state.matchedLocation == '/login';
 
-      // Allow access to developer settings even before authentication.
-      if (state.matchedLocation == '/admin/dev-settings') {
+      // Allow access to developer settings only in debug builds.
+      if (kDebugMode && state.matchedLocation == '/admin/dev-settings') {
         return null;
       }
 
@@ -54,11 +54,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           path: '/admin/import-users',
           builder: (context, state) => const AdminImportUsers(),
         ),
-      // Developer settings (available in release too: used to configure API base)
-      GoRoute(
-        path: '/admin/dev-settings',
-        builder: (context, state) => const DeveloperSettings(),
-      ),
+      // Developer settings (debug only)
+      if (kDebugMode)
+        GoRoute(
+          path: '/admin/dev-settings',
+          builder: (context, state) => const DeveloperSettings(),
+        ),
       GoRoute(
         path: '/',
         redirect: (context, state) => '/login',

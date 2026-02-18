@@ -6,6 +6,9 @@ export type AppSettings = {
   initialView: 'Moi' | 'Programme' | 'Assemblée';
   // Displayed on printed sheets and headers
   congregationName: string;
+  assemblyId: string;
+  assemblyPin: string;
+  sharingRegion: string;
   saveReminderFrequency: number; // in weeks
   showTipsOnStartup: boolean;
   passwordProtectApp: boolean;
@@ -31,6 +34,9 @@ export const defaultAppSettings: AppSettings = {
   theme: 'Original',
   initialView: 'Moi',
   congregationName: '',
+  assemblyId: '',
+  assemblyPin: '',
+  sharingRegion: '',
   saveReminderFrequency: 4,
   showTipsOnStartup: true,
   passwordProtectApp: false,

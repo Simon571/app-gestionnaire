@@ -7,16 +7,13 @@ const nextConfig: NextConfig = {
   /* Configuration pour build Tauri - export statique */
   output: 'export',
   
-  // Images non optimisées pour export statique
+  // Images non optimisées pour l'environnement local
   images: {
     unoptimized: true,
   },
   
   typescript: {
     ignoreBuildErrors: false,
-  },
-  eslint: {
-    ignoreDuringBuilds: false,
   },
   
   // Trailing slash pour cohérence des routes
