@@ -7,11 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DownloadCloud, HelpCircle } from "lucide-react";
 import { LogsPanel, PublisherLogRecord } from "@/components/publisher/logs/logs-panel";
 
-const demoLogs: PublisherLogRecord[] = [
-  { id: 'log-001', type: 'Envoyé', message: 'Rapport d’activité mensuel transmis à 10:45.', createdAt: '2025/11/05 10:45' },
-  { id: 'log-002', type: 'Reçu', message: 'Programme hebdomadaire importé.', createdAt: '2025/11/04 09:18' },
-  { id: 'log-003', type: 'Envoyé', message: 'Mise à jour des personnes envoyée.', createdAt: '2025/11/03 19:22' },
-];
+const demoLogs: PublisherLogRecord[] = [];
 
 type LogFilter = 'all' | 'sent' | 'received';
 

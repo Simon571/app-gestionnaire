@@ -635,16 +635,9 @@ export default function ReunionVieMinisterePage() {
     }
   }, [assignments]);
 
-  // Mock people data
+  // Empty fallback - real data comes from PeopleContext
   const mockPeople = React.useMemo(
-    () =>
-      [
-        { id: '1', firstName: 'Jean', lastName: 'Dupont', spiritual: { active: true, function: 'elder' }, gender: 'male', child: false },
-        { id: '2', firstName: 'Marie', lastName: 'Martin', spiritual: { active: true, function: 'servant' }, gender: 'female', child: false },
-        { id: '3', firstName: 'Pierre', lastName: 'Bernard', spiritual: { active: true, function: 'publisher' }, gender: 'male', child: false },
-        { id: '4', firstName: 'Sophie', lastName: 'Durand', spiritual: { active: true, function: 'publisher' }, gender: 'female', child: false },
-        { id: '5', firstName: 'Paul', lastName: 'Moreau', spiritual: { active: true, function: 'unbaptized' }, gender: 'male', child: true },
-      ] as Person[],
+    () => [] as Person[],
     []
   );
 

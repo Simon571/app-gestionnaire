@@ -70,33 +70,7 @@ export type PublisherDeviceRecord = {
   alert?: boolean;
 };
 
-const defaultDevices: PublisherDeviceRecord[] = [
-  { personId: '669429', deviceId: 'DEV-001', personName: 'Jacob BEYA', deviceModel: 'iPhone', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '274610', deviceId: 'DEV-002', personName: 'Bernard BUKASA', deviceModel: 'TECNO MOBILE LIMITED TECNO BE7', appVersion: '3.7.12', expirationDate: '2025/12/05', alert: false },
-  { personId: '927596', deviceId: 'DEV-003', personName: 'Nicha BUNSANGA', deviceModel: 'TECNO TECNO KI5k', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '565985', deviceId: 'DEV-004', personName: 'Papy BUNSANGA', deviceModel: 'Xiaomi 23053RN02A', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '125958', deviceId: 'DEV-005', personName: 'Augustine BWANGA', deviceModel: 'samsung SM-A065F', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '985411', deviceId: 'DEV-006', personName: 'Isaac BWANGA', deviceModel: 'iPhone', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '319114', deviceId: 'DEV-007', personName: 'Jessé BWANGA', deviceModel: 'TECNO MOBILE LIMITED TECNO KC8', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '363288', deviceId: 'DEV-008', personName: 'Marie José DIATEKILA', deviceModel: 'TECNO TECNO CL6k', appVersion: '3.7.18', expirationDate: '2025/11/11', alert: false },
-  { personId: '372026', deviceId: 'DEV-009', personName: 'Michaël DIATEKILA', deviceModel: 'samsung SM-S911B', appVersion: '3.7.18', expirationDate: '2025/12/10', alert: false },
-  { personId: '594653', deviceId: 'DEV-010', personName: 'Zacharie DIATEKILA', deviceModel: 'TECNO TECNO KJ5', appVersion: '3.7.18', expirationDate: '2025/12/10', alert: false },
-  { personId: '515553', deviceId: 'DEV-011', personName: 'Dieudonné DIMBO', deviceModel: 'TECNO MOBILE LIMITED TECNO KC8', appVersion: '3.7.15', expirationDate: '2025/12/05', alert: false },
-  { personId: '737800', deviceId: 'DEV-012', personName: 'Mireille DIMBO', deviceModel: 'ITEL itel A662L', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '785074', deviceId: 'DEV-013', personName: 'Christophe EFAMBE', deviceModel: 'samsung SM-S711B', appVersion: '3.7.18', expirationDate: '2025/12/05', alert: false },
-  { personId: '592898', deviceId: 'DEV-014', personName: 'Galina EFAMBE', deviceModel: 'samsung SM-A137F', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '908065', deviceId: 'DEV-015', personName: 'Isabelle FATUMA', deviceModel: 'iPhone', appVersion: '3.7.18', expirationDate: '2025/12/05', alert: false },
-  { personId: '267489', deviceId: 'DEV-016', personName: 'Claude ILANDA', deviceModel: 'TECNO MOBILE LIMITED TECNO KF6i', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '596493', deviceId: 'DEV-017', personName: 'Rachel ILELE', deviceModel: 'ITEL itel A662L', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '999289', deviceId: 'DEV-018', personName: 'Braslin ILUNGA', deviceModel: 'samsung SM-A065F', appVersion: '3.7.18', expirationDate: '2025/12/10', alert: false },
-  { personId: '866929', deviceId: 'DEV-019', personName: 'Godé ILUNGA', deviceModel: 'TECNO MOBILE LIMITED TECNO KG6', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '427634', deviceId: 'DEV-020', personName: 'Didier INGINDIA', deviceModel: 'TECNO TECNO KI5k', appVersion: '3.7.18', expirationDate: '2025/12/05', alert: false },
-  { personId: '508764', deviceId: 'DEV-021', personName: 'Dienne INGINDIA', deviceModel: 'samsung SM-225F', appVersion: '3.7.18', expirationDate: '2025/12/05', alert: false },
-  { personId: '145137', deviceId: 'DEV-022', personName: 'Jonathan IYOMBE', deviceModel: 'samsung SM-M986U', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '340658', deviceId: 'DEV-023', personName: 'Gaddiel KABISALA', deviceModel: 'INFINIX Infinix X678B', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-  { personId: '438772', deviceId: 'DEV-024', personName: 'Nancy KABISALA', deviceModel: 'iPhone', appVersion: '3.7.18', expirationDate: '2025/12/05', alert: false },
-  { personId: '998366', deviceId: 'DEV-025', personName: 'Michel KADIMA', deviceModel: 'TECNO TECNO CL6k', appVersion: '3.7.18', expirationDate: '2025/12/12', alert: false },
-];
+const defaultDevices: PublisherDeviceRecord[] = [];
 // When data is parsed from JSON, date strings need to be converted back to Date objects.
 const reviveDates = (person: any): Person => {
     const dateFields = ['birthDate'];
@@ -136,9 +110,28 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   const [devices, setDevices] = useState<PublisherDeviceRecord[]>([]);
   const [isSyncingUsers, setIsSyncingUsers] = useState(false);
 
+  // Version-based cache clear: when the app version changes, clear old cached data
+  // This prevents stale personal data from persisting across MSI upgrades or web deployments
+  const APP_DATA_VERSION = '2.0.0'; // Bump this to force a cache clear on next load
+
   // Load data from localStorage on initial mount
   useEffect(() => {
     try {
+      // Check if the data version has changed — if so, clear all cached data
+      const storedVersion = localStorage.getItem('appDataVersion');
+      if (storedVersion !== APP_DATA_VERSION) {
+        console.log(`App data version changed (${storedVersion} → ${APP_DATA_VERSION}). Clearing cached data.`);
+        localStorage.removeItem('people');
+        localStorage.removeItem('families');
+        localStorage.removeItem('preachingGroups');
+        localStorage.removeItem('publisherDevices');
+        localStorage.removeItem('discourseList');
+        localStorage.setItem('appDataVersion', APP_DATA_VERSION);
+        // Don't load anything — start fresh
+        setIsLoaded(true);
+        return;
+      }
+
       const storedPeople = localStorage.getItem('people');
       if (storedPeople) {
         let parsedPeople = JSON.parse(storedPeople);

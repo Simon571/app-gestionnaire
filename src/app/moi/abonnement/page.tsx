@@ -49,11 +49,11 @@ export default function AbonnementPage() {
   
   // Informations de l'assemblée (à connecter à votre backend)
   const [assemblyData] = useState({
-    assemblyId: '', // Attribué après souscription
-    assemblyName: 'Assemblée Or', // Défini par le plan
-    subscriptionStatus: 'inactive', // 'inactive' ou 'active'
-    titleNumber: '443-885-335',
-    expirationDate: '2026/01/02',
+    assemblyId: settings.assemblyId || '',
+    assemblyName: settings.congregationName || '',
+    subscriptionStatus: 'inactive',
+    titleNumber: '',
+    expirationDate: '',
   });
 
   // Récupération du nom de l'assemblée depuis les paramètres
@@ -79,15 +79,15 @@ export default function AbonnementPage() {
   const [renewalDate, setRenewalDate] = useState('3/08/2024');
   
   const assemblyInfo: AssemblyInfo = {
-    name: 'Assemblée Or',
-    country: 'Congo RDC',
+    name: settings.congregationName || '',
+    country: '',
     contact: {
-      name: 'Simon',
-      email: 'simonnzamba@yahoo.fr',
+      name: '',
+      email: '',
     },
-    titleNumber: '443-885-335',
-    expirationDate: '2026/01/02',
-    assemblyId: '443-885-335',
+    titleNumber: '',
+    expirationDate: '',
+    assemblyId: settings.assemblyId || '',
   };
 
   const pricingPlans: PricingPlan[] = [
