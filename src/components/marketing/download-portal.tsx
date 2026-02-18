@@ -2,48 +2,70 @@ import { DownloadButton } from "@/components/marketing/download-button";
 
 const COPY: Record<string, any> = {
   fr: {
-    badge: "Application desktop officielle",
+    badge: "Applications officielles",
     title: "Gestionnaire d'Assemblée",
     description:
-      "L'outil complet pour organiser les réunions, la prédication, les territoires et la communication de votre assemblée. Téléchargez la version Windows pour une expérience locale rapide et fiable.",
+      "L'outil complet pour organiser les réunions, la prédication, les territoires et la communication de votre assemblée. Disponible sur Windows (PC administrateur) et Android (proclamateurs).",
     what_you_get: "Ce que vous obtenez",
     quick_install: "Installation rapide",
     security: "Sécurité & conformité",
+    windows_title: "Windows — Administrateur",
+    windows_desc: "Pour l'ancien de l'assemblée. Gère les personnes, groupes, rapports et synchronise vers le serveur.",
+    android_title: "Android — Proclamateur",
+    android_desc: "Pour chaque proclamateur. Entre ses identifiants d'assemblée, envoie ses rapports mensuels, consulte son planning.",
+    android_steps: [
+      "Téléchargez et installez l'APK sur votre Android.",
+      "Ouvrez l'app et entrez l'ID de votre assemblée + le PIN.",
+      "Connectez-vous avec votre prénom et votre code personnel.",
+      "Vos données se synchronisent automatiquement.",
+    ],
+    android_note: "⚠️ Activer 'Sources inconnues' dans les paramètres Android avant l'installation.",
     steps: [
-      "Téléchargez le fichier .msi ou .exe depuis GitHub Releases.",
+      "Téléchargez le fichier .msi depuis ce bouton.",
       "Double-cliquez pour installer l'application.",
       "Lancez Gestionnaire d'Assemblée depuis le menu Démarrer.",
-      "Importez vos données et commencez immédiatement.",
+      "Entrez l'ID et le PIN de votre assemblée dans les paramètres.",
     ],
     note: "Besoin d'aide ? Suivez les étapes ci-dessous pour installer et démarrer.",
     footerLine1: "Dernière version publiée sur GitHub.",
-    footerLine2: "Fichiers .msi et .exe inclus.",
+    footerLine2: "Fichiers .msi inclus.",
   },
   en: {
-    badge: "Official desktop app",
+    badge: "Official apps",
     title: "Assembly Manager",
     description:
-      "All-in-one tool to organise meetings, preaching, territories and communication for your congregation. Download the Windows app for a fast, local, reliable experience.",
+      "All-in-one tool to organise meetings, preaching, territories and communication for your congregation. Available on Windows (admin) and Android (publishers).",
     what_you_get: "What you get",
     quick_install: "Quick install",
     security: "Security & compliance",
+    windows_title: "Windows — Administrator",
+    windows_desc: "For the congregation elder. Manages people, groups, reports and syncs to the server.",
+    android_title: "Android — Publisher",
+    android_desc: "For each publisher. Enter your congregation credentials, submit monthly reports, view your schedule.",
+    android_steps: [
+      "Download and install the APK on your Android device.",
+      "Open the app and enter your congregation ID + PIN.",
+      "Log in with your first name and personal code.",
+      "Your data syncs automatically.",
+    ],
+    android_note: "⚠️ Enable 'Unknown sources' in Android settings before installing.",
     steps: [
-      "Download the .msi or .exe from GitHub Releases.",
-      "Double-click the installer to install the app.",
+      "Download the .msi file from this button.",
+      "Double-click the installer.",
       "Open Assembly Manager from the Start menu.",
-      "Import your data and get started.",
+      "Enter your congregation ID and PIN in settings.",
     ],
     note: "Need help? Follow the steps below to install and start.",
     footerLine1: "Latest release available on GitHub.",
-    footerLine2: "Includes .msi and .exe installers.",
+    footerLine2: "Includes .msi installer.",
   },
 };
 
 export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
   const lang = locale.startsWith("en") ? "en" : "fr";
   const t = COPY[lang];
-  // Télécharger via API route qui redirige vers GitHub Releases
   const downloadUrl = "/api/download/windows";
+  const androidUrl = "/api/download/android";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -51,7 +73,7 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
     name: lang === "fr" ? "Gestionnaire d'Assemblée" : "Assembly Manager",
     description: t.description,
     applicationCategory: "BusinessApplication",
-    operatingSystem: "Windows",
+    operatingSystem: "Windows, Android",
     offers: {
       "@type": "Offer",
       url: downloadUrl,
@@ -70,12 +92,34 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t.title}</h1>
           <p className="text-lg text-muted-foreground">{t.description}</p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <DownloadButton locale={lang} />
-            <div className="text-sm text-muted-foreground">
-              <p>{t.footerLine1}</p>
-              <p>{t.footerLine2}</p>
+
+          {/* Windows card */}
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h2 className="mb-1 text-lg font-semibold">🖥 {t.windows_title}</h2>
+            <p className="mb-4 text-sm text-muted-foreground">{t.windows_desc}</p>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+              <DownloadButton locale={lang} />
+              <div className="text-sm text-muted-foreground">
+                <p>{t.footerLine1}</p>
+                <p>{t.footerLine2}</p>
+              </div>
             </div>
+          </div>
+
+          {/* Android card */}
+          <div className="rounded-xl border border-green-200 bg-green-50 p-5 shadow-sm">
+            <h2 className="mb-1 text-lg font-semibold">📱 {t.android_title}</h2>
+            <p className="mb-4 text-sm text-muted-foreground">{t.android_desc}</p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <a
+                href={androidUrl}
+                className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-green-700 transition-colors"
+              >
+                ⬇ Télécharger l'APK Android
+              </a>
+            </div>
+            <p className="mt-3 text-xs text-amber-700">{t.android_note}</p>
+            <p className="mt-1 text-xs text-muted-foreground">🚀 Bientôt disponible sur Google Play</p>
           </div>
 
           {/* Installer info for non-technical users (enhanced) */}
@@ -149,13 +193,28 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
 
       <section className="grid gap-6 rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <h2 className="text-2xl font-semibold">{t.quick_install}</h2>
-        <ol className="grid gap-4 text-sm text-muted-foreground sm:grid-cols-2">
-          {t.steps.map((s: string, i: number) => (
-            <li key={i} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              {i + 1}. {s}
-            </li>
-          ))}
-        </ol>
+        <div className="grid gap-8 md:grid-cols-2">
+          <div>
+            <h3 className="mb-3 text-base font-semibold">🖥 {t.windows_title}</h3>
+            <ol className="grid gap-3 text-sm text-muted-foreground">
+              {t.steps.map((s: string, i: number) => (
+                <li key={i} className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                  {i + 1}. {s}
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <h3 className="mb-3 text-base font-semibold">📱 {t.android_title}</h3>
+            <ol className="grid gap-3 text-sm text-muted-foreground">
+              {t.android_steps.map((s: string, i: number) => (
+                <li key={i} className="rounded-2xl border border-green-100 bg-green-50 p-4">
+                  {i + 1}. {s}
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-sky-50 to-white p-8 shadow-sm">
