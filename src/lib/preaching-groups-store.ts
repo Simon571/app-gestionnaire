@@ -1,45 +1,26 @@
-import fs from 'fs';
 import path from 'path';
+import { blobRead, blobWrite } from './blob-store';
 
 export interface PreachingGroup {
   id: string;
   name: string;
 }
 
-const isVercel = process.env.VERCEL === '1';
-const DEPLOY_FILE = path.join(process.cwd(), 'data', 'preaching-groups.json');
-const TMP_FILE = '/tmp/preaching-groups.json';
-const WRITE_FILE = isVercel ? TMP_FILE : DEPLOY_FILE;
+const BLOB_PATH = 'data/preaching-groups.json';
+const LOCAL_PATH = path.join(process.cwd(), 'data', 'preaching-groups.json');
 
 export async function readPreachingGroups(): Promise<PreachingGroup[]> {
-  // Sur Vercel : lire /tmp en priorité (données écrites à chaud)
-  if (isVercel) {
-    try {
-      if (fs.existsSync(TMP_FILE)) {
-        const data = fs.readFileSync(TMP_FILE, 'utf-8');
-        const parsed = JSON.parse(data);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch { /* pas encore dans /tmp */ }
-  }
-  // Fallback : fichier du déploiement
   try {
-    if (!fs.existsSync(DEPLOY_FILE)) return [];
-    const data = fs.readFileSync(DEPLOY_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading preaching groups:', error);
+    const content = await blobRead(BLOB_PATH, LOCAL_PATH);
+    if (!content) return [];
+    return JSON.parse(content) as PreachingGroup[];
+  } catch {
     return [];
   }
 }
 
 export async function writePreachingGroups(groups: PreachingGroup[]): Promise<void> {
-  try {
-    fs.writeFileSync(WRITE_FILE, JSON.stringify(groups, null, 2));
-  } catch (error) {
-    console.error('Error writing preaching groups:', error);
-    throw error;
-  }
+  await blobWrite(BLOB_PATH, LOCAL_PATH, JSON.stringify(groups, null, 2));
 }
 
 export async function addPreachingGroup(group: PreachingGroup): Promise<void> {
