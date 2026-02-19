@@ -108,7 +108,16 @@ class StorageService {
     // 1) Essayer l'API distante (liste à jour avec PIN du web)
     try {
       final apiBase = await getEffectiveApiBase();
-      final uri = Uri.parse('$apiBase/api/publisher-app/users/export');
+      // Passer l'assemblyId pour n'obtenir que les utilisateurs de cette assemblée
+      String assemblyId = '';
+      try {
+        final assembly = await getAssembly();
+        assemblyId = assembly?.id ?? '';
+      } catch (_) {}
+      final baseUri = '$apiBase/api/publisher-app/users/export';
+      final uri = assemblyId.isNotEmpty
+          ? Uri.parse('$baseUri?assemblyId=${Uri.encodeComponent(assemblyId)}')
+          : Uri.parse(baseUri);
       final resp = await http.get(uri).timeout(const Duration(seconds: 8));
       if (resp.statusCode == 200) {
         final decoded = jsonDecode(utf8.decode(resp.bodyBytes));

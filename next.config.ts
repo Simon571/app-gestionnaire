@@ -15,6 +15,43 @@ const nextConfig: NextConfig = {
     '/api/**': ['./data/**'],
   },
 
+  // CORS pour l'app MSI (Tauri) qui appelle Vercel depuis tauri://localhost
+  async headers() {
+    return [
+      {
+        source: '/api/publisher-app/users/export',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, OPTIONS' },
+        ],
+      },
+      {
+        source: '/api/publisher-app/users/web-sync',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+        ],
+      },
+      {
+        source: '/api/families',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+        ],
+      },
+      {
+        source: '/api/preaching-groups',
+        headers: [
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
+        ],
+      },
+    ];
+  },
+
   images: {
     unoptimized: true,
   },

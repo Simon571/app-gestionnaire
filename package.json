@@ -59,6 +59,7 @@
     "@radix-ui/react-tooltip": "^1.1.8",
     "@supabase/supabase-js": "^2.80.0",
     "@tauri-apps/api": "^2.9.0",
+    "@vercel/blob": "^2.2.0",
     "better-sqlite3": "^12.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

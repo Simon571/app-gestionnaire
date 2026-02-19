@@ -4,13 +4,10 @@ Abel MBOMBO
 Abigail TSHITENGE
 Adam MIGONI
 Aimerance ILANDA
-Albert MOKUBA
-Alberte MOKUBA
 André TSHITUNGU
 Anna MUKAYI
 Anya DIATEKILA
 Antoine LUYEDISA
-Aphia LUBY
 Armand MURHIMALIKA
 Asher NTUMBA
 Augustine BWANGA
@@ -80,8 +77,6 @@ Godelieve LUTUMBA
 Grace WANKANA
 Guershôn EFAMBE
 Guillaume KAMBA
-Gypsie LUBY
-Happy Dais
 Hervé MAKUMPE
 Hopyah NTUMBA
 Hortance TSHIBOLA
@@ -154,6 +149,7 @@ Pearce KAKELA
 Pépé LUPUKU
 Plameji MBOMBO
 Plick MAKUMPE
+Bertine MAKUMPE
 Précieuse WEMBI
 Precius OKOKO
 Prido EKEMBELE
@@ -168,7 +164,6 @@ Roxy MBOMA
 Russel KINAVANA
 Seraphin MBUMBA
 Servey KINAVANA
-Shadrack SHITA
 Silvain WETUNGANYI
 Simon NZAMBA
 Simonrent Sage NZAMBA
