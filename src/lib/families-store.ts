@@ -6,27 +6,26 @@ export interface Family {
   name: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const FAMILIES_FILE = path.join(DATA_DIR, 'families.json');
-
-// Ensure data directory exists (silently fail on read-only filesystems like Vercel)
-function ensureDataDir() {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-  } catch {
-    // Read-only filesystem (Vercel serverless) – directory may already exist in bundle
-  }
-}
+const isVercel = process.env.VERCEL === '1';
+const DEPLOY_FILE = path.join(process.cwd(), 'data', 'families.json');
+const TMP_FILE = '/tmp/families.json';
+const WRITE_FILE = isVercel ? TMP_FILE : DEPLOY_FILE;
 
 export async function readFamilies(): Promise<Family[]> {
-  ensureDataDir();
+  // Sur Vercel : lire /tmp en priorité (données écrites à chaud)
+  if (isVercel) {
+    try {
+      if (fs.existsSync(TMP_FILE)) {
+        const data = fs.readFileSync(TMP_FILE, 'utf-8');
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch { /* pas encore dans /tmp */ }
+  }
+  // Fallback : fichier du déploiement
   try {
-    if (!fs.existsSync(FAMILIES_FILE)) {
-      return [];
-    }
-    const data = fs.readFileSync(FAMILIES_FILE, 'utf-8');
+    if (!fs.existsSync(DEPLOY_FILE)) return [];
+    const data = fs.readFileSync(DEPLOY_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading families:', error);
@@ -35,8 +34,12 @@ export async function readFamilies(): Promise<Family[]> {
 }
 
 export async function writeFamilies(families: Family[]): Promise<void> {
-  ensureDataDir();
-  fs.writeFileSync(FAMILIES_FILE, JSON.stringify(families, null, 2));
+  try {
+    fs.writeFileSync(WRITE_FILE, JSON.stringify(families, null, 2));
+  } catch (error) {
+    console.error('Error writing families:', error);
+    throw error;
+  }
 }
 
 export async function addFamily(family: Family): Promise<void> {

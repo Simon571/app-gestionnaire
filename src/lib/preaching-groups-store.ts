@@ -6,27 +6,26 @@ export interface PreachingGroup {
   name: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const GROUPS_FILE = path.join(DATA_DIR, 'preaching-groups.json');
-
-// Ensure data directory exists (silently fail on read-only filesystems like Vercel)
-function ensureDataDir() {
-  try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-  } catch {
-    // Read-only filesystem (Vercel serverless) – directory may already exist in bundle
-  }
-}
+const isVercel = process.env.VERCEL === '1';
+const DEPLOY_FILE = path.join(process.cwd(), 'data', 'preaching-groups.json');
+const TMP_FILE = '/tmp/preaching-groups.json';
+const WRITE_FILE = isVercel ? TMP_FILE : DEPLOY_FILE;
 
 export async function readPreachingGroups(): Promise<PreachingGroup[]> {
-  ensureDataDir();
+  // Sur Vercel : lire /tmp en priorité (données écrites à chaud)
+  if (isVercel) {
+    try {
+      if (fs.existsSync(TMP_FILE)) {
+        const data = fs.readFileSync(TMP_FILE, 'utf-8');
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch { /* pas encore dans /tmp */ }
+  }
+  // Fallback : fichier du déploiement
   try {
-    if (!fs.existsSync(GROUPS_FILE)) {
-      return [];
-    }
-    const data = fs.readFileSync(GROUPS_FILE, 'utf-8');
+    if (!fs.existsSync(DEPLOY_FILE)) return [];
+    const data = fs.readFileSync(DEPLOY_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     console.error('Error reading preaching groups:', error);
@@ -35,8 +34,12 @@ export async function readPreachingGroups(): Promise<PreachingGroup[]> {
 }
 
 export async function writePreachingGroups(groups: PreachingGroup[]): Promise<void> {
-  ensureDataDir();
-  fs.writeFileSync(GROUPS_FILE, JSON.stringify(groups, null, 2));
+  try {
+    fs.writeFileSync(WRITE_FILE, JSON.stringify(groups, null, 2));
+  } catch (error) {
+    console.error('Error writing preaching groups:', error);
+    throw error;
+  }
 }
 
 export async function addPreachingGroup(group: PreachingGroup): Promise<void> {
