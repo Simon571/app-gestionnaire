@@ -7,6 +7,7 @@ Write-Host ""
 # Étape 1: Nettoyage
 Write-Host "📦 Étape 1/5: Nettoyage des fichiers de build précédents..." -ForegroundColor Yellow
 Remove-Item -Path "out" -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path ".next" -Recurse -ErrorAction SilentlyContinue
 Remove-Item -Path "src-tauri\target\release" -Recurse -ErrorAction SilentlyContinue
 
 # Étape 2: Installation des dépendances
@@ -16,43 +17,26 @@ npm install
 # Étape 3: Build Next.js en mode export
 Write-Host "⚙️  Étape 3/5: Build de l'interface (Next.js export)..." -ForegroundColor Yellow
 
-# Patcher les routes API: remplacer force-dynamic par force-static pour l'export statique
-Write-Host "   🔧 Patch des routes API pour l'export statique..." -ForegroundColor Gray
-$apiRoutesToPatch = @(
-    "src\app\api\families\route.ts",
-    "src\app\api\preaching-groups\route.ts",
-    "src\app\api\publisher-app\users\export\route.ts"
-)
-foreach ($route in $apiRoutesToPatch) {
-    $fullPath = Join-Path $PSScriptRoot $route
-    if (Test-Path $fullPath) {
-        (Get-Content $fullPath -Raw) -replace "export const dynamic = 'force-dynamic'", "export const dynamic = 'force-static'" | Set-Content $fullPath -NoNewline
-    }
-}
+# Patch temporaire: web-sync doit être force-static pour le build statique Tauri
+# (sur Vercel, il est force-dynamic pour lire le body POST)
+$webSyncPath = "src\app\api\publisher-app\users\web-sync\route.ts"
+$webSyncOriginal = Get-Content $webSyncPath -Raw
+$webSyncPatched = $webSyncOriginal -replace "export const dynamic = 'force-dynamic'", "export const dynamic = 'force-static'"
+Set-Content $webSyncPath $webSyncPatched
+Write-Host "  → web-sync patché (force-static pour Tauri)" -ForegroundColor Gray
 
 $env:NEXT_CONFIG = "next.config.tauri.ts"
 $env:NEXT_PUBLIC_PORTAL_MODE = "0"
 npm run build:tauri
+$buildResult = $LASTEXITCODE
 
-# Restaurer les routes API originales (force-dynamic pour Vercel)
-Write-Host "   🔧 Restauration des routes API..." -ForegroundColor Gray
-foreach ($route in $apiRoutesToPatch) {
-    $fullPath = Join-Path $PSScriptRoot $route
-    if (Test-Path $fullPath) {
-        (Get-Content $fullPath -Raw) -replace "export const dynamic = 'force-static'", "export const dynamic = 'force-dynamic'" | Set-Content $fullPath -NoNewline
-    }
-}
+# Restaurer web-sync à force-dynamic (état Vercel)
+Set-Content $webSyncPath $webSyncOriginal
+Write-Host "  → web-sync restauré (force-dynamic pour Vercel)" -ForegroundColor Gray
 
-# Étape 4: Vérification du build Next.js
-if ($LASTEXITCODE -ne 0) {
+# Vérification du build Next.js
+if ($buildResult -ne 0) {
     Write-Host "❌ Erreur lors du build Next.js" -ForegroundColor Red
-    # Restaurer les routes même en cas d'erreur
-    foreach ($route in $apiRoutesToPatch) {
-        $fullPath = Join-Path $PSScriptRoot $route
-        if (Test-Path $fullPath) {
-            (Get-Content $fullPath -Raw) -replace "export const dynamic = 'force-static'", "export const dynamic = 'force-dynamic'" | Set-Content $fullPath -NoNewline
-        }
-    }
     exit 1
 }
 

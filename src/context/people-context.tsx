@@ -16,6 +16,7 @@ interface PreachingGroup {
 
 import { discourseList as initialDiscourseList, type Discourse } from '@/lib/discours-data';
 import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+import { getApiBase } from '@/lib/api-base';
 
 interface PeopleContextType {
   people: Person[];
@@ -187,8 +188,9 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     if (!isLoaded) return;
     const loadFromApi = async () => {
       try {
+        const apiBase = getApiBase();
         // Load people
-        const usersResponse = await fetch('/api/publisher-app/users/export');
+        const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export`);
         if (usersResponse.ok) {
           const usersData = await usersResponse.json();
           if (Array.isArray(usersData.users) && usersData.users.length > 0) {
@@ -197,7 +199,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         
         // Load families from API
-        const familiesResponse = await fetch('/api/families');
+        const familiesResponse = await fetch(`${apiBase}/api/families`);
         if (familiesResponse.ok) {
           const familiesData = await familiesResponse.json();
           if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
@@ -206,7 +208,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         
         // Load preaching groups from API
-        const groupsResponse = await fetch('/api/preaching-groups');
+        const groupsResponse = await fetch(`${apiBase}/api/preaching-groups`);
         if (groupsResponse.ok) {
           const groupsData = await groupsResponse.json();
           if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
@@ -235,44 +237,48 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [people, families, preachingGroups, discourseList, devices, isLoaded]);
 
-  // DÉSACTIVÉ: Synchroniser la liste vers l'API (pour Flutter) dès que les personnes changent
-  // ATTENTION: Ceci écrasait publisher-users.json avec les données du localStorage
-  // qui n'étaient pas complètes, causant la perte de données
-  /*
+  // Synchroniser la liste vers publisher-users.json (lu par Flutter) dès que les personnes changent.
+  // On utilise un délai de 2 secondes pour ne pas surcharger l'API à chaque frappe clavier.
   useEffect(() => {
-    if (!isLoaded) return;
-    const sync = async () => {
+    if (!isLoaded || people.length === 0) return;
+    const timer = setTimeout(async () => {
       try {
         setIsSyncingUsers(true);
-        // Utiliser auto-sync pour créer automatiquement les jobs desktop_to_mobile
-        const response = await fetch('/api/publisher-app/auto-sync', {
+        const apiBase = getApiBase();
+        // Lire l'assemblyId depuis les paramètres de l'application (localStorage)
+        let assemblyId = '';
+        try {
+          const raw = localStorage.getItem('appSettings');
+          if (raw) assemblyId = (JSON.parse(raw) as Record<string, unknown>)?.['assemblyId'] as string ?? '';
+        } catch (_) {}
+        if (!assemblyId) {
+          // Aucun assemblyId configuré → utiliser 'DEFAULT' comme identifiant d'assemblée
+          assemblyId = 'DEFAULT';
+        }
+        const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ users: people }),
+          body: JSON.stringify({ users: people, assemblyId }),
         });
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Auto-sync success:', data.message);
-        } else {
-          console.error('Auto-sync failed:', response.status);
+        if (!response.ok) {
+          console.error('web-sync failed:', response.status);
         }
       } catch (error) {
         console.error('Sync users to Flutter failed', error);
       } finally {
         setIsSyncingUsers(false);
       }
-    };
-    sync();
+    }, 2000);
+    return () => clearTimeout(timer);
   }, [people, isLoaded]);
-  */
 
   // Synchroniser les familles vers l'API dès qu'elles changent
   useEffect(() => {
     if (!isLoaded || families.length === 0) return;
     const syncFamilies = async () => {
       try {
-        await fetch('/api/families', {
+        const apiBase = getApiBase();
+        await fetch(`${apiBase}/api/families`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ families }),
@@ -289,7 +295,8 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     if (!isLoaded || preachingGroups.length === 0) return;
     const syncGroups = async () => {
       try {
-        await fetch('/api/preaching-groups', {
+        const apiBase = getApiBase();
+        await fetch(`${apiBase}/api/preaching-groups`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ groups: preachingGroups }),
@@ -332,7 +339,8 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   // Fonction pour synchroniser l'activité vers publisher-preaching.json
   const syncActivityToPreaching = async (userId: string, activity: Person['activity']) => {
     try {
-      await fetch('/api/sync-activity', {
+      const apiBase = getApiBase();
+      await fetch(`${apiBase}/api/sync-activity`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, activity }),
@@ -349,7 +357,8 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
       const hasEmergencyContacts = person.emergency?.contacts && person.emergency.contacts.length > 0;
       
       if (hasActivity || hasEmergencyContacts) {
-        await fetch('/api/publisher-app/create-sync-job', {
+        const apiBase = getApiBase();
+        await fetch(`${apiBase}/api/publisher-app/create-sync-job`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ person }),
