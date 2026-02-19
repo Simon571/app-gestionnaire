@@ -36,37 +36,29 @@ foreach ($route in $routesToPatch) {
 
 $env:NEXT_CONFIG = "next.config.tauri.ts"
 $env:NEXT_PUBLIC_PORTAL_MODE = "0"
-npm run build:tauri
+
+# Étape 5: Build Tauri (beforeBuildCommand relance npm run build:tauri - routes encore patchées)
+Write-Host "🔨 Étape 5/5: Build de l'application Windows..." -ForegroundColor Yellow
+npx tauri build --bundles msi
 $buildResult = $LASTEXITCODE
 
-# Restaurer les routes à force-dynamic (état Vercel)
+# Restaurer les routes à force-dynamic (état Vercel) — après le build complet
 foreach ($route in $routesToPatch) {
   Set-Content $route $originalContents[$route]
   Write-Host "  → Restauré: $route" -ForegroundColor Gray
 }
 Write-Host "  → Routes restaurées (force-dynamic pour Vercel)" -ForegroundColor Gray
 
-# Vérification du build Next.js
 if ($buildResult -ne 0) {
-    Write-Host "❌ Erreur lors du build Next.js" -ForegroundColor Red
-    exit 1
-}
-
-# Étape 5: Build Tauri
-Write-Host "🔨 Étape 5/5: Build de l'application Windows..." -ForegroundColor Yellow
-npx tauri build --bundles msi
-
-if ($LASTEXITCODE -eq 0) {
-    Write-Host ""
-    Write-Host "✅ Build terminé avec succès!" -ForegroundColor Green
-    Write-Host ""
-    Write-Host "📂 Fichiers d'installation créés dans:" -ForegroundColor Cyan
-    Write-Host "   src-tauri\target\release\bundle\" -ForegroundColor White
-    Write-Host ""
-    Write-Host "Formats disponibles:" -ForegroundColor Cyan
-    Write-Host "   • .msi (Windows Installer)" -ForegroundColor White
-} else {
-    Write-Host ""
     Write-Host "❌ Erreur lors du build Tauri" -ForegroundColor Red
     exit 1
 }
+
+Write-Host ""
+Write-Host "✅ Build terminé avec succès!" -ForegroundColor Green
+Write-Host ""
+Write-Host "📂 Fichiers d'installation créés dans:" -ForegroundColor Cyan
+Write-Host "   src-tauri\target\release\bundle\" -ForegroundColor White
+Write-Host ""
+Write-Host "Formats disponibles:" -ForegroundColor Cyan
+Write-Host "   • .msi (Windows Installer)" -ForegroundColor White
