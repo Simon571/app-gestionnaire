@@ -2,6 +2,9 @@
 
 import { useState } from 'react';
 
+// URL absolue Vercel — fonctionne depuis le MSI (static export) et le navigateur
+const VERCEL_URL = 'https://app-gestionnaire.vercel.app';
+
 export default function SyncNow() {
   const [status, setStatus] = useState<string>('');
   const [done, setDone] = useState(false);
@@ -10,11 +13,11 @@ export default function SyncNow() {
     setStatus('Lecture du localStorage...');
     try {
       const raw = localStorage.getItem('people');
-      if (!raw) { setStatus('❌ Aucune donnée "people" dans ce navigateur.'); return; }
+      if (!raw) { setStatus('❌ Aucune donnée "people" dans ce navigateur/application.'); return; }
 
       const people = JSON.parse(raw);
       if (!Array.isArray(people) || people.length === 0) {
-        setStatus('❌ La liste est vide dans ce navigateur.'); return;
+        setStatus('❌ La liste est vide dans ce navigateur/application.'); return;
       }
 
       const rawSettings = localStorage.getItem('appSettings');
@@ -25,7 +28,7 @@ export default function SyncNow() {
 
       setStatus(`📤 Envoi de ${people.length} personnes (assemblyId=${assemblyId})...`);
 
-      const resp = await fetch('/api/publisher-app/users/web-sync', {
+      const resp = await fetch(`${VERCEL_URL}/api/publisher-app/users/web-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ users: people, assemblyId }),
