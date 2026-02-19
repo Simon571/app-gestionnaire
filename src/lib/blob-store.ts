@@ -39,6 +39,7 @@ export async function blobWrite(blobPath: string, localPath: string, content: st
     await put(blobPath, content, {
       access: 'public',
       addRandomSuffix: false,
+      allowOverwrite: true,
       contentType: 'application/json',
     });
   } else {
