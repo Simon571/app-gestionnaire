@@ -66,45 +66,6 @@ const readSubmissionsSafe = async (): Promise<MonthSubmission[]> => {
     return [];
   }
 };
-  // Sur Vercel : essayer /tmp d'abord
-  if (isVercel) {
-    try {
-      const raw = await fs.readFile(STORE_PATH, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed as PreachingReportRecord[];
-      if (parsed?.reports?.length > 0) return parsed.reports as PreachingReportRecord[];
-    } catch { /* pas dans /tmp */ }
-  }
-  // Fallback : fichier du déploiement
-  try {
-    const raw = await fs.readFile(STORE_DEPLOY, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed as PreachingReportRecord[];
-    if (parsed && Array.isArray(parsed.reports)) return parsed.reports as PreachingReportRecord[];
-    return [];
-  } catch {
-    return [];
-  }
-};
-
-const readSubmissionsSafe = async (): Promise<MonthSubmission[]> => {
-  if (isVercel) {
-    try {
-      const raw = await fs.readFile(SUBMISSION_PATH, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed as MonthSubmission[];
-    } catch { /* pas dans /tmp */ }
-  }
-  try {
-    const raw = await fs.readFile(SUBMISSION_DEPLOY, 'utf8');
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed as MonthSubmission[];
-    if (parsed && Array.isArray(parsed.submissions)) return parsed.submissions as MonthSubmission[];
-    return [];
-  } catch {
-    return [];
-  }
-};
 
 export async function listPreachingReports(): Promise<PreachingReportRecord[]> {
   return readFileSafe();
