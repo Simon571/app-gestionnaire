@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true, count: ownMerged.length, assemblyId });
   } catch (error) {
     console.error('web-sync POST error', error);
-    return NextResponse.json({ error: 'Erreur interne' }, { status: 500 });
+    const msg = error instanceof Error ? `${error.message}\n${error.stack}` : String(error);
+    return NextResponse.json({ error: 'Erreur interne', detail: msg }, { status: 500 });
   }
 }
