@@ -29,12 +29,16 @@ export async function GET(request: NextRequest) {
 
   const allUsers = await readPublisherUsers();
 
-  // Si assemblyId fourni : ne retourner que les utilisateurs de cette assemblée
-  // Si absent (rétrocompat) : retourner tous
+  // Filtrage par assemblyId :
+  // - Si pas d'assemblyId → retourner tous les utilisateurs (rétrocompat)
+  // - Si assemblyId fourni → retourner les utilisateurs de cette assemblée
+  //   + les utilisateurs tagués "DEFAULT" (synchro web sans assemblée configurée)
+  //   + les utilisateurs sans tag (anciens enregistrements)
   const users = assemblyId
-    ? allUsers.filter((u) =>
-        !u['_assemblyId'] || (u['_assemblyId'] as string) === assemblyId
-      )
+    ? allUsers.filter((u) => {
+        const tag = u['_assemblyId'] as string | undefined;
+        return !tag || tag === assemblyId || tag === 'DEFAULT';
+      })
     : allUsers;
 
   const reports = await listPreachingReports();
