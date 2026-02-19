@@ -1,3 +1,5 @@
+// force-dynamic: Vercel doit lire publisher-users.json en temps réel (pas de cache).
+// Pour le build Tauri (output: 'export'), build-tauri.ps1 patche en 'force-static'.
 export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
@@ -20,9 +22,21 @@ const isPrivateLanHost = (host: string) => {
 };
 
 // GET: retourne la liste des utilisateurs avec leurs rapports d'activité fusionnés
+// ?assemblyId=KINYOL-WGHK  → filtre uniquement les utilisateurs de cette assemblée
 export async function GET(request: NextRequest) {
-  // Optionnellement on pourrait verrouiller par device auth; pour le moment on laisse ouvert.
-  const users = await readPublisherUsers();
+  const { searchParams } = new URL(request.url);
+  const assemblyId = searchParams.get('assemblyId')?.trim() ?? '';
+
+  const allUsers = await readPublisherUsers();
+
+  // Si assemblyId fourni : ne retourner que les utilisateurs de cette assemblée
+  // Si absent (rétrocompat) : retourner tous
+  const users = assemblyId
+    ? allUsers.filter((u) =>
+        !u['_assemblyId'] || (u['_assemblyId'] as string) === assemblyId
+      )
+    : allUsers;
+
   const reports = await listPreachingReports();
   
   // Fusionner les rapports d'activité avec chaque utilisateur

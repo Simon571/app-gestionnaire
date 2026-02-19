@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+// force-dynamic: Vercel lit families.json en temps réel.
+// Pour le build Tauri, build-tauri.ps1 patche en 'force-static'.
 export const dynamic = 'force-dynamic';
 import { readFamilies, writeFamilies, addFamily, deleteFamily, type Family } from '@/lib/families-store';
 

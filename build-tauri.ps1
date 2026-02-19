@@ -17,22 +17,34 @@ npm install
 # Étape 3: Build Next.js en mode export
 Write-Host "⚙️  Étape 3/5: Build de l'interface (Next.js export)..." -ForegroundColor Yellow
 
-# Patch temporaire: web-sync doit être force-static pour le build statique Tauri
-# (sur Vercel, il est force-dynamic pour lire le body POST)
-$webSyncPath = "src\app\api\publisher-app\users\web-sync\route.ts"
-$webSyncOriginal = Get-Content $webSyncPath -Raw
-$webSyncPatched = $webSyncOriginal -replace "export const dynamic = 'force-dynamic'", "export const dynamic = 'force-static'"
-Set-Content $webSyncPath $webSyncPatched
-Write-Host "  → web-sync patché (force-static pour Tauri)" -ForegroundColor Gray
+# Patch temporaire: routes force-dynamic → force-static pour le build statique Tauri
+# (sur Vercel, elles sont force-dynamic pour lire les fichiers JSON en temps réel)
+$routesToPatch = @(
+  "src\app\api\publisher-app\users\web-sync\route.ts",
+  "src\app\api\publisher-app\users\export\route.ts",
+  "src\app\api\families\route.ts",
+  "src\app\api\preaching-groups\route.ts"
+)
+$originalContents = @{}
+foreach ($route in $routesToPatch) {
+  $original = Get-Content $route -Raw
+  $originalContents[$route] = $original
+  $patched = $original -replace "export const dynamic = 'force-dynamic'", "export const dynamic = 'force-static'"
+  Set-Content $route $patched
+  Write-Host "  → Paché: $route" -ForegroundColor Gray
+}
 
 $env:NEXT_CONFIG = "next.config.tauri.ts"
 $env:NEXT_PUBLIC_PORTAL_MODE = "0"
 npm run build:tauri
 $buildResult = $LASTEXITCODE
 
-# Restaurer web-sync à force-dynamic (état Vercel)
-Set-Content $webSyncPath $webSyncOriginal
-Write-Host "  → web-sync restauré (force-dynamic pour Vercel)" -ForegroundColor Gray
+# Restaurer les routes à force-dynamic (état Vercel)
+foreach ($route in $routesToPatch) {
+  Set-Content $route $originalContents[$route]
+  Write-Host "  → Restauré: $route" -ForegroundColor Gray
+}
+Write-Host "  → Routes restaurées (force-dynamic pour Vercel)" -ForegroundColor Gray
 
 # Vérification du build Next.js
 if ($buildResult -ne 0) {

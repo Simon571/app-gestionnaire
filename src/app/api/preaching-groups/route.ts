@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+// force-dynamic: Vercel lit preaching-groups.json en temps réel.
+// Pour le build Tauri, build-tauri.ps1 patche en 'force-static'.
 export const dynamic = 'force-dynamic';
 import { readPreachingGroups, writePreachingGroups, addPreachingGroup, deletePreachingGroup, type PreachingGroup } from '@/lib/preaching-groups-store';
 
