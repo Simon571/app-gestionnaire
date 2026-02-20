@@ -452,7 +452,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     // Mettre à jour aussi le groupName dans les personnes assignées à ce groupe
     setPeople(prevPeople => 
       prevPeople.map(p => {
-        if (p.spiritual.group === groupId) {
+        if (p.spiritual?.group === groupId) {
           return { ...p, spiritual: { ...p.spiritual, groupName: newName } };
         }
         return p;
@@ -464,7 +464,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     // Also unassign people from this group
     setPeople(prevPeople => 
         prevPeople.map(p => {
-            if (p.spiritual.group === groupId) {
+            if (p.spiritual?.group === groupId) {
                 return { ...p, spiritual: { ...p.spiritual, group: null } };
             }
             return p;

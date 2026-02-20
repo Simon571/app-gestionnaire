@@ -1376,11 +1376,11 @@ const PeopleList = ({ people, selectedPerson, onSelectPerson }: PeopleListProps)
                 case 'active_unappointed_brothers': return p.gender === 'male' && spiritual.active && !spiritual.function;
                 case 'brothers': return p.gender === 'male';
                 case 'sisters': return p.gender === 'female';
-                case 'all_pioneers': return !!spiritual.pioneer.status;
-                case 'regular_pioneers': return spiritual.pioneer.status === 'permanent';
-                case 'auxiliary_pioneers': return spiritual.pioneer.status === 'aux-permanent';
-                case 'special_pioneers': return spiritual.pioneer.status === 'special';
-                case 'missionaries': return spiritual.pioneer.status === 'missionary';
+                case 'all_pioneers': return !!spiritual.pioneer?.status;
+                case 'regular_pioneers': return spiritual.pioneer?.status === 'permanent';
+                case 'auxiliary_pioneers': return spiritual.pioneer?.status === 'aux-permanent';
+                case 'special_pioneers': return spiritual.pioneer?.status === 'special';
+                case 'missionaries': return spiritual.pioneer?.status === 'missionary';
                 case 'group_overseers': return spiritual.roleInGroup === 'overseer';
                 case 'group_assistants': return spiritual.roleInGroup === 'assistant';
                 case 'family_heads': return p.isHeadOfFamily;
@@ -1409,7 +1409,7 @@ const PeopleList = ({ people, selectedPerson, onSelectPerson }: PeopleListProps)
         
         const groupMatch = () => {
             if (selectedGroup === 'all-groups') return true;
-            return p.spiritual.group === selectedGroup;
+            return p.spiritual?.group === selectedGroup;
         };
 
         return roleMatch() && mainFilterMatch() && groupMatch();

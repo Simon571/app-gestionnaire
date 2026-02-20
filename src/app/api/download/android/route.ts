@@ -9,7 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(_request: NextRequest) {
   const downloadUrl = (
     process.env.NEXT_PUBLIC_ANDROID_DOWNLOAD_URL ||
-    'https://github.com/Simon571/app-gestionnaire/releases/latest/download/app-release.apk'
+    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/app-release.apk'
   ).trim().replace(/^\uFEFF/, '');
 
   return NextResponse.redirect(new URL(downloadUrl), { status: 307 });
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest) {
 export async function HEAD(_request: NextRequest) {
   const downloadUrl = (
     process.env.NEXT_PUBLIC_ANDROID_DOWNLOAD_URL ||
-    'https://github.com/Simon571/app-gestionnaire/releases/latest/download/app-release.apk'
+    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/app-release.apk'
   ).trim().replace(/^\uFEFF/, '');
 
   try {

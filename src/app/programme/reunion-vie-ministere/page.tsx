@@ -652,14 +652,14 @@ export default function ReunionVieMinisterePage() {
     if (isLoaded && people.length > 0) {
       return people.filter((p: any) => p.spiritual?.function === 'elder');
     }
-    return mockPeople.filter(p => p.spiritual.function === 'elder');
+    return mockPeople.filter(p => p.spiritual?.function === 'elder');
   }, [people, isLoaded, mockPeople]);
 
   const eldersAndServants = React.useMemo(() => {
     if (isLoaded && people.length > 0) {
       return people.filter((p: any) => p.spiritual?.function === 'elder' || p.spiritual?.function === 'servant');
     }
-    return mockPeople.filter(p => p.spiritual.function === 'elder' || p.spiritual.function === 'servant');
+    return mockPeople.filter(p => p.spiritual?.function === 'elder' || p.spiritual?.function === 'servant');
   }, [people, isLoaded, mockPeople]);
 
   const brothersAndChildren = React.useMemo(() => {

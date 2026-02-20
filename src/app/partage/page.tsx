@@ -63,7 +63,7 @@ export default function SharingPage() {
   const { settings, updateSetting } = useAppSettings();
 
   const { people } = usePeople();
-  const admins = people.filter(p => p.spiritual.function === 'elder');
+  const admins = people.filter(p => p.spiritual?.function === 'elder');
 
   const copyToClipboard = (value: string, field: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {

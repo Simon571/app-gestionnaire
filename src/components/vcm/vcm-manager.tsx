@@ -237,7 +237,7 @@ export function VcmManager({ selectedWeek, people, onDataLoaded }: VcmManagerPro
               <SelectContent>
                 <SelectItem value="unassigned">Non assigné</SelectItem>
                 {people
-                  .filter(p => p.spiritual.active)
+                  .filter(p => p.spiritual?.active)
                   .map(person => (
                     <SelectItem key={person.id} value={person.id}>
                       {person.firstName} {person.lastName}

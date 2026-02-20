@@ -75,13 +75,13 @@ const PublisherIcon = ({ gender }: { gender: 'male' | 'female' | null }) => {
 }
 
 const getRoleAbbreviation = (person: Person) => {
-    if (person.spiritual.pioneer.status === 'permanent') return 'PP';
-    if (person.spiritual.pioneer.status === 'special') return 'PS';
-    if (person.spiritual.pioneer.status === 'missionary') return 'M';
-    if (person.spiritual.pioneer.status === 'aux-permanent') return 'PA';
-    if (person.spiritual.function === 'elder') return 'A';
-    if (person.spiritual.function === 'servant') return 'AM';
-    if (person.spiritual.function === 'publisher') return 'P';
+    if (person.spiritual?.pioneer?.status === 'permanent') return 'PP';
+    if (person.spiritual?.pioneer?.status === 'special') return 'PS';
+    if (person.spiritual?.pioneer?.status === 'missionary') return 'M';
+    if (person.spiritual?.pioneer?.status === 'aux-permanent') return 'PA';
+    if (person.spiritual?.function === 'elder') return 'A';
+    if (person.spiritual?.function === 'servant') return 'AM';
+    if (person.spiritual?.function === 'publisher') return 'P';
     return '';
 }
 
@@ -157,7 +157,7 @@ const PreachingGroupsView = () => {
         // Create a map of members for easy lookup
         const membersByGroup: Record<string, Person[]> = {};
         people.forEach(person => {
-            const groupId = person.spiritual.group;
+            const groupId = person.spiritual?.group;
             if (groupId) {
                 if (!membersByGroup[groupId]) {
                     membersByGroup[groupId] = [];
@@ -169,8 +169,8 @@ const PreachingGroupsView = () => {
         // Map over the sorted list of groups and attach members and stats
         return sortedGroups.map(group => {
             const members = membersByGroup[group.id] || [];
-            const overseer = members.find(m => m.spiritual.roleInGroup === 'overseer');
-            const assistant = members.find(m => m.spiritual.roleInGroup === 'assistant');
+            const overseer = members.find(m => m.spiritual?.roleInGroup === 'overseer');
+            const assistant = members.find(m => m.spiritual?.roleInGroup === 'assistant');
             
             return {
                 id: group.id,
@@ -473,7 +473,7 @@ const FamiliesView = () => {
         const filteredPeopleByStatus = people.filter(p => {
             if (activeFilter === 'all' || activeFilter === 'families') return true;
             
-            const spiritual = p.spiritual;
+            const spiritual = p.spiritual ?? {} as any;
             if (!spiritual) return false;
 
             switch(activeFilter) {
@@ -490,11 +490,11 @@ const FamiliesView = () => {
                 case 'active_unappointed_brothers': return p.gender === 'male' && spiritual.active && !spiritual.function;
                 case 'brothers': return p.gender === 'male';
                 case 'sisters': return p.gender === 'female';
-                case 'all_pioneers': return !!spiritual.pioneer.status;
-                case 'regular_pioneers': return spiritual.pioneer.status === 'permanent';
-                case 'auxiliary_pioneers': return spiritual.pioneer.status === 'aux-permanent';
-                case 'special_pioneers': return spiritual.pioneer.status === 'special';
-                case 'missionaries': return spiritual.pioneer.status === 'missionary';
+                case 'all_pioneers': return !!spiritual.pioneer?.status;
+                case 'regular_pioneers': return spiritual.pioneer?.status === 'permanent';
+                case 'auxiliary_pioneers': return spiritual.pioneer?.status === 'aux-permanent';
+                case 'special_pioneers': return spiritual.pioneer?.status === 'special';
+                case 'missionaries': return spiritual.pioneer?.status === 'missionary';
                 case 'group_overseers': return spiritual.roleInGroup === 'overseer';
                 case 'group_assistants': return spiritual.roleInGroup === 'assistant';
                 case 'family_heads': return p.isHeadOfFamily;
@@ -521,9 +521,9 @@ const FamiliesView = () => {
                 return filteredPeopleByStatus;
             }
             if (selectedGroupId === 'unassigned') {
-                return filteredPeopleByStatus.filter(p => !p.spiritual.group);
+                return filteredPeopleByStatus.filter(p => !p.spiritual?.group);
             }
-            return filteredPeopleByStatus.filter(p => p.spiritual.group === selectedGroupId);
+            return filteredPeopleByStatus.filter(p => p.spiritual?.group === selectedGroupId);
         })();
 
         const sortedFamilies = [...families].sort((a, b) => a.name.localeCompare(b.name));

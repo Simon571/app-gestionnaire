@@ -118,7 +118,7 @@ const getProductionData = (
                         credit,
                         isLate: activity?.isLate ?? false,
                         remarks: activity?.remarks ?? null,
-                        pioneerStatus: p.spiritual.pioneer.status,
+                        pioneerStatus: p.spiritual?.pioneer?.status,
                 };
             }).sort((a, b) => {
                 const ln = a.lastName.localeCompare(b.lastName, 'fr', { sensitivity: 'base' });
@@ -243,7 +243,7 @@ export default function PreachingActivityPage() {
       const person = people.find(p => p.id === report.id);
       if (!person) return false;
 
-      const groupMatch = selectedGroup === 'all-groups' || person.spiritual.group === selectedGroup;
+      const groupMatch = selectedGroup === 'all-groups' || person.spiritual?.group === selectedGroup;
       if (!groupMatch) return false;
 
       switch (publisherFilter) {
@@ -252,21 +252,21 @@ export default function PreachingActivityPage() {
         case 'missing_report':
           return !report.participated;
         case 'elders':
-          return person.spiritual.function === 'elder';
+          return person.spiritual?.function === 'elder';
         case 'servants':
-          return person.spiritual.function === 'servant';
+          return person.spiritual?.function === 'servant';
         case 'publishers':
-          return person.spiritual.function === 'publisher';
+          return person.spiritual?.function === 'publisher';
         case 'unbaptized_publishers':
-          return person.spiritual.function === 'unbaptized';
+          return person.spiritual?.function === 'unbaptized';
         case 'auxiliary_pioneers':
           return report.isAuxiliary;
         case 'permanent_pioneers':
-          return person.spiritual.pioneer.status === 'permanent';
+          return person.spiritual?.pioneer?.status === 'permanent';
         case 'special_pioneers':
-          return person.spiritual.pioneer.status === 'special';
+          return person.spiritual?.pioneer?.status === 'special';
         case 'missionaries':
-          return person.spiritual.pioneer.status === 'missionary';
+          return person.spiritual?.pioneer?.status === 'missionary';
         default:
           return true;
       }
