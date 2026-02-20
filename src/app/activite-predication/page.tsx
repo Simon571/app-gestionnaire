@@ -396,7 +396,9 @@ export default function PreachingActivityPage() {
   }
 
   const handlePrint = () => {
-    window.print();
+        if (typeof window !== 'undefined' && window.print) {
+            window.print();
+        }
   }
 
     const handleValidateReport = async (userId: string) => {

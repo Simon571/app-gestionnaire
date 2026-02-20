@@ -66,10 +66,14 @@ export default function SharingPage() {
   const admins = people.filter(p => p.spiritual.function === 'elder');
 
   const copyToClipboard = (value: string, field: string) => {
-    navigator.clipboard.writeText(value);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-    toast({ description: `${field} copié dans le presse-papiers.` });
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(value);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+      toast({ description: `${field} copié dans le presse-papiers.` });
+    } else {
+      toast({ description: `Copie non supportée dans ce navigateur.` });
+    }
   };
 
   React.useEffect(() => {

@@ -94,7 +94,9 @@ const PreachingGroupsView = () => {
     const [currentPage, setCurrentPage] = React.useState(1);
 
     const handlePrint = () => {
-        window.print();
+        if (typeof window !== 'undefined' && window.print) {
+            window.print();
+        }
     };
 
     const handleAddGroup = (name: string) => {
@@ -118,9 +120,11 @@ const PreachingGroupsView = () => {
     };
 
     const handleDeleteSelected = () => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedGroupIds.length} groupe(s) ? Cette action est irréversible.`)) {
-            selectedGroupIds.forEach(id => deletePreachingGroup(id));
-            setSelectedGroupIds([]);
+        if (typeof window !== 'undefined' && window.confirm) {
+            if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedGroupIds.length} groupe(s) ? Cette action est irréversible.`)) {
+                selectedGroupIds.forEach(id => deletePreachingGroup(id));
+                setSelectedGroupIds([]);
+            }
         }
     };
 
@@ -141,7 +145,9 @@ const PreachingGroupsView = () => {
         });
 
         const subject = "Liste des groupes de prédication";
-        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        if (typeof window !== 'undefined') {
+            window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        }
     };
 
     const groups = React.useMemo(() => {
@@ -429,7 +435,9 @@ const FamiliesView = () => {
     const [selectedGroupId, setSelectedGroupId] = React.useState('all-groups');
 
     const handlePrint = () => {
-        window.print();
+        if (typeof window !== 'undefined' && window.print) {
+            window.print();
+        }
     };
 
     const handleAddFamily = (name: string) => {
@@ -453,9 +461,11 @@ const FamiliesView = () => {
     };
 
     const handleDeleteSelected = () => {
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedFamilyIds.length} famille(s) ? Les membres de la famille ne seront pas supprimés, mais seulement leur affiliation familiale.`)) {
-            selectedFamilyIds.forEach(id => deleteFamily(id));
-            setSelectedFamilyIds([]);
+        if (typeof window !== 'undefined' && window.confirm) {
+            if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedFamilyIds.length} famille(s) ? Les membres de la famille ne seront pas supprimés, mais seulement leur affiliation familiale.`)) {
+                selectedFamilyIds.forEach(id => deleteFamily(id));
+                setSelectedFamilyIds([]);
+            }
         }
     };
 
