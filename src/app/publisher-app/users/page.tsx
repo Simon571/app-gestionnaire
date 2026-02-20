@@ -13,17 +13,16 @@ import type { Person } from '@/app/personnes/page';
 
 // Helper function to map Person to PublisherUser
 const mapPersonToPublisherUser = (person: Person, preachingGroups: { id: string; name: string }[]): PublisherUser => {
-  const groupName = preachingGroups.find(g => g.id === person.spiritual.group)?.name || 'Non assigné';
-  
-  // Placeholder for PIN and delegate as these are not in Person type
+  const spiritual = person.spiritual ?? {};
+  const groupName = preachingGroups.find(g => g.id === spiritual.group)?.name || 'Non assigné';
   const pin = person.pin || 'N/A';
-  const delegate = undefined; // Or fetch from another source if available
+  const delegate = undefined;
 
-  let status: PublisherUser['status'] = 'Non connecté'; // Default to non-connected
-  if (person.spiritual.active) {
+  let status: PublisherUser['status'] = 'Non connecté';
+  if (spiritual.active) {
     status = 'Actif';
-  } else if (person.spiritual.isDeleted) {
-    status = 'Inactif'; // Assuming deleted means inactive
+  } else if (spiritual.isDeleted) {
+    status = 'Inactif';
   }
 
   return {
