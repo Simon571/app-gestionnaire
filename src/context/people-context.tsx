@@ -73,6 +73,8 @@ export type PublisherDeviceRecord = {
 
 const defaultDevices: PublisherDeviceRecord[] = [];
 // When data is parsed from JSON, date strings need to be converted back to Date objects.
+// Garantit aussi que person.spiritual et person.spiritual.pioneer ne sont jamais undefined,
+// évitant les crashs "Cannot read properties of undefined" sur toutes les pages.
 const reviveDates = (person: any): Person => {
     const dateFields = ['birthDate'];
     const spiritualDateFields = ['functionDate', 'baptismDate', 'preachingStartDate', 'lastVisitDate', 'teleVolunteerDate', 'complexVolunteerDate', 'bethelVolunteerDate', 'customSpiritual7Date'];
@@ -84,20 +86,28 @@ const reviveDates = (person: any): Person => {
         }
     }
 
-    if (person.spiritual) {
-        for (const field of spiritualDateFields) {
-            if (person.spiritual[field]) {
-                person.spiritual[field] = new Date(person.spiritual[field]);
-            }
-        }
-        if (person.spiritual.pioneer) {
-            for (const field of pioneerDateFields) {
-                if (person.spiritual.pioneer[field]) {
-                    person.spiritual.pioneer[field] = new Date(person.spiritual.pioneer[field]);
-                }
-            }
+    // Garantir que spiritual existe toujours (données Blob peuvent manquer ce champ)
+    if (!person.spiritual || typeof person.spiritual !== 'object') {
+        person.spiritual = {};
+    }
+
+    for (const field of spiritualDateFields) {
+        if (person.spiritual[field]) {
+            person.spiritual[field] = new Date(person.spiritual[field]);
         }
     }
+
+    // Garantir que spiritual.pioneer existe toujours
+    if (!person.spiritual.pioneer || typeof person.spiritual.pioneer !== 'object') {
+        person.spiritual.pioneer = {};
+    }
+
+    for (const field of pioneerDateFields) {
+        if (person.spiritual.pioneer[field]) {
+            person.spiritual.pioneer[field] = new Date(person.spiritual.pioneer[field]);
+        }
+    }
+
     return person as Person;
 };
 

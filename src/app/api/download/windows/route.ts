@@ -8,9 +8,9 @@ export const dynamic = "force-static";
  */
 export async function GET(request: NextRequest) {
   // URL de téléchargement depuis les variables d'environnement
-  // Fallback vers la dernière release v1.0.1
+  // Fallback vers la dernière release v1.0.2
   const downloadUrl = (process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL || 
-    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.1/Gestionnaire-setup.msi').trim().replace(/^\uFEFF/, '');
+    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/Gestionnaire-setup.msi').trim().replace(/^\uFEFF/, '');
 
   // Log pour debug
   console.log('Download URL:', downloadUrl);
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
  */
 export async function HEAD(request: NextRequest) {
   const downloadUrl = (process.env.NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL || 
-    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.1/Gestionnaire-setup.msi').trim().replace(/^\uFEFF/, '');
+    'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/Gestionnaire-setup.msi').trim().replace(/^\uFEFF/, '');
 
   try {
     const response = await fetch(downloadUrl, { method: 'HEAD' });
