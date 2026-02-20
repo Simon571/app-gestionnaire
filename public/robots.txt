@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://app-gestionnaire.vercel.app/sitemap.xml
