@@ -36,6 +36,8 @@ foreach ($route in $routesToPatch) {
 
 $env:NEXT_CONFIG = "next.config.tauri.ts"
 $env:NEXT_PUBLIC_PORTAL_MODE = "0"
+# Limiter le parallélisme Rust pour éviter "LLVM ERROR: out of memory"
+$env:CARGO_BUILD_JOBS = "2"
 
 # Étape 5: Build Tauri (beforeBuildCommand relance npm run build:tauri - routes encore patchées)
 Write-Host "🔨 Étape 5/5: Build de l'application Windows..." -ForegroundColor Yellow

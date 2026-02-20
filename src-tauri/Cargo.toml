@@ -23,3 +23,10 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.7.0", features = [] }
 tauri-plugin-log = "2"
+
+# Profil release allégé pour éviter "LLVM ERROR: out of memory" sur machines avec peu de RAM.
+# opt-level=1 et lto=false réduisent considérablement l'usage mémoire du compilateur.
+[profile.release]
+opt-level = 1
+lto = false
+codegen-units = 4
