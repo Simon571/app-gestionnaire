@@ -199,8 +199,14 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     const loadFromApi = async () => {
       try {
         const apiBase = getApiBase();
-        // Load people
-        const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export`);
+        // Récupérer l'assemblyId pour ne charger QUE les utilisateurs de cette assemblée
+        let assemblyId = 'DEFAULT';
+        try {
+          const raw = localStorage.getItem('appSettings');
+          if (raw) assemblyId = (JSON.parse(raw) as Record<string, string>)?.assemblyId || 'DEFAULT';
+        } catch (_) {}
+        // Load people — filtré par assemblyId pour éviter de charger d'autres assemblées
+        const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`);
         if (usersResponse.ok) {
           const usersData = await usersResponse.json();
           if (Array.isArray(usersData.users) && usersData.users.length > 0) {
