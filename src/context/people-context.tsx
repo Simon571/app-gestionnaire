@@ -184,8 +184,11 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Charger la liste depuis l'API (fichier publisher-users) pour intégrer les mises à jour importées
+  // En mode MSI (PORTAL_MODE=0), le MSI EST la source de vérité → on ne charge PAS depuis l'API
+  // (sinon le Blob, qui peut être vide ou partiel, écraserait les données locales)
   useEffect(() => {
     if (!isLoaded) return;
+    if (process.env.NEXT_PUBLIC_PORTAL_MODE === '0') return; // MSI : source de vérité locale
     const loadFromApi = async () => {
       try {
         const apiBase = getApiBase();
