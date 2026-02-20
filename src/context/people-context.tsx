@@ -143,6 +143,13 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         // Clean up any "ghost" entries (people with no name)
         parsedPeople = parsedPeople.filter((p: Person) => p.displayName && p.displayName.trim() !== '');
+        // Dédupliquer par ID (évite la triplication si des cycles de sync ont dupliqué les entrées)
+        const seenIds = new Set<string>();
+        parsedPeople = parsedPeople.filter((p: Person) => {
+          if (!p.id || seenIds.has(p.id)) return false;
+          seenIds.add(p.id);
+          return true;
+        });
         // Ensure all loaded people have a PIN
         parsedPeople = parsedPeople.map((p: Person) => {
             if (!p.pin) {
@@ -183,12 +190,12 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     setIsLoaded(true); // Mark as loaded
   }, []);
 
-  // Charger la liste depuis l'API (fichier publisher-users) pour intégrer les mises à jour importées
-  // En mode MSI (PORTAL_MODE=0), le MSI EST la source de vérité → on ne charge PAS depuis l'API
-  // (sinon le Blob, qui peut être vide ou partiel, écraserait les données locales)
+  // Charger la liste depuis l'API uniquement si localStorage EST VIDE (évite d'écraser les données locales).
+  // En mode MSI (PORTAL_MODE=0), le MSI EST la source de vérité → on ne charge jamais depuis l'API.
   useEffect(() => {
     if (!isLoaded) return;
     if (process.env.NEXT_PUBLIC_PORTAL_MODE === '0') return; // MSI : source de vérité locale
+    if (people.length > 0) return; // localStorage avait déjà des données → ne pas écraser avec le Blob
     const loadFromApi = async () => {
       try {
         const apiBase = getApiBase();
