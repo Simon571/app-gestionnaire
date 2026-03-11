@@ -1,6 +1,7 @@
-// force-dynamic: Vercel doit lire publisher-users.json en temps réel (pas de cache).
-// Pour le build Tauri (output: 'export'), build-tauri.ps1 patche en 'force-static'.
-export const dynamic = 'force-dynamic';
+// Pour Tauri (NEXT_EXPORT): static; pour Vercel: dynamic
+// force-dynamic sur Vercel: lire publisher-users.json en temps réel (pas de cache)
+// force-static sur Tauri: compatible avec output: 'export'
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { authenticateDevice, handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';

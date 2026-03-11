@@ -1,6 +1,7 @@
-// force-dynamic: nécessaire pour que Vercel serverless lise le body du POST.
-// Pour le build Tauri (output: 'export'), build-tauri.ps1 patche temporairement en 'force-static'.
-export const dynamic = 'force-dynamic';
+// Pour Tauri (NEXT_EXPORT): static; pour Vercel: dynamic
+// force-dynamic pour Vercel: lire le body du POST en temps réel
+// force-static pour Tauri: compatible avec output: 'export'
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 
