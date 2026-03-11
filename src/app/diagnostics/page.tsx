@@ -42,12 +42,20 @@ export default function DiagnosticsPage() {
           `${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`,
           { signal: AbortSignal.timeout(5000) }
         );
+        let bodyPreview = '';
+        if (response.ok) {
+          const json = await response.json();
+          bodyPreview = JSON.stringify(json).slice(0, 200);
+        } else {
+          const text = await response.text();
+          bodyPreview = text.slice(0, 200);
+        }
         results.usersEndpoint = {
           status: response.ok ? 'ok' : 'error',
           statusCode: response.status,
           statusText: response.statusText,
           headers: Array.from(response.headers.entries()),
-          bodyPreview: response.ok ? (await response.json().then(j => JSON.stringify(j).slice(0, 200))) : await response.text().slice(0, 200),
+          bodyPreview: bodyPreview,
         };
       } catch (e) {
         results.usersEndpoint = { status: 'error', error: String(e) };
