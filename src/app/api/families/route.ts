@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
-// force-dynamic: Vercel lit families.json en temps réel.
-// Pour le build Tauri, build-tauri.ps1 patche en 'force-static'.
-export const dynamic = 'force-dynamic';
+// Note: Tauri build utilise NEXT_CONFIG=next.config.tauri.ts avec output: export (statique)
+// Pour Vercel, la route est dynamique et lit families.json en temps réel
+// Dynamique sur Vercel, statique sur Tauri grâce à NEXT_EXPORT et next.config.tauri.ts
+const isDynamic = process.env.NEXT_EXPORT !== 'true';
+export const dynamic = isDynamic ? 'force-dynamic' : 'force-static';
 import { readFamilies, writeFamilies, addFamily, deleteFamily, type Family } from '@/lib/families-store';
 
 const noCacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
