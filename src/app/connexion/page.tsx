@@ -122,8 +122,15 @@ export default function LoginPage() {
       const VALID_ASSEMBLY_PIN = '136573';
       const VALID_ASSEMBLY_NAME = 'KIN YOLO EST Français';
 
+      // DEBUG: Log les valeurs entrées et attendues
+      console.log('🔐 Tentative de connexion administrateur:');
+      console.log('  Entrée ID:', assemblyId, '| Attendu:', VALID_ASSEMBLY_ID, '| Match:', assemblyId === VALID_ASSEMBLY_ID);
+      console.log('  Entrée PIN:', assemblyPin, '| Attendu:', VALID_ASSEMBLY_PIN, '| Match:', assemblyPin === VALID_ASSEMBLY_PIN);
+      console.log('  Les deux match?', assemblyId === VALID_ASSEMBLY_ID && assemblyPin === VALID_ASSEMBLY_PIN);
+
       // Vérifier les identifiants
       if (assemblyId === VALID_ASSEMBLY_ID && assemblyPin === VALID_ASSEMBLY_PIN) {
+        console.log('✅ Identifiants corrects! Création session...');
         localStorage.setItem('admin_session', JSON.stringify({
           assemblyId: VALID_ASSEMBLY_ID,
           displayName: VALID_ASSEMBLY_NAME,
@@ -144,8 +151,10 @@ export default function LoginPage() {
           description: `Bienvenue, administrateur de ${VALID_ASSEMBLY_NAME}!`,
         });
 
+        console.log('🚀 Redirection vers accueil...');
         router.push('/');
       } else {
+        console.log('❌ Identifiants incorrects');
         toast({
           title: "Échec de connexion",
           description: "ID ou PIN de l'assemblée incorrect.",
@@ -153,6 +162,7 @@ export default function LoginPage() {
         });
       }
     } catch (error) {
+      console.error('❌ Erreur lors de la connexion:', error);
       toast({
         title: "Erreur",
         description: "Une erreur s'est produite lors de la connexion.",
