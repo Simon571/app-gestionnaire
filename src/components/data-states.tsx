@@ -51,23 +51,26 @@ export function DataErrorState({
   );
 }
 
-export function DataEmptyState({ 
-  title = "Aucune donnée",
-  message = "Aucune donnée disponible pour afficher.",
-  action?: React.ReactNode
-}: { 
-  title?: string; 
+export function DataEmptyState({
+  title,
+  message,
+  action
+}: {
+  title?: string;
   message?: string;
   action?: React.ReactNode;
-}) {
+} = {}) {
+  const displayTitle = title ?? "Aucune donnée";
+  const displayMessage = message ?? "Aucune donnée disponible pour afficher.";
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{displayTitle}</CardTitle>
       </CardHeader>
       <CardContent className="text-center space-y-4">
         <div className="text-muted-foreground">
-          <p>{message}</p>
+          <p>{displayMessage}</p>
         </div>
         {action && <div>{action}</div>}
       </CardContent>
