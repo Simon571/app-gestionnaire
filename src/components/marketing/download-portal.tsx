@@ -29,6 +29,8 @@ const COPY: Record<string, any> = {
     note: "Besoin d'aide ? Suivez les étapes ci-dessous pour installer et démarrer.",
     footerLine1: "Dernière version publiée sur GitHub.",
     footerLine2: "Fichiers .msi inclus.",
+    app_access: "Accéder à l'application",
+    login: "Connexion",
   },
   en: {
     badge: "Official apps",
@@ -58,6 +60,8 @@ const COPY: Record<string, any> = {
     note: "Need help? Follow the steps below to install and start.",
     footerLine1: "Latest release available on GitHub.",
     footerLine2: "Includes .msi installer.",
+    app_access: "Access the App",
+    login: "Login",
   },
 };
 
@@ -82,7 +86,21 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
   } as const;
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-12">
+    <>
+      {/* Header avec lien vers connexion */}
+      <header className="border-b border-slate-200 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div className="text-lg font-semibold">{lang === 'fr' ? 'Gestionnaire d\'Assemblée' : 'Assembly Manager'}</div>
+          <a 
+            href="/connexion" 
+            className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition-colors"
+          >
+            {t.login}
+          </a>
+        </div>
+      </header>
+
+      <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-12">
       <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
 
       <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
@@ -222,5 +240,6 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
         <p className="mt-3 text-sm text-muted-foreground">Les données restent locales et les mises à jour sont signées. Pensez à garder Windows à jour et à conserver vos sauvegardes.</p>
       </section>
     </main>
+    </>
   );
 }
