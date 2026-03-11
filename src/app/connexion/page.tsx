@@ -44,6 +44,12 @@ export default function LoginPage() {
   const [loginMode, setLoginMode] = useState<'person' | 'assembly'>('person');
 
   useEffect(() => {
+    // Log au chargement pour vérifier que la page charge
+    console.log('📄 Page Connexion chargée');
+    console.log('✅ Mode de connexion:', loginMode);
+  }, [loginMode]);
+
+  useEffect(() => {
     // Charger les personnes depuis localStorage
     const storedPeople = localStorage.getItem('people');
     if (storedPeople) {
