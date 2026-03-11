@@ -17,22 +17,25 @@ export function DataLoadingState() {
   );
 }
 
-export function DataErrorState({ 
-  title = "Erreur de chargement",
-  message = "Les données n'ont pas pu être chargées. Veuillez recharger la page.",
-  error?: string
-}: { 
-  title?: string; 
+export function DataErrorState({
+  title,
+  message,
+  error
+}: {
+  title?: string;
   message?: string;
   error?: string;
-}) {
+} = {}) {
+  const displayTitle = title ?? "Erreur de chargement";
+  const displayMessage = message ?? "Les données n'ont pas pu être chargées. Veuillez recharger la page.";
+  
   return (
     <div className="space-y-4 py-8">
       <Alert variant="destructive">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>{title}</AlertTitle>
+        <AlertTitle>{displayTitle}</AlertTitle>
         <AlertDescription className="space-y-2 mt-2">
-          <p>{message}</p>
+          <p>{displayMessage}</p>
           {error && (
             <details className="text-xs bg-background rounded p-2 max-h-40 overflow-auto mt-2">
               <summary className="cursor-pointer font-semibold">Détails de l'erreur</summary>
