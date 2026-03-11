@@ -8,7 +8,7 @@ import 'utils/logger.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'routes/router.dart';
-import 'providers/auth_provider.dart';
+import 'providers/auth_provider.dart' show initializeSharedServices, getSharedStorageService, authStateProvider;
 import 'providers/sync_provider.dart';
 import 'models/person.dart';
 import 'widgets/connectivity_banner.dart';

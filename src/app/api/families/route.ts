@@ -12,7 +12,14 @@ export async function GET() {
     return NextResponse.json({ families }, { headers: noCacheHeaders });
   } catch (error) {
     console.error('Error reading families:', error);
-    return NextResponse.json({ error: 'Failed to read families' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Failed to read families',
+        message: error instanceof Error ? error.message : String(error),
+        families: [],
+      }, 
+      { status: 500, headers: noCacheHeaders }
+    );
   }
 }
 
@@ -56,4 +63,5 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to delete family' }, { status: 500 });
   }
 }
+
 

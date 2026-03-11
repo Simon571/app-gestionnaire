@@ -1,1 +1,34 @@
-﻿[]
+﻿[
+  {
+    "id": "simon-001",
+    "firstName": "Simon",
+    "displayName": "Simon",
+    "pin": "3299",
+    "dob": "1980-01-01",
+    "gender": "male",
+    "roles": ["publisher"],
+    "email": "simon@example.com",
+    "phone": "",
+    "notes": "Utilisateur de test - Simon",
+    "isActive": true,
+    "baptized": true,
+    "pioneer": false,
+    "elderOrMSMinister": false
+  },
+  {
+    "id": "abel-001",
+    "firstName": "Abel",
+    "displayName": "Abel",
+    "pin": "4017",
+    "dob": "1985-01-01",
+    "gender": "male",
+    "roles": ["publisher"],
+    "email": "abel@example.com",
+    "phone": "",
+    "notes": "Utilisateur de test - Abel",
+    "isActive": true,
+    "baptized": true,
+    "pioneer": false,
+    "elderOrMSMinister": false
+  }
+]

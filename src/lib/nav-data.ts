@@ -60,8 +60,8 @@ export const navItems: NavItem[] = [
       isMainItem: true,
       href: '/assembly',
       subItems: [
-        { id: 'assembly-info', label: 'Information de l’assemblée', icon: Info, href: '/parametres' },
-        { id: 'assembly-sharing', label: 'Partage de l’assemblée', icon: Share2, href: '/partage' },
+        { id: 'assembly-info', label: 'Information de l\'assemblée', icon: Info, href: '/information-assemblee' },
+        { id: 'assembly-sharing', label: 'Partage de l\'assemblée', icon: Share2, href: '/partage' },
         { id: 'bulletin-assembly', label: "Tableau d'affichage assemblée", icon: ClipboardList, href: '/communications?board=assembly' },
         { id: 'bulletin-elders', label: "Tableau d'affichage anciens", icon: ClipboardList, href: '/communications?board=elders' },
         { id: 'bulletin-elders-assistants', label: "Tableau d'affichage anciens et assistants", icon: ClipboardList, href: '/communications?board=elders-assistants' },

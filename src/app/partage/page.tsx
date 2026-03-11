@@ -62,8 +62,8 @@ export default function SharingPage() {
   const { toast } = useToast();
   const { settings, updateSetting } = useAppSettings();
 
-  const { people } = usePeople();
-  const admins = people.filter(p => p.spiritual?.function === 'elder');
+  const { people, isLoaded } = usePeople();
+  const admins = Array.isArray(people) && isLoaded ? people.filter(p => p?.spiritual?.function === 'elder') : [];
 
   const copyToClipboard = (value: string, field: string) => {
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
@@ -142,6 +142,14 @@ export default function SharingPage() {
   };
 
   const selectedUser = users.find(u => u.id === selectedUserId);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-lg text-muted-foreground">Chargement des données...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">

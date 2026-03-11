@@ -152,12 +152,12 @@ const PreachingGroupsView = () => {
 
     const groups = React.useMemo(() => {
         // Start with the definitive list of preaching groups, sorted by name
-        const sortedGroups = [...preachingGroups].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedGroups = Array.isArray(preachingGroups) ? [...preachingGroups].sort((a, b) => (a?.name || '').localeCompare(b?.name || '')) : [];
 
         // Create a map of members for easy lookup
         const membersByGroup: Record<string, Person[]> = {};
-        people.forEach(person => {
-            const groupId = person.spiritual?.group;
+        (Array.isArray(people) ? people : []).forEach(person => {
+            const groupId = person?.spiritual?.group;
             if (groupId) {
                 if (!membersByGroup[groupId]) {
                     membersByGroup[groupId] = [];
@@ -470,7 +470,7 @@ const FamiliesView = () => {
     };
 
     const familiesWithMembers = React.useMemo(() => {
-        const filteredPeopleByStatus = people.filter(p => {
+        const filteredPeopleByStatus = (Array.isArray(people) ? people : []).filter(p => {
             if (activeFilter === 'all' || activeFilter === 'families') return true;
             
             const spiritual = p.spiritual ?? {} as any;
@@ -526,7 +526,7 @@ const FamiliesView = () => {
             return filteredPeopleByStatus.filter(p => p.spiritual?.group === selectedGroupId);
         })();
 
-        const sortedFamilies = [...families].sort((a, b) => a.name.localeCompare(b.name));
+        const sortedFamilies = (Array.isArray(families) ? [...families] : []).sort((a, b) => (a?.name || '').localeCompare(b?.name || ''));
         return sortedFamilies.map(family => ({
             ...family,
             members: filteredPeople.filter(p => p.familyId === family.id)

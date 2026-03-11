@@ -24,69 +24,91 @@ const isPrivateLanHost = (host: string) => {
 // GET: retourne la liste des utilisateurs avec leurs rapports d'activité fusionnés
 // ?assemblyId=KINYOL-WGHK  → filtre uniquement les utilisateurs de cette assemblée
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const assemblyId = searchParams.get('assemblyId')?.trim() ?? '';
+  try {
+    const { searchParams } = new URL(request.url);
+    const assemblyId = searchParams.get('assemblyId')?.trim() ?? '';
 
-  const allUsers = await readPublisherUsers();
+    const allUsers = await readPublisherUsers();
 
-  // Filtrage par assemblyId :
-  // - Si pas d'assemblyId → retourner tous les utilisateurs (rétrocompat)
-  // - Si assemblyId fourni → retourner les utilisateurs de cette assemblée
-  //   + les utilisateurs tagués "DEFAULT" (synchro web sans assemblée configurée)
-  //   + les utilisateurs sans tag (anciens enregistrements)
-  const users = assemblyId
-    ? allUsers.filter((u) => {
-        const tag = u['_assemblyId'] as string | undefined;
-        return !tag || tag === assemblyId || tag === 'DEFAULT';
-      })
-    : allUsers;
+    // Filtrage par assemblyId :
+    // - Si pas d'assemblyId → retourner tous les utilisateurs (rétrocompat)
+    // - Si assemblyId fourni → retourner les utilisateurs de cette assemblée
+    //   + les utilisateurs tagués "DEFAULT" (synchro web sans assemblée configurée)
+    //   + les utilisateurs sans tag (anciens enregistrements)
+    const users = assemblyId
+      ? allUsers.filter((u) => {
+          const tag = u['_assemblyId'] as string | undefined;
+          return !tag || tag === assemblyId || tag === 'DEFAULT';
+        })
+      : allUsers;
 
-  const reports = await listPreachingReports();
-  
-  // Fusionner les rapports d'activité avec chaque utilisateur
-  const usersWithActivity = users.map((user) => {
-    const userId = user['id'] as string;
-    const userReports = reports.filter((r) => r.userId === userId);
+    const reports = await listPreachingReports();
     
-    // Convertir les rapports au format attendu par l'app Flutter
-    const activity = userReports.map((r) => ({
-      month: r.month,
-      participated: r.didPreach ?? false,
-      bibleStudies: r.totals?.bibleStudies ?? 0,
-      isAuxiliaryPioneer: false,
-      hours: r.totals?.hours ?? 0,
-      credit: r.totals?.credit ?? 0,
-      isLate: r.isLate ?? false,
-      remarks: '',
-    }));
-    
-    // Fusionner avec les activités existantes (si présentes)
-    const existingActivity = Array.isArray(user['activity']) ? user['activity'] as Record<string, unknown>[] : [];
-    const existingMonths = new Set(existingActivity.map((a) => a['month']));
-    
-    // Ajouter les nouvelles activités qui ne sont pas déjà présentes
-    const mergedActivity = [...existingActivity];
-    for (const act of activity) {
-      if (existingMonths.has(act.month)) {
-        // Mettre à jour l'activité existante
-        const idx = mergedActivity.findIndex((a) => a['month'] === act.month);
-        if (idx >= 0) {
-          mergedActivity[idx] = { ...mergedActivity[idx], ...act };
+    // Fusionner les rapports d'activité avec chaque utilisateur
+    const usersWithActivity = users.map((user) => {
+      try {
+        const userId = user['id'] as string;
+        const userReports = reports.filter((r) => r.userId === userId);
+        
+        // Convertir les rapports au format attendu par l'app Flutter
+        const activity = userReports.map((r) => ({
+          month: r.month,
+          participated: r.didPreach ?? false,
+          bibleStudies: r.totals?.bibleStudies ?? 0,
+          isAuxiliaryPioneer: false,
+          hours: r.totals?.hours ?? 0,
+          credit: r.totals?.credit ?? 0,
+          isLate: r.isLate ?? false,
+          remarks: '',
+        }));
+        
+        // Fusionner avec les activités existantes (si présentes)
+        const existingActivity = Array.isArray(user['activity']) ? user['activity'] as Record<string, unknown>[] : [];
+        const existingMonths = new Set(existingActivity.map((a) => a['month']));
+        
+        // Ajouter les nouvelles activités qui ne sont pas déjà présentes
+        const mergedActivity = [...existingActivity];
+        for (const act of activity) {
+          if (existingMonths.has(act.month)) {
+            // Mettre à jour l'activité existante
+            const idx = mergedActivity.findIndex((a) => a['month'] === act.month);
+            if (idx >= 0) {
+              mergedActivity[idx] = { ...mergedActivity[idx], ...act };
+            }
+          } else {
+            mergedActivity.push(act);
+          }
         }
-      } else {
-        mergedActivity.push(act);
+        
+        return {
+          ...user,
+          activity: mergedActivity,
+        };
+      } catch (error) {
+        console.error(`Error processing user ${user['id']}:`, error);
+        // Retourner l'utilisateur sans activité plutôt que de lancer une exception
+        return {
+          ...user,
+          activity: user['activity'] || [],
+        };
       }
-    }
+    });
     
-    return {
-      ...user,
-      activity: mergedActivity,
-    };
-  });
-  
-  return NextResponse.json({ users: usersWithActivity }, {
-    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
-  });
+    console.log(`GET /api/publisher-app/users/export: assemblyId=${assemblyId}, returned ${usersWithActivity.length} users`);
+    
+    return NextResponse.json({ users: usersWithActivity }, {
+      headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
+    });
+  } catch (error) {
+    console.error('Error in GET /api/publisher-app/users/export:', error);
+    return NextResponse.json(
+      { 
+        error: 'Erreur lors de la lecture des utilisateurs',
+        message: error instanceof Error ? error.message : String(error),
+      }, 
+      { status: 500 }
+    );
+  }
 }
 
 // POST: remplace la liste, réservé aux appareils desktop/server avec permission 'updates'
@@ -134,3 +156,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Requête invalide' }, { status: 400 });
   }
 }
+

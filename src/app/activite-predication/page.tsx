@@ -79,6 +79,9 @@ const getProductionData = (
         people: Person[],
         incoming: Record<string, IncomingReportLite> = {},
 ) => {
+    // Defensive check: ensure people is an array
+    const safepeople = Array.isArray(people) ? people : [];
+    
     const reportData = {
         publishers: { reports: 0, studies: 0, hours: null },
         auxiliary_pioneers: { reports: 0, studies: 0, hours: 0 },
@@ -90,7 +93,7 @@ const getProductionData = (
         publisherReports: [] as PublisherReport[],
     };
 
-        const publisherReports: PublisherReport[] = people.map(p => {
+        const publisherReports: PublisherReport[] = safepeople.map(p => {
                 const activity = p.activity?.find(a => a.month === monthKey);
                 const incomingData = incoming[`${p.id}_${monthKey}`];
                 const useIncoming = !!incomingData; // affiche les chiffres dès réception, et a fortiori après validation
@@ -175,9 +178,9 @@ const reportRows: {key: ReportDataKey, label: string}[] = [
 export default function PreachingActivityPage() {
   const { people, preachingGroups, isLoaded } = usePeople();
   const months = React.useMemo(() => generateMonths(), []);
-  const [selectedMonth, setSelectedMonth] = React.useState(months[0].key);
+  const [selectedMonth, setSelectedMonth] = React.useState(() => months[0]?.key || '');
   const [activeTab, setActiveTab] = React.useState('assembly');
-    const [reportData, setReportData] = React.useState<ReportData>(() => getProductionData(selectedMonth, people));
+    const [reportData, setReportData] = React.useState<ReportData>(() => getProductionData(months[0]?.key || '', Array.isArray(people) ? people : []));
     const [incomingReports, setIncomingReports] = React.useState<Record<string, IncomingReportLite>>({});
   const [status, setStatus] = React.useState<'sent' | 'not_sent'>('not_sent');
   const [publisherFilter, setPublisherFilter] = React.useState('all');
@@ -239,8 +242,8 @@ export default function PreachingActivityPage() {
     }, []);
 
   const filteredPublisherReports = React.useMemo(() => {
-    return reportData.publisherReports.filter(report => {
-      const person = people.find(p => p.id === report.id);
+    return (reportData?.publisherReports || []).filter(report => {
+      const person = (Array.isArray(people) ? people : []).find(p => p?.id === report.id);
       if (!person) return false;
 
       const groupMatch = selectedGroup === 'all-groups' || person.spiritual?.group === selectedGroup;
@@ -303,7 +306,7 @@ export default function PreachingActivityPage() {
 
   const handleSendReport = async () => {
       // Find users who haven't submitted a report (no status or not validated/received)
-      const lateUserIds = reportData.publisherReports
+      const lateUserIds = (reportData?.publisherReports || [])
           .filter(r => !r.participated && !incomingReports[`${r.id}_${selectedMonth}`]?.status)
           .map(r => r.id);
       
@@ -626,31 +629,31 @@ export default function PreachingActivityPage() {
                                 <p className="text-2xl font-bold">{summary.active_publishers}</p>
                                 <hr className="my-2"/>
                                 <h3 className="font-bold text-primary">Assistance moyenne aux réunions le week-end</h3>
-                                <p className="text-2xl font-bold">{reportData.weekend_attendance}</p>
+                                <p className="text-2xl font-bold">{reportData?.weekend_attendance || 0}</p>
                             </CardContent>
                         </Card>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <Card>
                                 <CardHeader><CardTitle className="text-lg">Proclamateurs</CardTitle></CardHeader>
                                 <CardContent>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData.publishers.reports}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData.publishers.studies}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData?.publishers?.reports || 0}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData?.publishers?.studies || 0}</span></div>
                                 </CardContent>
                             </Card>
                              <Card>
                                 <CardHeader><CardTitle className="text-lg">Pionniers auxiliaires</CardTitle></CardHeader>
                                 <CardContent>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData.auxiliary_pioneers.reports}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Heures</span><span className="font-semibold">{reportData.auxiliary_pioneers.hours}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData.auxiliary_pioneers.studies}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData?.auxiliary_pioneers?.reports || 0}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Heures</span><span className="font-semibold">{reportData?.auxiliary_pioneers?.hours || 0}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData?.auxiliary_pioneers?.studies || 0}</span></div>
                                 </CardContent>
                             </Card>
                              <Card>
                                 <CardHeader><CardTitle className="text-lg">Pionniers permanents</CardTitle></CardHeader>
                                 <CardContent>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData.permanent_pioneers.reports}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Heures</span><span className="font-semibold">{reportData.permanent_pioneers.hours}</span></div>
-                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData.permanent_pioneers.studies}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Nombre de rap</span><span className="font-semibold">{reportData?.permanent_pioneers?.reports || 0}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Heures</span><span className="font-semibold">{reportData?.permanent_pioneers?.hours || 0}</span></div>
+                                    <div className="flex justify-between text-sm"><span className="text-muted-foreground">Cours bibliques</span><span className="font-semibold">{reportData?.permanent_pioneers?.studies || 0}</span></div>
                                 </CardContent>
                             </Card>
                         </div>
@@ -691,8 +694,8 @@ export default function PreachingActivityPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="all-groups">Tous les groupes</SelectItem>
-                                        {preachingGroups.map((group) => (
-                                            <SelectItem key={group.id} value={group.id}>{group.name}</SelectItem>
+                                        {(Array.isArray(preachingGroups) ? preachingGroups : []).map((group) => (
+                                            <SelectItem key={group?.id} value={group?.id || ''}>{group?.name}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>

@@ -128,6 +128,12 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   // Load data from localStorage on initial mount
   useEffect(() => {
     try {
+      // Check if localStorage is available
+      if (typeof window === 'undefined' || !window.localStorage) {
+        setIsLoaded(true);
+        return;
+      }
+      
       // Check if the data version has changed — if so, clear all cached data
       const storedVersion = localStorage.getItem('appDataVersion');
       if (storedVersion !== APP_DATA_VERSION) {
@@ -172,12 +178,22 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
 
       const storedFamilies = localStorage.getItem('families');
       if (storedFamilies) {
-        setFamilies(JSON.parse(storedFamilies));
+        let parsedFamilies = JSON.parse(storedFamilies);
+        if (!Array.isArray(parsedFamilies)) {
+            console.warn("Stored families data is not an array. Resetting to empty array.");
+            parsedFamilies = [];
+        }
+        setFamilies(parsedFamilies);
       }
       
       const storedGroups = localStorage.getItem('preachingGroups');
       if (storedGroups) {
-        setPreachingGroups(JSON.parse(storedGroups));
+        let parsedGroups = JSON.parse(storedGroups);
+        if (!Array.isArray(parsedGroups)) {
+            console.warn("Stored preachingGroups data is not an array. Resetting to empty array.");
+            parsedGroups = [];
+        }
+        setPreachingGroups(parsedGroups);
       }
 
       const storedDevices = localStorage.getItem('publisherDevices');
@@ -201,56 +217,106 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   // Charger la liste depuis l'API uniquement si localStorage EST VIDE (évite d'écraser les données locales).
-  // En mode MSI (PORTAL_MODE=0), le MSI EST la source de vérité → on ne charge jamais depuis l'API.
+  // IMPORTANT: EN MODE MSI, ON FORCE LE CHARGEMENT DEPUIS VERCEL SI LES DONNÉES LOCALES SONT VIDES
+  // Cela permet au MSI neutre de récupérer les données de l'assemblée configurée dans l'app
   useEffect(() => {
     if (!isLoaded) return;
-    if (process.env.NEXT_PUBLIC_PORTAL_MODE === '0') return; // MSI : source de vérité locale
-    if (people.length > 0) return; // localStorage avait déjà des données → ne pas écraser avec le Blob
+    
+    // En mode Vercel (PORTAL_MODE=1), on charge normalement depuis l'API
+    // En mode MSI (PORTAL_MODE=0), on ne charge depuis Vercel QUE si localStorage est complètement vide
+    const isPortalMode = process.env.NEXT_PUBLIC_PORTAL_MODE === '1';
+    const isMSIMode = process.env.NEXT_PUBLIC_PORTAL_MODE === '0';
+    
+    // Logique de chargement:
+    // - En mode Vercel (portal): charger seulement si localStorage vide
+    // - En mode MSI: charger seulement si localStorage vide
+    // - En dev local ou non défini: charger seulement si localStorage vide
+    if (people.length > 0) return; // Si on a déjà des données locales, ne pas recharger
+    
     const loadFromApi = async () => {
       try {
         const apiBase = getApiBase();
-        // Récupérer l'assemblyId pour ne charger QUE les utilisateurs de cette assemblée
         let assemblyId = 'DEFAULT';
         try {
-          const raw = localStorage.getItem('appSettings');
-          if (raw) assemblyId = (JSON.parse(raw) as Record<string, string>)?.assemblyId || 'DEFAULT';
-        } catch (_) {}
-        // Load people — filtré par assemblyId pour éviter de charger d'autres assemblées
-        const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`);
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
-          if (Array.isArray(usersData.users) && usersData.users.length > 0) {
-            setPeople(usersData.users.map(reviveDates));
+          if (typeof window !== 'undefined' && window.localStorage) {
+            const raw = localStorage.getItem('appSettings');
+            if (raw) {
+              const parsed = JSON.parse(raw) as Record<string, string>;
+              assemblyId = parsed.assemblyId || 'DEFAULT';
+            }
           }
+        } catch (err) {
+          console.warn('Failed to read assemblyId from localStorage:', err);
+        }
+        
+        console.log(`Loading data from API for assemblyId: ${assemblyId}`);
+        
+        // Load people
+        try {
+          const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`, {
+            signal: AbortSignal.timeout(5000), // 5s timeout
+          });
+          if (usersResponse.ok) {
+            const usersData = await usersResponse.json();
+            if (Array.isArray(usersData.users) && usersData.users.length > 0) {
+              console.log(`Loaded ${usersData.users.length} users from API`);
+              setPeople(usersData.users.map(reviveDates));
+            } else {
+              console.log('No users data returned from API');
+            }
+          } else {
+            console.warn(`Users API returned status ${usersResponse.status}`);
+          }
+        } catch (error) {
+          console.error('Failed to load users from API', error);
         }
         
         // Load families from API
-        const familiesResponse = await fetch(`${apiBase}/api/families`);
-        if (familiesResponse.ok) {
-          const familiesData = await familiesResponse.json();
-          if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
-            setFamilies(familiesData.families);
+        try {
+          const familiesResponse = await fetch(`${apiBase}/api/families`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          if (familiesResponse.ok) {
+            const familiesData = await familiesResponse.json();
+            if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
+              console.log(`Loaded ${familiesData.families.length} families from API`);
+              setFamilies(familiesData.families);
+            }
+          } else {
+            console.warn(`Families API returned status ${familiesResponse.status}`);
           }
+        } catch (error) {
+          console.error('Failed to load families from API', error);
         }
         
         // Load preaching groups from API
-        const groupsResponse = await fetch(`${apiBase}/api/preaching-groups`);
-        if (groupsResponse.ok) {
-          const groupsData = await groupsResponse.json();
-          if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
-            setPreachingGroups(groupsData.groups);
+        try {
+          const groupsResponse = await fetch(`${apiBase}/api/preaching-groups`, {
+            signal: AbortSignal.timeout(5000),
+          });
+          if (groupsResponse.ok) {
+            const groupsData = await groupsResponse.json();
+            if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
+              console.log(`Loaded ${groupsData.groups.length} preaching groups from API`);
+              setPreachingGroups(groupsData.groups);
+            }
+          } else {
+            console.warn(`Preaching groups API returned status ${groupsResponse.status}`);
           }
+        } catch (error) {
+          console.error('Failed to load preaching groups from API', error);
         }
       } catch (error) {
-        console.error('Failed to load data from API', error);
+        console.error('Error in loadFromApi wrapper:', error);
       }
     };
+    
     loadFromApi();
   }, [isLoaded]);
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
-    if (isLoaded) { // Only save after initial data has been loaded
+    if (isLoaded && typeof window !== 'undefined' && window.localStorage) { // Only save after initial data has been loaded
         try {
             localStorage.setItem('people', JSON.stringify(people));
             localStorage.setItem('families', JSON.stringify(families));
@@ -266,7 +332,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
   // Synchroniser la liste vers publisher-users.json (lu par Flutter) dès que les personnes changent.
   // On utilise un délai de 2 secondes pour ne pas surcharger l'API à chaque frappe clavier.
   useEffect(() => {
-    if (!isLoaded || people.length === 0) return;
+    if (!isLoaded || people.length === 0 || typeof window === 'undefined' || !window.localStorage) return;
     const timer = setTimeout(async () => {
       try {
         setIsSyncingUsers(true);

@@ -25,27 +25,32 @@ const LABELS: Record<string, { download: string; detecting: string; reserved: st
 
 export function DownloadButton({ locale }: { locale?: string }) {
   const [isWindows, setIsWindows] = React.useState<boolean | null>(null);
-  React.useEffect(() => setIsWindows(/windows/i.test(navigator.userAgent)), []);
+  const [isHydrated, setIsHydrated] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsWindows(/windows/i.test(navigator.userAgent));
+    setIsHydrated(true);
+  }, []);
 
   const lang = (locale || navigator.language || "fr").startsWith("en") ? "en" : "fr";
   const L = LABELS[lang];
   const releasesUrl = DEFAULT_RELEASES;
 
-  const isReady = isWindows !== null;
+  const isReady = isHydrated && isWindows !== null;
   const isSupported = isWindows === true;
 
   return (
-    <div className="flex flex-col gap-3">
-      <Button asChild disabled={!isReady || !isSupported} className="h-12 px-6 text-base">
+    <div className="flex flex-col gap-3" suppressHydrationWarning>
+      <Button asChild disabled={!isHydrated || !isReady || !isSupported} className="h-12 px-6 text-base">
         <a
           href={releasesUrl}
           aria-label={L.download}
         >
-          {isReady ? L.download : L.detecting}
+          {isHydrated ? (isReady ? L.download : L.detecting) : L.detecting}
         </a>
       </Button>
 
-      {!isReady ? null : isSupported ? (
+      {!isHydrated || !isReady ? null : isSupported ? (
         <p className="text-sm text-muted-foreground">{L.releases}</p>
       ) : (
         <div className="text-sm text-muted-foreground">

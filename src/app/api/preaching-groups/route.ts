@@ -12,7 +12,14 @@ export async function GET() {
     return NextResponse.json({ groups }, { headers: noCacheHeaders });
   } catch (error) {
     console.error('Error reading preaching groups:', error);
-    return NextResponse.json({ error: 'Failed to read preaching groups' }, { status: 500 });
+    return NextResponse.json(
+      { 
+        error: 'Failed to read preaching groups',
+        message: error instanceof Error ? error.message : String(error),
+        groups: [],
+      }, 
+      { status: 500, headers: noCacheHeaders }
+    );
   }
 }
 
@@ -56,4 +63,5 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to delete preaching group' }, { status: 500 });
   }
 }
+
 

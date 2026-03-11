@@ -6,6 +6,7 @@ import { PeopleProvider } from '@/context/people-context';
 import { AppSettingsProvider } from '@/context/app-settings-context';
 import RouteProgress from '@/components/RouteProgress';
 import { ptSans } from '@/lib/fonts';
+import { ErrorBoundary } from '@/components/error-boundary';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app-gestionnaire.vercel.app';
 
@@ -121,13 +122,15 @@ export default function RootLayout({
         />
       </head>
       <body className={ptSans.className}>
-          <RouteProgress />
-          <PeopleProvider>
-            <AppSettingsProvider>
-              {isPortal ? children : <AppShell>{children}</AppShell>}
-            </AppSettingsProvider>
-          </PeopleProvider>
-        <Toaster />
+          <ErrorBoundary>
+            <RouteProgress />
+            <PeopleProvider>
+              <AppSettingsProvider>
+                {isPortal ? children : <AppShell>{children}</AppShell>}
+              </AppSettingsProvider>
+            </PeopleProvider>
+            <Toaster />
+          </ErrorBoundary>
       </body>
     </html>
   );

@@ -19,17 +19,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: '/api/publisher-app/users/export',
+        source: '/api/publisher-app/:path*',
         headers: [
           { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'GET, OPTIONS' },
-        ],
-      },
-      {
-        source: '/api/publisher-app/users/web-sync',
-        headers: [
-          { key: 'Access-Control-Allow-Origin', value: '*' },
-          { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, DELETE, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
         ],
       },
