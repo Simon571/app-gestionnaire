@@ -117,34 +117,31 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Vérifier assemblyId et assemblyPin depuis appSettings
-      const appSettings = localStorage.getItem('appSettings');
-      if (!appSettings) {
-        toast({
-          title: "Erreur",
-          description: "Configuration de l'assemblée non trouvée.",
-          variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-      }
+      // Identifiants valides pour l'administrateur (KIN YOLO EST)
+      const VALID_ASSEMBLY_ID = 'KINYOL-WGHK';
+      const VALID_ASSEMBLY_PIN = '136573';
+      const VALID_ASSEMBLY_NAME = 'KIN YOLO EST Français';
 
-      const settings = JSON.parse(appSettings);
-      const storedAssemblyId = settings.assemblyId;
-      const storedAssemblyPin = settings.assemblyPin;
-
-      if (assemblyId === storedAssemblyId && assemblyPin === storedAssemblyPin) {
+      // Vérifier les identifiants
+      if (assemblyId === VALID_ASSEMBLY_ID && assemblyPin === VALID_ASSEMBLY_PIN) {
         localStorage.setItem('admin_session', JSON.stringify({
-          assemblyId: assemblyId,
-          displayName: settings.assemblyName || 'Administrateur',
+          assemblyId: VALID_ASSEMBLY_ID,
+          displayName: VALID_ASSEMBLY_NAME,
           role: 'assembly-admin',
           loggedInAt: new Date().toISOString(),
           expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         }));
 
+        // Aussi initialiser appSettings pour future référence
+        localStorage.setItem('appSettings', JSON.stringify({
+          assemblyId: VALID_ASSEMBLY_ID,
+          assemblyPin: VALID_ASSEMBLY_PIN,
+          assemblyName: VALID_ASSEMBLY_NAME
+        }));
+
         toast({
           title: "Connexion réussie",
-          description: `Bienvenue, administrateur de ${settings.assemblyName}!`,
+          description: `Bienvenue, administrateur de ${VALID_ASSEMBLY_NAME}!`,
         });
 
         router.push('/');
