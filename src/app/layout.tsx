@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
-import { AppShell } from '@/components/layout/app-shell';
+import { LayoutWrapper } from '@/components/layout/layout-wrapper';
 import { Toaster } from "@/components/ui/toaster";
 import { PeopleProvider } from '@/context/people-context';
 import { AppSettingsProvider } from '@/context/app-settings-context';
@@ -126,7 +126,7 @@ export default function RootLayout({
             <RouteProgress />
             <PeopleProvider>
               <AppSettingsProvider>
-                {isPortal ? children : <AppShell>{children}</AppShell>}
+                <LayoutWrapper isPortal={isPortal}>{children}</LayoutWrapper>
               </AppSettingsProvider>
             </PeopleProvider>
             <Toaster />
