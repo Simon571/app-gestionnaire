@@ -235,7 +235,6 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     
     const loadFromApi = async () => {
       try {
-        const apiBase = getApiBase();
         let assemblyId = 'DEFAULT';
         try {
           if (typeof window !== 'undefined' && window.localStorage) {
@@ -249,17 +248,22 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
           console.warn('Failed to read assemblyId from localStorage:', err);
         }
         
-        console.log(`Loading data from API for assemblyId: ${assemblyId}`);
+        console.log(`Loading data for assemblyId: ${assemblyId}`);
         
-        // Load people
+        // ✅ Pour Tauri/MSI: charger toujours depuis Vercel (qui a les données)
+        // L'API Vercel est publicly accessible sur https://app-gestionnaire.vercel.app/api/...
+        const apiBase = 'https://app-gestionnaire.vercel.app';
+        
+        // Load users from API
         try {
+          console.log(`Loading users from: ${apiBase}/api/publisher-app/users/export`);
           const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`, {
-            signal: AbortSignal.timeout(5000), // 5s timeout
+            signal: AbortSignal.timeout(5000),
           });
           if (usersResponse.ok) {
             const usersData = await usersResponse.json();
             if (Array.isArray(usersData.users) && usersData.users.length > 0) {
-              console.log(`Loaded ${usersData.users.length} users from API`);
+              console.log(`✅ Loaded ${usersData.users.length} users from Vercel API`);
               setPeople(usersData.users.map(reviveDates));
             } else {
               console.log('No users data returned from API');
@@ -279,7 +283,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
           if (familiesResponse.ok) {
             const familiesData = await familiesResponse.json();
             if (Array.isArray(familiesData.families) && familiesData.families.length > 0) {
-              console.log(`Loaded ${familiesData.families.length} families from API`);
+              console.log(`✅ Loaded ${familiesData.families.length} families from Vercel API`);
               setFamilies(familiesData.families);
             }
           } else {
@@ -297,7 +301,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
           if (groupsResponse.ok) {
             const groupsData = await groupsResponse.json();
             if (Array.isArray(groupsData.groups) && groupsData.groups.length > 0) {
-              console.log(`Loaded ${groupsData.groups.length} preaching groups from API`);
+              console.log(`✅ Loaded ${groupsData.groups.length} preaching groups from Vercel API`);
               setPreachingGroups(groupsData.groups);
             }
           } else {
