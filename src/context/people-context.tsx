@@ -348,8 +348,8 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
           if (raw) assemblyId = (JSON.parse(raw) as Record<string, unknown>)?.['assemblyId'] as string ?? '';
         } catch (_) {}
         if (!assemblyId) {
-          // Aucun assemblyId configuré → utiliser 'DEFAULT' comme identifiant d'assemblée
-          assemblyId = 'DEFAULT';
+          // Utiliser KINYOL-WGHK par défaut pour KIN YOLO EST
+          assemblyId = 'KINYOL-WGHK';
         }
         const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
           method: 'POST',
