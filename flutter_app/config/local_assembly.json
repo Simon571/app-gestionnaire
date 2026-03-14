@@ -1,16 +1,16 @@
 {
-  "id": null,
-  "assemblyId": null,
-  "name": null,
-  "assemblyName": null,
-  "pin": null,
-  "assemblyPin": null,
-  "region": null,
-  "country": null,
+  "id": "KINYOL-WGHK",
+  "assemblyId": "KINYOL-WGHK",
+  "name": "KIN YOLO EST",
+  "assemblyName": "KIN YOLO EST Français",
+  "pin": "136573",
+  "assemblyPin": "136573",
+  "region": "Kinshasa",
+  "country": "Congo",
   "zoomId": null,
   "zoomPassword": null,
   "zoomUrl": null,
   "weekdayMeeting": null,
   "weekendMeeting": null,
-  "autoLogin": false
+  "autoLogin": true
 }
