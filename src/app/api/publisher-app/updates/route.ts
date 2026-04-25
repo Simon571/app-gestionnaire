@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = "force-static";
-export const revalidate = 0;
+export const dynamic = "force-dynamic";
+
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { PublisherSyncType, PUBLISHER_SYNC_TYPES } from '@/types/publisher-sync';

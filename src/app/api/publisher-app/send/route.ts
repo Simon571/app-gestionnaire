@@ -6,6 +6,8 @@ import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { handlePublisherSend } from '@/lib/publisher-send-handler';
 import { PUBLISHER_SYNC_TYPES, PUBLISHER_SYNC_DIRECTIONS } from '@/types/publisher-sync';
 
+export const dynamic = 'force-dynamic';
+
 const bodySchema = z.object({
   type: z.enum(PUBLISHER_SYNC_TYPES),
   payload: z.unknown().default({}),
@@ -16,6 +18,43 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Permettre l'accès sans authentification depuis le même serveur (web dashboard)
+  const deviceId = request.headers.get('x-device-id');
+
+  if (!deviceId) {
+    // Accès local depuis le web dashboard - créer le job directement
+    try {
+      const json = await request.json();
+      const body = bodySchema.parse(json);
+
+      const job = await PublisherSyncStore.addJob({
+        type: body.type,
+        direction: body.direction,
+        payload: body.payload,
+        initiator: body.initiator ?? 'desktop',
+        deviceTarget: body.deviceTarget ?? null,
+        notify: body.notify ?? false,
+      });
+
+      // Écrire dans les assets Flutter si applicable
+      const writeAssetsEnabled = process.env.PUBLISHER_WRITE_FLUTTER_ASSETS !== '0';
+      if (body.direction === 'desktop_to_mobile' && writeAssetsEnabled) {
+        writeJobToFlutterAssets(job as any).catch((e) => {
+          console.error('failed to write flutter asset for job', job?.type, e);
+        });
+      }
+
+      return NextResponse.json({ job }, { status: 201 });
+    } catch (error) {
+      console.error('publisher-app/send local error', error);
+      return NextResponse.json(
+        { error: 'Impossible de créer le job de synchronisation.' },
+        { status: 400 }
+      );
+    }
+  }
+
+  // Requête avec device headers - authentification requise
   return handlePublisherSyncRequest(
     request,
     async ({ request: authRequest, device }) => {
