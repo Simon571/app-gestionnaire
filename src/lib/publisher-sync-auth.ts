@@ -7,6 +7,7 @@ import {
   checkRateLimit,
   getRateLimitKey,
 } from '@/lib/rate-limiter';
+import { blobRead } from '@/lib/blob-store';
 
 export type PublisherSyncRole = 'desktop' | 'mobile' | 'server';
 export type PublisherSyncPermission =
@@ -37,6 +38,7 @@ interface DevicesFileSchema {
 }
 
 const DEVICE_CONFIG_PATH = path.join(process.cwd(), 'data', 'publisher-sync', 'devices.json');
+const BLOB_DEVICES_PATH = 'publisher-sync/devices.json';
 const TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
 
 const jsonError = (message: string, status = 401) =>
@@ -46,15 +48,15 @@ let cachedDevices: PublisherSyncDevice[] | null = null;
 let cacheMtime = 0;
 
 async function loadDevices(): Promise<PublisherSyncDevice[]> {
+  // Sur Vercel ou en local : utiliser blobRead qui gère les deux cas
   try {
-    const stat = await fs.stat(DEVICE_CONFIG_PATH);
-    if (cachedDevices && stat.mtimeMs === cacheMtime) {
-      return cachedDevices;
+    const raw = await blobRead(BLOB_DEVICES_PATH, DEVICE_CONFIG_PATH);
+    if (!raw) {
+      console.warn('publisher-sync-auth: devices file not found (blob or local)');
+      return [];
     }
-    const raw = await fs.readFile(DEVICE_CONFIG_PATH, 'utf8');
     const parsed = JSON.parse(raw) as DevicesFileSchema;
     cachedDevices = parsed.devices ?? [];
-    cacheMtime = stat.mtimeMs;
     return cachedDevices;
   } catch (error) {
     console.error('publisher-sync-auth: unable to load devices file', error);
