@@ -32,6 +32,7 @@ import { usePeople } from '@/context/people-context';
 import type { Person } from '@/app/personnes/page';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { getApiBase } from '@/lib/api-base';
 
 const generateMonths = () => {
   const months = [];
@@ -202,7 +203,7 @@ export default function PreachingActivityPage() {
     React.useEffect(() => {
         const fetchReports = async () => {
             try {
-                const res = await fetch('/api/publisher-app/activity');
+                const res = await fetch(`${getApiBase()}/api/publisher-app/activity`);
                 if (!res.ok) return;
                 const data = await res.json();
                 if (!data?.reports) return;
@@ -228,7 +229,7 @@ export default function PreachingActivityPage() {
     React.useEffect(() => {
         const fetchSubmissions = async () => {
             try {
-                const res = await fetch('/api/publisher-app/activity/submit-to-branch');
+                const res = await fetch(`${getApiBase()}/api/publisher-app/activity/submit-to-branch`);
                 if (!res.ok) return;
                 const data = await res.json();
                 if (data?.submissions) {
@@ -311,7 +312,7 @@ export default function PreachingActivityPage() {
           .map(r => r.id);
       
       try {
-          const res = await fetch('/api/publisher-app/activity/submit-to-branch', {
+          const res = await fetch(`${getApiBase()}/api/publisher-app/activity/submit-to-branch`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ month: selectedMonth, lateUserIds }),
@@ -354,7 +355,7 @@ export default function PreachingActivityPage() {
 
   const handleCancelSend = async () => {
       try {
-          const res = await fetch('/api/publisher-app/activity/submit-to-branch', {
+          const res = await fetch(`${getApiBase()}/api/publisher-app/activity/submit-to-branch`, {
               method: 'DELETE',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ month: selectedMonth }),
@@ -406,7 +407,7 @@ export default function PreachingActivityPage() {
 
     const handleValidateReport = async (userId: string) => {
         try {
-            const res = await fetch('/api/publisher-app/activity', {
+            const res = await fetch(`${getApiBase()}/api/publisher-app/activity`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, month: selectedMonth, status: 'validated' }),
@@ -444,7 +445,7 @@ export default function PreachingActivityPage() {
         try {
             await Promise.all(
                 pendingIds.map(async (id) => {
-                    const res = await fetch('/api/publisher-app/activity', {
+                    const res = await fetch(`${getApiBase()}/api/publisher-app/activity`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId: id, month: selectedMonth, status: 'validated' }),

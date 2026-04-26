@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { blobRead, blobWrite } from './blob-store';
 
 export type TacheStatus = 'todo' | 'in_progress' | 'done';
 
@@ -21,21 +20,21 @@ export interface Tache {
   assignedTo?: string | string[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const TACHES_FILE = path.join(DATA_DIR, 'taches.json');
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+const TACHES_BLOB_PATH = 'data/taches.json';
+const TACHES_LOCAL_PATH = (() => {
+  try {
+    const path = require('path');
+    return path.join(process.cwd(), 'data', 'taches.json');
+  } catch {
+    return 'data/taches.json';
   }
-}
+})();
 
 export async function readTaches(): Promise<Tache[]> {
-  ensureDataDir();
   try {
-    if (!fs.existsSync(TACHES_FILE)) return [];
-    const raw = fs.readFileSync(TACHES_FILE, 'utf-8');
-    const parsed = JSON.parse(raw);
+    const content = await blobRead(TACHES_BLOB_PATH, TACHES_LOCAL_PATH);
+    if (!content) return [];
+    const parsed = JSON.parse(content);
     if (!Array.isArray(parsed)) return [];
     return parsed as Tache[];
   } catch (error) {
@@ -45,8 +44,7 @@ export async function readTaches(): Promise<Tache[]> {
 }
 
 export async function writeTaches(taches: Tache[]): Promise<void> {
-  ensureDataDir();
-  fs.writeFileSync(TACHES_FILE, JSON.stringify(taches, null, 2));
+  await blobWrite(TACHES_BLOB_PATH, TACHES_LOCAL_PATH, JSON.stringify(taches, null, 2));
 }
 
 export async function addTache(tache: Tache): Promise<void> {

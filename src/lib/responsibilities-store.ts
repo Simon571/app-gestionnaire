@@ -1,5 +1,4 @@
-import fs from 'fs';
-import path from 'path';
+import { blobRead, blobWrite } from './blob-store';
 
 export interface ResponsibilityAssignment {
   id: string;
@@ -16,28 +15,27 @@ export interface ResponsibilitiesData {
   updatedAt: string;
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const RESPONSIBILITIES_FILE = path.join(DATA_DIR, 'responsibilities.json');
-
-// Ensure data directory exists
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+const RESP_BLOB_PATH = 'data/responsibilities.json';
+const RESP_LOCAL_PATH = (() => {
+  try {
+    const path = require('path');
+    return path.join(process.cwd(), 'data', 'responsibilities.json');
+  } catch {
+    return 'data/responsibilities.json';
   }
-}
+})();
 
 export async function readResponsibilities(): Promise<ResponsibilitiesData> {
-  ensureDataDir();
   try {
-    if (!fs.existsSync(RESPONSIBILITIES_FILE)) {
+    const content = await blobRead(RESP_BLOB_PATH, RESP_LOCAL_PATH);
+    if (!content) {
       return { 
         assignments: [], 
         customResponsibilities: [],
         updatedAt: new Date().toISOString()
       };
     }
-    const data = fs.readFileSync(RESPONSIBILITIES_FILE, 'utf-8');
-    return JSON.parse(data);
+    return JSON.parse(content);
   } catch (error) {
     console.error('Error reading responsibilities:', error);
     return { 
@@ -49,7 +47,6 @@ export async function readResponsibilities(): Promise<ResponsibilitiesData> {
 }
 
 export async function writeResponsibilities(data: ResponsibilitiesData): Promise<void> {
-  ensureDataDir();
   data.updatedAt = new Date().toISOString();
-  fs.writeFileSync(RESPONSIBILITIES_FILE, JSON.stringify(data, null, 2));
+  await blobWrite(RESP_BLOB_PATH, RESP_LOCAL_PATH, JSON.stringify(data, null, 2));
 }

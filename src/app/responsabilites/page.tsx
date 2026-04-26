@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Trash2, PlusCircle, Printer, Save, Loader2 } from "lucide-react";
 import { usePeople } from '@/context/people-context';
 import { useToast } from '@/hooks/use-toast';
+import { getApiBase } from '@/lib/api-base';
 import type { Person } from '@/app/personnes/page';
 
 interface ResponsibilityAssignment {
@@ -247,7 +248,7 @@ export default function ResponsibilitiesPage() {
   useEffect(() => {
     const loadData = async () => {
       try {
-        const response = await fetch('/api/responsibilities');
+        const response = await fetch(`${getApiBase()}/api/responsibilities`);
         if (response.ok) {
           const data = await response.json();
           setAssignments(data.assignments || []);
@@ -300,7 +301,7 @@ export default function ResponsibilitiesPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('/api/responsibilities', {
+      const response = await fetch(`${getApiBase()}/api/responsibilities`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
