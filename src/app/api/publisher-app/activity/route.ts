@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = "force-static";
 export const revalidate = 0;
@@ -116,19 +116,16 @@ export async function POST(req: NextRequest) {
 
   // Synchroniser vers publisher-users.json pour que Flutter voit le rapport comme envoyé
   try {
-    const fs = await import('fs/promises');
-    const path = await import('path');
-    const publisherUsersPath = path.join(process.cwd(), 'data', 'publisher-users.json');
+    const { writePublisherUsers } = await import('@/lib/publisher-users-store');
     
-    // Lire le fichier
-    const rawData = await fs.readFile(publisherUsersPath, 'utf8');
-    const users = JSON.parse(rawData);
+    // Lire le fichier (users a déjà été chargé au début de la route, on peut le réutiliser ou le relire)
+    const currentUsers = await readPublisherUsers();
     
     // Trouver l'utilisateur concerné
-    const userIndex = users.findIndex((u: any) => u.id === parsed.data.userId);
+    const userIndex = currentUsers.findIndex((u: any) => u.id === parsed.data.userId);
     
     if (userIndex >= 0) {
-      const user = users[userIndex];
+      const user = currentUsers[userIndex];
       
       // S'assurer que activity[] existe
       if (!user.activity) {
@@ -136,7 +133,7 @@ export async function POST(req: NextRequest) {
       }
       
       // Chercher si un rapport existe déjà pour ce mois
-      const activityIndex = user.activity.findIndex((a: any) => a.month === parsed.data.month);
+      const activityIndex = (user.activity as any[]).findIndex((a: any) => a.month === parsed.data.month);
       
       // Créer ou mettre à jour le rapport
       const activityReport = {
@@ -152,20 +149,20 @@ export async function POST(req: NextRequest) {
       
       if (activityIndex >= 0) {
         // Mettre à jour le rapport existant
-        user.activity[activityIndex] = {
-          ...user.activity[activityIndex],
+        (user.activity as any[])[activityIndex] = {
+          ...(user.activity as any[])[activityIndex],
           ...activityReport,
         };
       } else {
         // Ajouter un nouveau rapport
-        user.activity.push(activityReport);
+        (user.activity as any[]).push(activityReport);
       }
       
       // Mettre à jour l'utilisateur dans le tableau
-      users[userIndex] = user;
+      currentUsers[userIndex] = user;
       
       // Sauvegarder le fichier
-      await fs.writeFile(publisherUsersPath, JSON.stringify(users, null, 2), 'utf8');
+      await writePublisherUsers(currentUsers);
       
       console.log(`✅ Rapport synchronisé dans publisher-users.json pour ${parsed.data.userId} (${parsed.data.month})`);
     }
@@ -214,19 +211,16 @@ export async function PATCH(req: Request) {
   // Si le statut est "validated", mettre à jour aussi person.activity[] dans publisher-users.json
   if (parsed.data.status === 'validated') {
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const publisherUsersPath = path.join(process.cwd(), 'data', 'publisher-users.json');
+      const { readPublisherUsers, writePublisherUsers } = await import('@/lib/publisher-users-store');
       
       // Lire le fichier
-      const rawData = await fs.readFile(publisherUsersPath, 'utf8');
-      const users = JSON.parse(rawData);
+      const currentUsers = await readPublisherUsers();
       
       // Trouver l'utilisateur concerné
-      const userIndex = users.findIndex((u: any) => u.id === parsed.data.userId);
+      const userIndex = currentUsers.findIndex((u: any) => u.id === parsed.data.userId);
       
       if (userIndex >= 0) {
-        const user = users[userIndex];
+        const user = currentUsers[userIndex];
         
         // S'assurer que activity[] existe
         if (!user.activity) {
@@ -234,7 +228,7 @@ export async function PATCH(req: Request) {
         }
         
         // Chercher si un rapport existe déjà pour ce mois
-        const activityIndex = user.activity.findIndex((a: any) => a.month === parsed.data.month);
+        const activityIndex = (user.activity as any[]).findIndex((a: any) => a.month === parsed.data.month);
         
         // Créer ou mettre à jour le rapport
         const activityReport = {
@@ -250,20 +244,20 @@ export async function PATCH(req: Request) {
         
         if (activityIndex >= 0) {
           // Mettre à jour le rapport existant
-          user.activity[activityIndex] = {
-            ...user.activity[activityIndex],
+          (user.activity as any[])[activityIndex] = {
+            ...(user.activity as any[])[activityIndex],
             ...activityReport,
           };
         } else {
           // Ajouter un nouveau rapport
-          user.activity.push(activityReport);
+          (user.activity as any[]).push(activityReport);
         }
         
         // Mettre à jour l'utilisateur dans le tableau
-        users[userIndex] = user;
+        currentUsers[userIndex] = user;
         
         // Sauvegarder le fichier
-        await fs.writeFile(publisherUsersPath, JSON.stringify(users, null, 2), 'utf8');
+        await writePublisherUsers(currentUsers);
         
         console.log(`✅ Rapport validé et synchronisé dans publisher-users.json pour ${parsed.data.userId} (${parsed.data.month})`);
       }

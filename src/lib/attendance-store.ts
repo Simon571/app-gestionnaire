@@ -1,5 +1,4 @@
-import { promises as fs } from 'fs';
-import path from 'path';
+import { blobRead, blobWrite } from './blob-store';
 
 export interface AttendanceRecord {
   id: string;
@@ -19,16 +18,20 @@ interface AttendanceStore {
   records: AttendanceRecord[];
 }
 
-const ATTENDANCE_FILE_PATH = path.join(process.cwd(), 'data', 'attendance.json');
-
-async function ensureDataDir() {
-  const dir = path.dirname(ATTENDANCE_FILE_PATH);
-  await fs.mkdir(dir, { recursive: true });
-}
+const ATTENDANCE_BLOB_PATH = 'data/attendance.json';
+const ATTENDANCE_LOCAL_PATH = (() => {
+  try {
+    const path = require('path');
+    return path.join(process.cwd(), 'data', 'attendance.json');
+  } catch {
+    return 'data/attendance.json';
+  }
+})();
 
 export async function readAttendanceRecords(): Promise<AttendanceRecord[]> {
   try {
-    const content = await fs.readFile(ATTENDANCE_FILE_PATH, 'utf8');
+    const content = await blobRead(ATTENDANCE_BLOB_PATH, ATTENDANCE_LOCAL_PATH);
+    if (!content) return [];
     const data = JSON.parse(content) as AttendanceStore;
     return data.records ?? [];
   } catch {
@@ -37,9 +40,8 @@ export async function readAttendanceRecords(): Promise<AttendanceRecord[]> {
 }
 
 export async function writeAttendanceRecords(records: AttendanceRecord[]): Promise<void> {
-  await ensureDataDir();
   const data: AttendanceStore = { records };
-  await fs.writeFile(ATTENDANCE_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
+  await blobWrite(ATTENDANCE_BLOB_PATH, ATTENDANCE_LOCAL_PATH, JSON.stringify(data, null, 2));
 }
 
 export async function addAttendanceRecord(record: Omit<AttendanceRecord, 'id' | 'createdAt' | 'updatedAt'>): Promise<AttendanceRecord> {
