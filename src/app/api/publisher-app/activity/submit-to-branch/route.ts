@@ -1,6 +1,6 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 import { z } from 'zod';
 import { markMonthAsSent, cancelMonthSent, listMonthSubmissions, getMonthSubmission } from '@/lib/publisher-preaching-store';

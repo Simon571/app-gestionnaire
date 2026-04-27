@@ -88,3 +88,4 @@ export async function GET(request: NextRequest) {
     { roles: ['desktop', 'server'], permissions: ['queue'], methods: ['GET'] }
   );
 }
+

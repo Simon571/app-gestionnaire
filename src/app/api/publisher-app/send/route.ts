@@ -73,3 +73,4 @@ export async function POST(request: NextRequest) {
     { roles: ['desktop', 'server'], permissions: ['send'], methods: ['POST'] }
   );
 }
+

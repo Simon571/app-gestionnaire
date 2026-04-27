@@ -68,3 +68,4 @@ export async function DELETE(request: NextRequest) {
     { roles: ['desktop', 'server'], permissions: ['notifications'], methods: ['DELETE'] }
   );
 }
+
