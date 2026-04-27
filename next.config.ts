@@ -17,8 +17,8 @@ const nextConfig: NextConfig = {
 
   // Variables d'environnement intégrées au build
   env: {
-    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://drive.google.com/uc?export=download&id=1me3PNMlrzFFulQQffH8we0jaGz9cSfBY',
-    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://drive.google.com/uc?export=download&id=1bZeZ-pPa9-dJ4fEOA3-akzjEmjEso9Ri'
+    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://drive.google.com/uc?export=download&confirm=t&id=1me3PNMlrzFFulQQffH8we0jaGz9cSfBY',
+    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://drive.google.com/uc?export=download&confirm=t&id=1bZeZ-pPa9-dJ4fEOA3-akzjEmjEso9Ri'
   },
 
   // CORS pour l'app MSI (Tauri) qui appelle Vercel depuis tauri://localhost
