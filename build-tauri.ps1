@@ -15,23 +15,31 @@ Write-Host "📦 Étape 2/5: Vérification des dépendances..." -ForegroundColor
 npm install
 
 # Étape 3: Build Next.js en mode export
-Write-Host "⚙️  Étape 3/5: Build de l'interface (Next.js export)..." -ForegroundColor Yellow
+Write-Host "⚙️  Étape 3/5: Préparation du build statique..." -ForegroundColor Yellow
 
-# Patch temporaire: routes force-dynamic → force-static pour le build statique Tauri
-# (sur Vercel, elles sont force-dynamic pour lire les fichiers JSON en temps réel)
-$routesToPatch = @(
-  "src\app\api\publisher-app\users\web-sync\route.ts",
-  "src\app\api\publisher-app\users\export\route.ts",
-  "src\app\api\families\route.ts",
-  "src\app\api\preaching-groups\route.ts"
-)
-$originalContents = @{}
-foreach ($route in $routesToPatch) {
-  $original = Get-Content $route -Raw
-  $originalContents[$route] = $original
-  $patched = $original -replace "export const dynamic = 'force-dynamic'", "export const dynamic = 'force-static'"
-  Set-Content $route $patched
-  Write-Host "  → Paché: $route" -ForegroundColor Gray
+# ─────────────────────────────────────────────────────────────────
+# STRATÉGIE:
+# Le MSI est un export statique. Les routes API ne sont PAS embarquées
+# dans le MSI — le MSI appelle les API Vercel directement via getApiBase().
+# On renomme temporairement le dossier api/ pour éviter les conflits
+# avec l'export statique (force-dynamic, fs, redirect, etc.)
+# ─────────────────────────────────────────────────────────────────
+
+$apiDir = "src\app\api"
+$apiBackupDir = "src\app\_api_backup_tauri"
+
+# Renommer le dossier api/ → _api_backup_tauri/ pour le build
+if (Test-Path $apiDir) {
+    Rename-Item -Path $apiDir -NewName "_api_backup_tauri"
+    Write-Host "  → Routes API masquées pour le build statique" -ForegroundColor Gray
+}
+
+# De même, masquer les routes serveur-only (vcm/weeks qui utilise fs)
+$vcmWeeksDir = "src\app\vcm\weeks"
+$vcmWeeksBackup = "src\app\vcm\_weeks_backup_tauri"
+if (Test-Path $vcmWeeksDir) {
+    Rename-Item -Path $vcmWeeksDir -NewName "_weeks_backup_tauri"
+    Write-Host "  → Route vcm/weeks masquée" -ForegroundColor Gray
 }
 
 $env:NEXT_CONFIG = "next.config.tauri.ts"
@@ -39,17 +47,32 @@ $env:NEXT_PUBLIC_PORTAL_MODE = "0"
 # Limiter le parallélisme Rust pour éviter "LLVM ERROR: out of memory"
 $env:CARGO_BUILD_JOBS = "2"
 
-# Étape 5: Build Tauri (beforeBuildCommand relance npm run build:tauri - routes encore patchées)
+# Étape 5: Build Tauri (beforeBuildCommand relance npm run build:tauri)
 Write-Host "🔨 Étape 5/5: Build de l'application Windows..." -ForegroundColor Yellow
 npx tauri build --bundles msi
 $buildResult = $LASTEXITCODE
 
-# Restaurer les routes à force-dynamic (état Vercel) — après le build complet
-foreach ($route in $routesToPatch) {
-  Set-Content $route $originalContents[$route]
-  Write-Host "  → Restauré: $route" -ForegroundColor Gray
+# ─────────────────────────────────────────────────────────────────
+# Restaurer les dossiers api/ et vcm/weeks
+# ─────────────────────────────────────────────────────────────────
+if (Test-Path $apiBackupDir) {
+    # Supprimer le dossier api/ vide s'il a été recréé
+    if (Test-Path $apiDir) {
+        Remove-Item -Path $apiDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    Rename-Item -Path $apiBackupDir -NewName "api"
+    Write-Host "  → Routes API restaurées" -ForegroundColor Gray
 }
-Write-Host "  → Routes restaurées (force-dynamic pour Vercel)" -ForegroundColor Gray
+
+if (Test-Path $vcmWeeksBackup) {
+    if (Test-Path $vcmWeeksDir) {
+        Remove-Item -Path $vcmWeeksDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    Rename-Item -Path $vcmWeeksBackup -NewName "weeks"
+    Write-Host "  → Route vcm/weeks restaurée" -ForegroundColor Gray
+}
+
+Write-Host "  → Structure du code restaurée pour Vercel" -ForegroundColor Gray
 
 if ($buildResult -ne 0) {
     Write-Host "❌ Erreur lors du build Tauri" -ForegroundColor Red

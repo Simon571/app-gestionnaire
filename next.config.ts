@@ -15,6 +15,11 @@ const nextConfig: NextConfig = {
     '/api/**': ['./data/**'],
   },
 
+  // Variables d'environnement intégrées au build
+  env: {
+    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://drive.google.com/uc?export=download&id=1me3PNMlrzFFulQQffH8we0jaGz9cSfBY'
+  },
+
   // CORS pour l'app MSI (Tauri) qui appelle Vercel depuis tauri://localhost
   async headers() {
     return [
