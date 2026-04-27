@@ -40,7 +40,9 @@ export function LayoutWrapper({ children, isPortal }: LayoutWrapperProps) {
   }
 
   // ✅ RÈGLE: Si connecté, toujours afficher AppShell (même en mode portal)
-  if (hasAdminSession) {
+  // Sauf pour la page de téléchargement qui doit rester plein écran
+  const isDownloadPage = typeof window !== 'undefined' && window.location.pathname.includes('/download');
+  if (hasAdminSession && !isDownloadPage) {
     return <AppShell>{children}</AppShell>;
   }
 
