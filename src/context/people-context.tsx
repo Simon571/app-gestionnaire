@@ -351,13 +351,25 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
           // Utiliser KINYOL-WGHK par défaut pour KIN YOLO EST
           assemblyId = 'KINYOL-WGHK';
         }
+
+        // Pré-sérialiser pour convertir les Date en strings et supprimer les valeurs non-JSON
+        let safeUsers: unknown[];
+        try {
+          safeUsers = JSON.parse(JSON.stringify(people));
+        } catch (serErr) {
+          console.error('web-sync: échec de sérialisation des données:', serErr);
+          return;
+        }
+
         const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ users: people, assemblyId }),
+          body: JSON.stringify({ users: safeUsers, assemblyId }),
         });
         if (!response.ok) {
-          console.error('web-sync failed:', response.status);
+          let detail = '';
+          try { const json = await response.json(); detail = json?.detail ?? json?.error ?? ''; } catch (_) {}
+          console.error(`web-sync failed: ${response.status}`, detail);
         }
       } catch (error) {
         console.error('Sync users to Flutter failed', error);

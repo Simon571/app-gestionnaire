@@ -1,7 +1,8 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 import { NextResponse } from 'next/server';
 import { readResponsibilities, writeResponsibilities, type ResponsibilitiesData } from '@/lib/responsibilities-store';
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET() {
   try {
@@ -23,3 +24,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to save responsibilities' }, { status: 500 });
   }
 }
+

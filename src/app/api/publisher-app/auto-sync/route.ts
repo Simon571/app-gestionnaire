@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/publisher-app/auto-sync
  * Synchronise les utilisateurs depuis la page Personnes et crée automatiquement 

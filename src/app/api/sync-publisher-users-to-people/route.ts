@@ -1,8 +1,9 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 import { NextResponse } from 'next/server';
 import { readPublisherUsers } from '@/lib/publisher-users-store';
 import type { Person } from '@/app/personnes/page';
+
+export const dynamic = "force-static";
+export const revalidate = 0;
 
 /**
  * Endpoint pour synchroniser les utilisateurs Publisher App vers la liste des personnes

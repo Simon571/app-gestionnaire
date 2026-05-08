@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 export const revalidate = 0;
 import { promises as fs } from 'fs';
 import path from 'path';

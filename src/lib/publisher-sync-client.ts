@@ -25,6 +25,15 @@ export const publisherSyncFetch = async (
   input: string,
   init: PublisherSyncFetchOptions = {}
 ): Promise<Response> => {
+  // En mode Tauri/MSI, utiliser l'URL configurée ou Vercel par défaut
+  const isTauri = typeof window !== 'undefined' && window.location.protocol === 'tauri:';
+  const configuredBase = process.env.NEXT_PUBLIC_API_URL || 'https://app-gestionnaire.vercel.app';
+
+  let resolvedInput = input;
+  if (isTauri && input.startsWith('/')) {
+    resolvedInput = `${configuredBase}${input}`;
+  }
+
   const cfg = getDeviceConfig();
   if (!cfg) {
     // Best-effort fallback for local usage: proceed without device auth headers.
@@ -33,11 +42,11 @@ export const publisherSyncFetch = async (
       // eslint-disable-next-line no-console
       console.warn('publisherSyncFetch: missing NEXT_PUBLIC_PUBLISHER_SYNC_DEVICE_*. Sending request without auth headers.');
     }
-    return fetch(input, init);
+    return fetch(resolvedInput, init);
   }
 
   const { deviceId, apiKey } = cfg;
-  const url = new URL(input, typeof window === 'undefined' ? 'http://localhost' : window.location.origin);
+  const url = new URL(resolvedInput);
   const timestamp = Date.now().toString();
   const { signature } = getSignature(init.method ?? 'GET', `${url.pathname}${url.search}`, timestamp, apiKey);
 
@@ -47,7 +56,7 @@ export const publisherSyncFetch = async (
   headers.set('X-Timestamp', timestamp);
   headers.set('X-Signature', signature);
 
-  return fetch(input, {
+  return fetch(resolvedInput, {
     ...init,
     headers,
   });

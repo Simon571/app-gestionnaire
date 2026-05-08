@@ -1,7 +1,7 @@
 // Pour Tauri (NEXT_EXPORT): static; pour Vercel: dynamic
 // force-dynamic sur Vercel: lire publisher-users.json en temps réel (pas de cache)
-// force-dynamic sur Tauri: compatible avec output: 'export'
-export const dynamic = 'force-dynamic';
+// force-static sur Tauri: compatible avec output: 'export'
+export const dynamic = 'force-static';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { authenticateDevice, handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
@@ -157,8 +157,4 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Requête invalide' }, { status: 400 });
   }
 }
-
-
-
-
 

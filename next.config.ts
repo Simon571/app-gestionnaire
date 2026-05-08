@@ -17,8 +17,8 @@ const nextConfig: NextConfig = {
 
   // Variables d'environnement intégrées au build
   env: {
-    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/Gestionnaire.d.Assemblee_1.0.2_x64_en-US.msi',
-    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.2/app-release.apk'
+    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.3/Gestionnaire.d.Assemblee_1.0.3_x64_en-US.msi',
+    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.3/app-release.apk'
   },
 
   // CORS pour l'app MSI (Tauri) qui appelle Vercel depuis tauri://localhost

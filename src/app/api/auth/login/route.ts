@@ -13,6 +13,8 @@ import { secureApiRoute, RATE_LIMIT_MAX_REQUESTS } from '@/lib/rate-limiter';
 import { AuditLog, EncryptionService } from '@/lib/encryption-service';
 import { SecureAuthService } from '@/lib/secure-auth-service';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   return secureApiRoute(
     request,

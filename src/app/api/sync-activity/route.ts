@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Endpoint pour synchroniser person.activity[] vers publisher-preaching.json
  * Appelé quand on modifie l'activité d'un proclamateur depuis la page Personnes

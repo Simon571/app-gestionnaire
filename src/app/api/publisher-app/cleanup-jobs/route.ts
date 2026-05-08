@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/publisher-app/cleanup-jobs
  * Nettoie les jobs en double ou obsolètes de type user_data

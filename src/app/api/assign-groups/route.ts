@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Endpoint pour assigner automatiquement les groupes aux utilisateurs qui n'en ont pas
  * Distribution équitable entre tous les groupes disponibles

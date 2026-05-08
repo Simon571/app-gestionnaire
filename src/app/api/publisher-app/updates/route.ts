@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-export const dynamic = "force-dynamic";
-
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { PublisherSyncType, PUBLISHER_SYNC_TYPES } from '@/types/publisher-sync';
+
+export const dynamic = "force-static";
+export const revalidate = 0;
 
 const sanitizeTypes = (params: URLSearchParams): PublisherSyncType[] | undefined => {
   const typeParam = params.getAll('type');
@@ -67,4 +67,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

@@ -1,7 +1,26 @@
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 export const revalidate = 0;
 import { NextRequest, NextResponse } from "next/server";
-import { readVcmAssignments, writeVcmAssignments } from '@/lib/vcm-assignments-store';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'data', 'vcm-assignments.json');
+
+async function readAssignments(): Promise<{ [weekId: string]: any }> {
+    try {
+        await fs.mkdir(path.dirname(ASSIGNMENTS_FILE_PATH), { recursive: true });
+        const file = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf8');
+        return JSON.parse(file);
+    } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return {};
+        throw error;
+    }
+}
+
+async function writeAssignments(data: any) {
+    await fs.mkdir(path.dirname(ASSIGNMENTS_FILE_PATH), { recursive: true });
+    await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
 
 export async function GET(
   request: NextRequest,
@@ -9,7 +28,7 @@ export async function GET(
 ) {
     try {
         const { weekStartIso } = await params;
-        const allAssignments = await readVcmAssignments();
+        const allAssignments = await readAssignments();
         const weekAssignments = allAssignments[weekStartIso] || {};
         return NextResponse.json(weekAssignments);
     } catch (e) {
@@ -26,7 +45,7 @@ export async function POST(
   console.log("[API][ASSIGN]", { week: weekStartIso, payload: body });
   
   try {
-    const allAssignments = await readVcmAssignments();
+    const allAssignments = await readAssignments();
     if (!allAssignments[weekStartIso]) {
         allAssignments[weekStartIso] = {};
     }
@@ -37,7 +56,7 @@ export async function POST(
         override: body.override
     };
 
-    await writeVcmAssignments(allAssignments);
+    await writeAssignments(allAssignments);
     return NextResponse.json({ ok: true });
 
   } catch (e) {

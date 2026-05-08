@@ -7,18 +7,17 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 
-// Utiliser le Blob Store Vercel si le token est présent, même en local (pour partager la BDD)
-const useBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const isVercel = process.env.VERCEL === '1';
 
 export async function blobRead(blobPath: string, localPath: string): Promise<string | null> {
-  if (useBlob) {
+  if (isVercel) {
     try {
       const { list } = await import('@vercel/blob');
       const { blobs } = await list({ prefix: blobPath });
       const blob = blobs.find((b) => b.pathname === blobPath);
       if (!blob) return null;
       // Fetch le contenu depuis l'URL publique
-      const resp = await fetch(blob.url, { cache: 'no-store' });
+      const resp = await fetch(blob.url);
       if (!resp.ok) return null;
       return await resp.text();
     } catch (e) {
@@ -35,7 +34,7 @@ export async function blobRead(blobPath: string, localPath: string): Promise<str
 }
 
 export async function blobWrite(blobPath: string, localPath: string, content: string): Promise<void> {
-  if (useBlob) {
+  if (isVercel) {
     const { put } = await import('@vercel/blob');
     await put(blobPath, content, {
       access: 'public',

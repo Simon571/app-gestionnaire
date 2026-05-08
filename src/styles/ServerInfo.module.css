@@ -1,0 +1,118 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.main {
+  max-width: 800px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  color: #333;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.main h1 {
+  text-align: center;
+  color: #667eea;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+  .methods {
+    grid-template-columns: 1fr;
+  }
+}
+
+.method {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.method h2 {
+  color: #495057;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.qrContainer {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.qrCode {
+  border: 8px solid white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.help {
+  text-align: center;
+  color: #868e96;
+  font-size: 0.9rem;
+}
+
+.infoBox {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  margin: 1rem 0;
+}
+
+.infoBox code {
+  display: block;
+  background: #495057;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 0.5rem;
+  font-size: 1.1rem;
+  text-align: center;
+  word-break: break-all;
+}
+
+.steps {
+  margin-top: 1rem;
+}
+
+.steps ol {
+  padding-left: 1.5rem;
+}
+
+.steps li {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background: #d4edda;
+  border-radius: 8px;
+  color: #155724;
+}

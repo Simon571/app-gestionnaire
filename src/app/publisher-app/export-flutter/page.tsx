@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePeople } from '@/context/people-context';
 import { Download, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { getApiBase } from '@/lib/api-base';
 
 export default function ExportPublisherUsersPage() {
   const { people } = usePeople();
@@ -30,7 +29,7 @@ export default function ExportPublisherUsersPage() {
     setExportResult(null);
 
     try {
-      const response = await fetch(`${getApiBase()}/api/export-people-to-publisher`, {
+      const response = await fetch('/api/export-people-to-publisher', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

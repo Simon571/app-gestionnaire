@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { writePublisherUsers } from '@/lib/publisher-users-store';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Endpoint pour réparer publisher-users.json en synchronisant depuis localStorage
  * Utilisé une seule fois pour copier les données complètes (groupes, etc.)

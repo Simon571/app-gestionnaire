@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-export const dynamic = "force-dynamic";
-
 import { z } from 'zod';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
@@ -11,6 +8,9 @@ import {
   PUBLISHER_SYNC_STATUSES,
   PUBLISHER_SYNC_TYPES,
 } from '@/types/publisher-sync';
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const isStatus = (value: string | null): value is PublisherSyncStatus =>
   value !== null && (PUBLISHER_SYNC_STATUSES as readonly string[]).includes(value);
@@ -103,4 +103,3 @@ export async function POST(request: NextRequest) {
     { roles: ['mobile', 'server'], permissions: ['incoming'], methods: ['POST'] }
   );
 }
-

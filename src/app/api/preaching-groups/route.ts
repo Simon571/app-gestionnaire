@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 // Pour Tauri: output: export (static) + NEXT_EXPORT=true en build-tauri
 // Pour Vercel: dynamique, lit preaching-groups.json en temps réel
 // Tauri build utilise NEXT_EXPORT=true qui change ce comportement au build
-export const dynamic = 'force-dynamic'; // Tauri nécessite static pour next export
+export const dynamic = 'force-static'; // Tauri nécessite static pour next export
 import { readPreachingGroups, writePreachingGroups, addPreachingGroup, deletePreachingGroup, type PreachingGroup } from '@/lib/preaching-groups-store';
 
 const noCacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };
@@ -64,8 +64,5 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: 'Failed to delete preaching group' }, { status: 500 });
   }
 }
-
-
-
 
 

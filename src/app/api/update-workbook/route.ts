@@ -1,9 +1,9 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
 import { NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 // Chemin vers notre fichier de stockage JSON
 const dataFilePath = path.join(process.cwd(), 'export', 'vcm-program.json');

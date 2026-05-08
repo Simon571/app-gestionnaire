@@ -7,6 +7,7 @@ import { AppSettingsProvider } from '@/context/app-settings-context';
 import RouteProgress from '@/components/RouteProgress';
 import { ptSans } from '@/lib/fonts';
 import { ErrorBoundary } from '@/components/error-boundary';
+import ServerBanner from '@/components/ServerBanner';
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://app-gestionnaire.vercel.app';
 
@@ -126,6 +127,7 @@ export default function RootLayout({
             <RouteProgress />
             <PeopleProvider>
               <AppSettingsProvider>
+                <ServerBanner />
                 <LayoutWrapper isPortal={isPortal}>{children}</LayoutWrapper>
               </AppSettingsProvider>
             </PeopleProvider>

@@ -3,6 +3,8 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
+export const dynamic = 'force-dynamic';
+
 const FLUTTER_DATA_PATH = path.join(process.cwd(), 'flutter_app', 'assets', 'data', 'temoignage_public.json');
 
 /**

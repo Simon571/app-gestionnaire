@@ -1,32 +1,29 @@
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 export const revalidate = 0;
 
 import { NextRequest, NextResponse } from "next/server";
-import { readVcmAssignments, writeVcmAssignments } from '@/lib/vcm-assignments-store';
+import { promises as fs } from 'fs';
+import path from 'path';
+
+const ASSIGNMENTS_FILE_PATH = path.join(process.cwd(), 'data', 'vcm-assignments.json');
+
+async function readAssignments(): Promise<{ [weekId: string]: any }> {
+    try {
+        const file = await fs.readFile(ASSIGNMENTS_FILE_PATH, 'utf8');
+        return JSON.parse(file);
+    } catch (error) {
+        if (error instanceof Error && 'code' in error && error.code === 'ENOENT') return {};
+        throw error;
+    }
+}
+
+async function writeAssignments(data: any) {
+    await fs.writeFile(ASSIGNMENTS_FILE_PATH, JSON.stringify(data, null, 2), 'utf8');
+}
 
 type RouteContext = {
   params: Promise<{ weekStartIso: string }>
 };
-
-export async function GET(
-  request: NextRequest,
-  context: RouteContext
-) {
-  try {
-    const { weekStartIso } = await context.params;
-    
-    let data: any = {};
-    try {
-      data = await readVcmAssignments();
-    } catch (e) {
-      console.error('Failed to read assignments', e);
-    }
-    
-    return NextResponse.json(data[weekStartIso] || {});
-  } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch assignments' }, { status: 500 });
-  }
-}
 
 export async function DELETE(
   request: NextRequest,
@@ -35,9 +32,9 @@ export async function DELETE(
   const { weekStartIso } = await context.params;
   console.log("[API][DELETE] Suppression de toutes les données pour la semaine:", weekStartIso);
   try {
-    const allAssignments = await readVcmAssignments();
+    const allAssignments = await readAssignments();
     delete allAssignments[weekStartIso];
-    await writeVcmAssignments(allAssignments);
+    await writeAssignments(allAssignments);
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ message: 'Erreur serveur', error: (e as Error).message }, { status: 500 });
