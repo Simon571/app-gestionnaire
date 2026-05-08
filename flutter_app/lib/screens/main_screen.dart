@@ -1710,8 +1710,8 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
     MaterialPageRoute<void>? Function(VcmWeek week)? destinationBuilder,
     VcmAssignmentsState? vcmAssignments,
   }) {
-    // Collapse view limited to three upcoming weeks for quicker scanning.
-    final shown = expanded ? weeks : weeks.take(3).toList();
+    // Collapse view limited to five upcoming weeks for quicker scanning.
+    final shown = expanded ? weeks : weeks.take(5).toList();
 
     return Card(
       elevation: 2,

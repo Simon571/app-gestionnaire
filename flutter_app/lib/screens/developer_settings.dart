@@ -65,6 +65,25 @@ class _DeveloperSettingsState extends ConsumerState<DeveloperSettings> {
                   "Option avancée. Utilise l'adresse IP de ton PC (réseau Wi‑Fi) ou 10.0.2.2 sur émulateur Android.",
                 ),
               ),
+            // ✅ Bouton Scanner QR Code
+            ElevatedButton.icon(
+              onPressed: () async {
+                final result = await Navigator.of(context).pushNamed('/qr-scanner');
+                if (result == true) {
+                  // Recharger l'URL actuelle
+                  _load();
+                }
+              },
+              icon: const Icon(Icons.qr_code_scanner),
+              label: const Text('Scanner le QR Code du serveur'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
             TextField(
               controller: _apiBaseController,
               decoration: const InputDecoration(labelText: 'API Base (ex: http://192.168.1.5:3000)'),

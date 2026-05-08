@@ -4,6 +4,10 @@ import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 /**
  * POST /api/publisher-app/auto-sync
  * Synchronise les utilisateurs depuis la page Personnes et crée automatiquement 

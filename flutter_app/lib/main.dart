@@ -16,7 +16,7 @@ import 'services/update_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialiser les services au démarrage
   await initializeSharedServices();
   
@@ -54,11 +54,9 @@ void main() async {
   } catch (e) {
     print('⚠️ Failed to load users: $e — l\'utilisateur doit se connecter à une assemblée');
   }
-  
+
   runApp(const ProviderScope(child: MyApp()));
 }
-
-
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({Key? key}) : super(key: key);

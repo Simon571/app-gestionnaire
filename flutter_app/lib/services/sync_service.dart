@@ -142,10 +142,8 @@ class SyncCredentials {
     // 5) Apply apiBase override from prefs (if any)
     if (apiBasePref != null) {
       final normalized = _normalizeApiBase(apiBasePref);
-      if (normalized == _prodApiBase) {
-        if (kDebugMode) print('SyncCredentials: overriding apiBase from prefs: $apiBasePref');
-        loaded = loaded.copyWith(apiBase: normalized);
-      }
+      if (kDebugMode) print('SyncCredentials: overriding apiBase from prefs: $normalized');
+      loaded = loaded.copyWith(apiBase: normalized);
     }
 
     return loaded;

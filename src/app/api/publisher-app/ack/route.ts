@@ -6,6 +6,10 @@ import { PUBLISHER_SYNC_STATUSES } from '@/types/publisher-sync';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 const bodySchema = z.object({
   jobId: z.string().min(1),
   status: z.enum(PUBLISHER_SYNC_STATUSES).default('processed'),

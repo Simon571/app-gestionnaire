@@ -3,6 +3,10 @@ import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 /**
  * POST /api/publisher-app/cleanup-jobs
  * Nettoie les jobs en double ou obsolètes de type user_data

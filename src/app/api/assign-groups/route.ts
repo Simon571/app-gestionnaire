@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 /**
  * Endpoint pour assigner automatiquement les groupes aux utilisateurs qui n'en ont pas
  * Distribution équitable entre tous les groupes disponibles

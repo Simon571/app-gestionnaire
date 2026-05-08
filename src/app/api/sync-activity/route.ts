@@ -4,6 +4,10 @@ import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 /**
  * Endpoint pour synchroniser person.activity[] vers publisher-preaching.json
  * Appelé quand on modifie l'activité d'un proclamateur depuis la page Personnes

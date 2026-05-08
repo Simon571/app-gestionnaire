@@ -3,6 +3,10 @@ import { writePublisherUsers } from '@/lib/publisher-users-store';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 /**
  * Endpoint pour réparer publisher-users.json en synchronisant depuis localStorage
  * Utilisé une seule fois pour copier les données complètes (groupes, etc.)

@@ -5,6 +5,10 @@ import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 const FLUTTER_DATA_PATH = path.join(process.cwd(), 'flutter_app', 'assets', 'data', 'temoignage_public.json');
 
 /**

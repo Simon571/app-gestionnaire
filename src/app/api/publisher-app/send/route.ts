@@ -8,6 +8,10 @@ import { PUBLISHER_SYNC_TYPES, PUBLISHER_SYNC_DIRECTIONS } from '@/types/publish
 
 export const dynamic = 'force-dynamic';
 
+export async function GET() {
+  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
+}
+
 const bodySchema = z.object({
   type: z.enum(PUBLISHER_SYNC_TYPES),
   payload: z.unknown().default({}),

@@ -69,25 +69,16 @@ class StorageService {
   String get lastPeopleSource => _lastPeopleSource;
   int get lastPeopleCount => _lastPeopleCount;
 
-  Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
-    // Clear any non-production API base override.
-    final legacyApiBase = _prefs.getString('api_base');
-    if (legacyApiBase != null && _normalizeApiBase(legacyApiBase) != _prodApiBase) {
-      await _prefs.remove('api_base');
-    }
-    // Retenter d'envoyer les rapports en attente au démarrage
-    await retryPendingReports();
-  }
+Future<void> init() async {
+  _prefs = await SharedPreferences.getInstance();
+  // Retenter d'envoyer les rapports en attente au démarrage
+  await retryPendingReports();
+}
 
-  Future<String> getEffectiveApiBase() async {
-    final fromPrefs = _prefs.getString('api_base');
-    final normalized = _normalizeApiBase(fromPrefs ?? _defaultApiBase);
-    if (normalized != _prodApiBase) {
-      return _prodApiBase;
-    }
-    return normalized;
-  }
+Future<String> getEffectiveApiBase() async {
+  final fromPrefs = _prefs.getString('api_base');
+  return _normalizeApiBase(fromPrefs ?? _defaultApiBase);
+}
 
   // Append a small timestamped debug line into /sdcard/Download/gestionnaire_debug.txt
   Future<void> _appendDebug(String tag, String message) async {
@@ -460,17 +451,14 @@ class StorageService {
   // ===== API BASE =====
   Future<String?> getApiBase() async => _prefs.getString('api_base');
 
-  Future<void> setApiBase(String apiBase) async {
-    final normalized = _normalizeApiBase(apiBase);
-    if (normalized.isEmpty) {
-      await _prefs.remove('api_base');
-      return;
-    }
-    if (normalized != _prodApiBase) {
-      return;
-    }
-    await _prefs.setString('api_base', normalized);
+Future<void> setApiBase(String apiBase) async {
+  final normalized = _normalizeApiBase(apiBase);
+  if (normalized.isEmpty) {
+    await _prefs.remove('api_base');
+    return;
   }
+  await _prefs.setString('api_base', normalized);
+}
 
   // ===== PREACHING ACTIVITY =====
   Future<Map<String, dynamic>> getPreachingData(String userId) async {

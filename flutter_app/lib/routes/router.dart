@@ -6,6 +6,7 @@ import '../screens/login_screen.dart';
 import '../screens/main_screen.dart';
 import '../screens/admin_import_users.dart';
 import '../screens/developer_settings.dart';
+import '../screens/qr_scanner_screen.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   // Ne pas watcher authStateProvider pour éviter les rebuilds constants
@@ -60,6 +61,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           path: '/admin/dev-settings',
           builder: (context, state) => const DeveloperSettings(),
         ),
+      // QR Scanner
+      GoRoute(
+        path: '/qr-scanner',
+        builder: (context, state) => const QRScannerScreen(),
+      ),
       GoRoute(
         path: '/',
         redirect: (context, state) => '/login',
