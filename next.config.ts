@@ -6,9 +6,11 @@ const withNextIntlConfig = withNextIntl('./src/i18n.ts');
 
 const isStaticExport = process.env.NEXT_EXPORT === 'true';
 
+const isTauriBuild = process.env.NEXT_CONFIG === 'next.config.tauri.ts';
+
 const nextConfig: NextConfig = {
   /* config options here */
-  ...(isStaticExport ? { output: 'export' } : {}),
+  ...(isStaticExport ? { output: 'export' } : isTauriBuild ? { output: 'standalone' } : {}),
 
   // Inclure les fichiers data/ dans le bundle des fonctions serverless Vercel
   outputFileTracingIncludes: {
@@ -17,8 +19,8 @@ const nextConfig: NextConfig = {
 
   // Variables d'environnement intégrées au build
   env: {
-    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.3/Gestionnaire.d.Assemblee_1.0.3_x64_en-US.msi',
-    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.3/app-release.apk'
+    NEXT_PUBLIC_WINDOWS_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.4/Gestionnaire.d.Assemblee_1.0.4_x64_en-US.msi',
+    NEXT_PUBLIC_ANDROID_DOWNLOAD_URL: 'https://github.com/Simon571/app-gestionnaire/releases/download/v1.0.4/app-release.apk'
   },
 
   // CORS pour l'app MSI (Tauri) qui appelle Vercel depuis tauri://localhost

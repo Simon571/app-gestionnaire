@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { DownloadPortal } from "@/components/marketing/download-portal";
 
+export const dynamic = 'force-static';
+
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://app-gestionnaire.vercel.app";
 
 export const metadata: Metadata = {

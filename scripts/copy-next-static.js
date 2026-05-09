@@ -40,8 +40,8 @@ copyRecursive(staticSrc, staticDest);
 console.log(`Static Next.js copié vers ${path.relative(projectRoot, staticDest)}`);
 
 if (!fs.existsSync(standaloneSrc)) {
-  console.error('Erreur: le dossier .next/standalone est introuvable. Avez-vous exécuté "next build" ?');
-  process.exit(1);
+  console.warn('Avertissement: .next/standalone introuvable, archivage Tauri ignoré (normal pour build Vercel).');
+  process.exit(0);
 }
 
 fs.rmSync(archiveDest, { force: true });
