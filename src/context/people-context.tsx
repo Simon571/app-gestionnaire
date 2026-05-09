@@ -333,52 +333,55 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [people, families, preachingGroups, discourseList, devices, isLoaded]);
 
-  // Synchroniser la liste vers publisher-users.json (lu par Flutter) dès que les personnes changent.
-  // On utilise un délai de 2 secondes pour ne pas surcharger l'API à chaque frappe clavier.
-  useEffect(() => {
-    if (!isLoaded || people.length === 0 || typeof window === 'undefined' || !window.localStorage) return;
-    const timer = setTimeout(async () => {
+  // Fonction réutilisable pour synchroniser les membres vers le serveur (lu par Flutter)
+  const syncPeopleToServer = React.useCallback(async (currentPeople: Person[]) => {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    if (currentPeople.length === 0) return;
+    try {
+      setIsSyncingUsers(true);
+      const apiBase = getApiBase();
+      // Lire l'assemblyId depuis les paramètres de l'application (localStorage)
+      let assemblyId = '';
       try {
-        setIsSyncingUsers(true);
-        const apiBase = getApiBase();
-        // Lire l'assemblyId depuis les paramètres de l'application (localStorage)
-        let assemblyId = '';
-        try {
-          const raw = localStorage.getItem('appSettings');
-          if (raw) assemblyId = (JSON.parse(raw) as Record<string, unknown>)?.['assemblyId'] as string ?? '';
-        } catch (_) {}
-        if (!assemblyId) {
-          // Utiliser KINYOL-WGHK par défaut pour KIN YOLO EST
-          assemblyId = 'KINYOL-WGHK';
-        }
-
-        // Pré-sérialiser pour convertir les Date en strings et supprimer les valeurs non-JSON
-        let safeUsers: unknown[];
-        try {
-          safeUsers = JSON.parse(JSON.stringify(people));
-        } catch (serErr) {
-          console.error('web-sync: échec de sérialisation des données:', serErr);
-          return;
-        }
-
-        const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ users: safeUsers, assemblyId }),
-        });
-        if (!response.ok) {
-          let detail = '';
-          try { const json = await response.json(); detail = json?.detail ?? json?.error ?? ''; } catch (_) {}
-          console.error(`web-sync failed: ${response.status}`, detail);
-        }
-      } catch (error) {
-        console.error('Sync users to Flutter failed', error);
-      } finally {
-        setIsSyncingUsers(false);
+        const raw = localStorage.getItem('appSettings');
+        if (raw) assemblyId = (JSON.parse(raw) as Record<string, unknown>)?.['assemblyId'] as string ?? '';
+      } catch (_) {}
+      if (!assemblyId) {
+        console.warn('web-sync: assemblyId non configuré dans les paramètres de l\'application');
+        return;
       }
-    }, 2000);
+      let safeUsers: unknown[];
+      try {
+        safeUsers = JSON.parse(JSON.stringify(currentPeople));
+      } catch (serErr) {
+        console.error('web-sync: échec de sérialisation:', serErr);
+        return;
+      }
+      const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ users: safeUsers, assemblyId }),
+      });
+      if (!response.ok) {
+        let detail = '';
+        try { const json = await response.json(); detail = json?.detail ?? json?.error ?? ''; } catch (_) {}
+        console.error(`web-sync failed: ${response.status}`, detail);
+      } else {
+        console.log(`web-sync: ${currentPeople.length} membres synchronisés (assemblyId=${assemblyId})`);
+      }
+    } catch (error) {
+      console.error('Sync users to Flutter failed', error);
+    } finally {
+      setIsSyncingUsers(false);
+    }
+  }, []);
+
+  // Synchroniser la liste vers le serveur dès que les personnes changent (délai 1s anti-rebond)
+  useEffect(() => {
+    if (!isLoaded || typeof window === 'undefined' || !window.localStorage) return;
+    const timer = setTimeout(() => { syncPeopleToServer(people); }, 1000);
     return () => clearTimeout(timer);
-  }, [people, isLoaded]);
+  }, [people, isLoaded, syncPeopleToServer]);
 
   // Synchroniser les familles vers l'API dès qu'elles changent
   useEffect(() => {

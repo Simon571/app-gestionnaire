@@ -1,25 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Gestionnaire d'Assemblée",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "identifier": "com.appgestionnaire.app",
   "build": {
-    "frontendDist": "../out",
-    "devUrl": "http://localhost:3000",
     "beforeDevCommand": "npm run dev:tauri",
-    "beforeBuildCommand": "npm run build:tauri"
+    "beforeBuildCommand": "powershell -File build-tauri-final.ps1"
   },
   "app": {
-    "windows": [
-      {
-        "label": "main",
-        "title": "Gestionnaire d'assemblée",
-        "width": 1200,
-        "height": 800,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ],
     "security": {
       "csp": null
     },
@@ -41,6 +29,13 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": []
+    "resources": [
+      "resources/**/*"
+    ]
+  },
+  "plugins": {
+    "process": {
+      "sidecar": true
+    }
   }
 }
