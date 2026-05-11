@@ -1,0 +1,88 @@
+{
+  "jobs": [
+    {
+      "id": "ca6ebeca-ff9a-4429-b584-9473586e3ff6",
+      "type": "communications",
+      "direction": "desktop_to_mobile",
+      "payload": {
+        "generatedAt": "2026-04-26T21:03:16.952Z",
+        "boardType": "assembly",
+        "boardLabel": "Tableau d'affichage assemblée",
+        "communications": [
+          {
+            "id": "comm-1777220351816",
+            "title": "<Communication>",
+            "type": "communication",
+            "displayAfter": "2026-04-26T16:19:11.816Z",
+            "displayAfterTime": "09:30",
+            "expirationDate": "2026-04-30T23:00:00.000Z",
+            "attachment": "Liste des orateurs extérieurs de la circonscription KN -14.docx",
+            "link": "",
+            "content": "",
+            "order": 1,
+            "boardType": "assembly"
+          },
+          {
+            "id": "comm-1777222678237",
+            "title": "<Communication>",
+            "type": "communication",
+            "displayAfter": "2026-04-26T16:57:58.237Z",
+            "displayAfterTime": "09:30",
+            "expirationDate": "2026-05-01T23:00:00.000Z",
+            "attachment": "reglement_officiel_afrikacash (1).pdf",
+            "link": "",
+            "content": "",
+            "order": 2,
+            "boardType": "assembly"
+          }
+        ],
+        "totalCount": 2
+      },
+      "status": "sent",
+      "initiator": "desktop",
+      "deviceTarget": null,
+      "notify": true,
+      "errorMessage": null,
+      "createdAt": "2026-04-26T21:03:20.244Z",
+      "updatedAt": "2026-04-26T21:03:39.115Z"
+    },
+    {
+      "id": "2aedd50a-0cdf-404d-8793-d583b732d53b",
+      "type": "territories",
+      "direction": "desktop_to_mobile",
+      "payload": {
+        "message": "Test sync blob"
+      },
+      "status": "sent",
+      "initiator": "desktop",
+      "deviceTarget": null,
+      "notify": false,
+      "errorMessage": null,
+      "createdAt": "2026-04-26T20:34:12.584Z",
+      "updatedAt": "2026-04-26T21:02:37.089Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "2b65bd5c-2c83-4ac6-9809-cc30c6c0878b",
+      "jobId": "ca6ebeca-ff9a-4429-b584-9473586e3ff6",
+      "message": "Statut mis à jour → sent",
+      "level": "info",
+      "createdAt": "2026-04-26T21:03:39.115Z"
+    },
+    {
+      "id": "a6c23b4d-b50f-449e-af67-b31e53a4b795",
+      "jobId": "ca6ebeca-ff9a-4429-b584-9473586e3ff6",
+      "message": "Notification programmée pour communications",
+      "level": "info",
+      "createdAt": "2026-04-26T21:03:20.244Z"
+    },
+    {
+      "id": "db4e92a6-28bd-495d-8f72-43a76d2a2e79",
+      "jobId": "2aedd50a-0cdf-404d-8793-d583b732d53b",
+      "message": "Statut mis à jour → sent",
+      "level": "info",
+      "createdAt": "2026-04-26T21:02:37.089Z"
+    }
+  ]
+}

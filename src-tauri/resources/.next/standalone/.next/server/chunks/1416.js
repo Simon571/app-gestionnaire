@@ -1,0 +1,1 @@
+"use strict";exports.id=1416,exports.ids=[1416],exports.modules={41416:(a,b,c)=>{async function d(a,b){throw Error("Assistant IA indisponible dans cette version export.")}c.r(b),c.d(b,{askAssistant:()=>d})}};

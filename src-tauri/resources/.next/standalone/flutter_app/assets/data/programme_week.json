@@ -1,0 +1,139 @@
+{
+  "weeks": [
+    {
+      "weekStart": "2026-04-19T23:00:00.000Z",
+      "weekEnd": "2026-04-25T23:00:00.000Z",
+      "weekLabel": "20 avr. - 26 avr. 2026",
+      "assignments": {
+        "hall1:treasures_president": "person-1771495928976-1",
+        "hall1:treasures_opening_prayer": "person-1771495928976-5",
+        "hall1:treasures_discourse": "person-1771495928976-10",
+        "hall1:treasures_gems": "person-1771495928976-16",
+        "hall1:bible_reading": "person-1771495928976-8",
+        "hall1:ministry_0_student": "person-1771495928976-6",
+        "hall1:ministry_0_assistant": "person-1771495928976-7",
+        "hall1:ministry_1_student": "person-1771495928976-17",
+        "hall1:ministry_1_assistant": "person-1771495928976-9",
+        "hall1:ministry_2_student": "person-1771495928976-23",
+        "hall1:ministry_2_assistant": "person-1771495928976-13",
+        "hall1:ministry_3_student": "person-1771495928976-25",
+        "hall1:ministry_3_assistant": "person-1771495928976-14",
+        "hall1:life_0_participant": "person-1771495928976-27",
+        "study_conductor": "person-1771495928976-36",
+        "study_reader": "person-1771495928976-18",
+        "closing_prayer": "person-1771495928976-20"
+      },
+      "songs": {
+        "opening": "42",
+        "middle": "160",
+        "closing": "34"
+      },
+      "participants": [
+        {
+          "personId": "person-1771495928976-1",
+          "personName": "Abel MBOMBO",
+          "role": "hall1:treasures_president",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-5",
+          "personName": "André TSHITUNGU",
+          "role": "hall1:treasures_opening_prayer",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-10",
+          "personName": "Asher NTUMBA",
+          "role": "hall1:treasures_discourse",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-16",
+          "personName": "Bogus KUNONGA",
+          "role": "hall1:treasures_gems",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-8",
+          "personName": "Antoine LUYEDISA",
+          "role": "hall1:bible_reading",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-6",
+          "personName": "Anna MUKAYI",
+          "role": "hall1:ministry_0_student",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-7",
+          "personName": "Anya DIATEKILA",
+          "role": "hall1:ministry_0_assistant",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-17",
+          "personName": "Bogusson KUNONGA",
+          "role": "hall1:ministry_1_student",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-9",
+          "personName": "Armand MURHIMALIKA",
+          "role": "hall1:ministry_1_assistant",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-23",
+          "personName": "Charles MBUMBA",
+          "role": "hall1:ministry_2_student",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-13",
+          "personName": "Bernard BUKASA",
+          "role": "hall1:ministry_2_assistant",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-25",
+          "personName": "Chimène INGINDA",
+          "role": "hall1:ministry_3_student",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-14",
+          "personName": "Bienvenu MAFUTA",
+          "role": "hall1:ministry_3_assistant",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-27",
+          "personName": "Christophe EFAMBE",
+          "role": "hall1:life_0_participant",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-36",
+          "personName": "Delphin LUTUMBA",
+          "role": "study_conductor",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-18",
+          "personName": "Braslin ILUNGA",
+          "role": "study_reader",
+          "date": "2026-04-19T23:00:00.000Z"
+        },
+        {
+          "personId": "person-1771495928976-20",
+          "personName": "Cephas KINAVANA",
+          "role": "closing_prayer",
+          "date": "2026-04-19T23:00:00.000Z"
+        }
+      ],
+      "hall": "1",
+      "updatedAt": "2026-04-26T16:34:48.501Z"
+    }
+  ]
+}

@@ -2,7 +2,7 @@ name: gestionnaire_app
 description: Application mobile pour les utilisateurs de l'assemblée.
 publish_to: 'none'
 
-version: 1.0.3+103
+version: 1.0.4+104
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -34,6 +34,9 @@ dependencies:
   uuid: ^4.0.0
   crypto: ^3.0.3
   connectivity_plus: ^7.0.0
+  
+  # QR Code Scanning
+  mobile_scanner: ^6.0.0
   
   # Date & Time
   timezone: ^0.10.1

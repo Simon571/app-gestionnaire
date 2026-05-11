@@ -1,0 +1,1 @@
+"use strict";exports.id=2155,exports.ids=[2155],exports.modules={62155:(a,b,c)=>{async function d(a){throw Error("Synthese vocale indisponible en build export.")}c.r(b),c.d(b,{textToSpeech:()=>d})}};

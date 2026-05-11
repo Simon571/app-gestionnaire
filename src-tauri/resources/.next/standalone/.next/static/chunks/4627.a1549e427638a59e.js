@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_N_E=self.webpackChunk_N_E||[]).push([[4627],{24627:(e,n,s)=>{async function t(e){throw Error("Synthese vocale indisponible en build export.")}s.r(n),s.d(n,{textToSpeech:()=>t})}}]);

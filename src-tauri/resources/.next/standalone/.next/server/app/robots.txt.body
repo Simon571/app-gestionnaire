@@ -1,0 +1,20 @@
+User-Agent: *
+Allow: /
+Allow: /fr/
+Allow: /en/
+Allow: /fr/download
+Allow: /en/download
+Disallow: /api/
+Disallow: /admin/
+Disallow: /moi/
+Disallow: /publisher-app/
+Disallow: /personnes
+Disallow: /programme
+Disallow: /territoires
+Disallow: /rapports
+Disallow: /assembly
+Disallow: /circonscriptions-orateurs
+Disallow: /vcm
+Disallow: /downloads/
+
+Sitemap: https://app-gestionnaire.vercel.app/sitemap.xml
