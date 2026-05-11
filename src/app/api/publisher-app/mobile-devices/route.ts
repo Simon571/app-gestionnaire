@@ -37,8 +37,3 @@ export async function GET() {
     return NextResponse.json({ devices: [], d: String(error) });
   }
 }
-  } catch (error) {
-    console.error('mobile-devices GET error', error);
-    return NextResponse.json({ devices: [] });
-  }
-}
