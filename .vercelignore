@@ -24,6 +24,7 @@ src-tauri/
 # Flutter app
 flutter_app/
 *.apk
+!public/downloads/app-release.apk
 
 # Local data
 data/
