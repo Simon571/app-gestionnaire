@@ -6,8 +6,8 @@
  * - Sur Vercel (serverless)    : Upstash Redis (persistant, gratuit, sans limite)
  *
  * Variables d'environnement requises sur Vercel :
- *   UPSTASH_REDIS_REST_URL   → https://xxxxx.upstash.io
- *   UPSTASH_REDIS_REST_TOKEN → AXxx...
+ *   UPSTASH_REDIS_REST_URL   -> https://xxxxx.upstash.io
+ *   UPSTASH_REDIS_REST_TOKEN -> AXxx...
  */
 import { promises as fs } from 'fs';
 import path from 'path';
@@ -24,27 +24,26 @@ function hasRedis(): boolean {
   return url.startsWith('https://') && token.length > 0;
 }
 
-/** Convertit un chemin de fichier en clé Redis valide */
+/** Convertit un chemin de fichier en cle Redis valide */
 function toRedisKey(blobPath: string): string {
   return 'app:' + blobPath.replace(/\\/g, '/').replace(/\//g, ':');
 }
 
-function getRedisClient() {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { Redis } = require('@upstash/redis');
+async function getRedisClient() {
+  const { Redis } = await import('@upstash/redis');
   const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
   const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
   return new Redis({ url, token });
 }
 
 async function redisGet(key: string): Promise<string | null> {
-  const redis = getRedisClient();
+  const redis = await getRedisClient();
   const value = await redis.get<string>(key);
   return value ?? null;
 }
 
 async function redisSet(key: string, value: string): Promise<void> {
-  const redis = getRedisClient();
+  const redis = await getRedisClient();
   await redis.set(key, value);
 }
 
