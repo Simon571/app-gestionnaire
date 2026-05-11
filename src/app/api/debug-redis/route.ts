@@ -16,7 +16,9 @@ export async function GET() {
   let pingResult = 'not attempted';
   try {
     const { Redis } = await import('@upstash/redis');
-    const redis = Redis.fromEnv();
+    const cleanUrl = (process.env.UPSTASH_REDIS_REST_URL ?? '').trim().replace(/^\uFEFF/, '');
+    const cleanToken = (process.env.UPSTASH_REDIS_REST_TOKEN ?? '').trim().replace(/^\uFEFF/, '');
+    const redis = new Redis({ url: cleanUrl, token: cleanToken });
     const pong = await redis.ping();
     pingResult = String(pong);
   } catch (e: unknown) {
