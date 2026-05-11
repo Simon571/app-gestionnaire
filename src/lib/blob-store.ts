@@ -1,4 +1,4 @@
-/**
+﻿/**
  * blob-store.ts
  * Abstraction de stockage persistant pour les fichiers JSON de données.
  *
@@ -13,31 +13,43 @@ import { promises as fs } from 'fs';
 import path from 'path';
 
 const isVercel = process.env.VERCEL === '1';
-const hasRedis =
-  typeof process.env.UPSTASH_REDIS_REST_URL === 'string' &&
-  process.env.UPSTASH_REDIS_REST_URL.length > 0 &&
-  typeof process.env.UPSTASH_REDIS_REST_TOKEN === 'string' &&
-  process.env.UPSTASH_REDIS_REST_TOKEN.length > 0;
 
+function cleanEnv(s: string | undefined): string {
+  return (s ?? '').replace(/^\uFEFF/, '').trim();
+}
+
+function hasRedis(): boolean {
+  const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
+  const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
+  return url.startsWith('https://') && token.length > 0;
+}
+
+/** Convertit un chemin de fichier en clé Redis valide */
 function toRedisKey(blobPath: string): string {
   return 'app:' + blobPath.replace(/\\/g, '/').replace(/\//g, ':');
 }
 
+function getRedisClient() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Redis } = require('@upstash/redis');
+  const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
+  const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
+  return new Redis({ url, token });
+}
+
 async function redisGet(key: string): Promise<string | null> {
-  const { Redis } = await import('@upstash/redis');
-  const redis = Redis.fromEnv();
+  const redis = getRedisClient();
   const value = await redis.get<string>(key);
   return value ?? null;
 }
 
 async function redisSet(key: string, value: string): Promise<void> {
-  const { Redis } = await import('@upstash/redis');
-  const redis = Redis.fromEnv();
+  const redis = getRedisClient();
   await redis.set(key, value);
 }
 
 export async function blobRead(blobPath: string, localPath: string): Promise<string | null> {
-  if (isVercel && hasRedis) {
+  if (isVercel && hasRedis()) {
     try {
       return await redisGet(toRedisKey(blobPath));
     } catch (e) {
@@ -53,7 +65,7 @@ export async function blobRead(blobPath: string, localPath: string): Promise<str
 }
 
 export async function blobWrite(blobPath: string, localPath: string, content: string): Promise<void> {
-  if (isVercel && hasRedis) {
+  if (isVercel && hasRedis()) {
     try {
       await redisSet(toRedisKey(blobPath), content);
       return;
