@@ -21,17 +21,18 @@ export async function GET() {
   try {
     const raw = await blobRead(BLOB_DEVICES_PATH, DEVICE_CONFIG_PATH);
     if (!raw) {
-      return NextResponse.json({ devices: [] });
+      return NextResponse.json({ devices: [], debug: 'raw is null/empty' });
     }
-
-    const parsed = JSON.parse(raw) as { devices: DeviceEntry[] };
+    const rawType = typeof raw;
+    const rawPreview = typeof raw === 'string' ? raw.substring(0, 80) : JSON.stringify(raw).substring(0, 80);
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) as { devices: DeviceEntry[] } : raw as unknown as { devices: DeviceEntry[] };
     const devices = (parsed.devices ?? [])
       .filter((d) => d.role === 'mobile')
       .map(({ id, label, status, lastRotatedAt }) => ({ id, label, status, lastRotatedAt }));
 
-    return NextResponse.json({ devices });
+    return NextResponse.json({ devices, debug: { rawType, rawPreview } });
   } catch (error) {
     console.error('mobile-devices GET error', error);
-    return NextResponse.json({ devices: [] });
+    return NextResponse.json({ devices: [], debug: String(error) });
   }
 }
