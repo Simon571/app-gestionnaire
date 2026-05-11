@@ -51,8 +51,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ job }, { status: 201 });
     } catch (error) {
       console.error('publisher-app/send local error', error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       return NextResponse.json(
-        { error: 'Impossible de créer le job de synchronisation.' },
+        { error: 'Impossible de créer le job de synchronisation.', detail: errMsg },
         { status: 400 }
       );
     }
