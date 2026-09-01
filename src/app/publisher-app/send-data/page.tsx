@@ -14,6 +14,7 @@ import {
 } from '@/types/publisher-sync';
 import { publisherSyncFetch } from '@/lib/publisher-sync-client';
 import { isActionablePublisherJob } from '@/lib/publisher-sync-actionable';
+import { MobileDeviceEnrolment } from '@/components/publisher/device-enrolment';
 
 const typeLabels: Record<PublisherSyncType, string> = {
   programme_week: 'Programme Vie et ministère',
@@ -32,21 +33,12 @@ const typeLabels: Record<PublisherSyncType, string> = {
   user_data: 'Données utilisateur',
 };
 
-interface MobileDevice {
-  id: string;
-  label: string;
-  status: string;
-  lastRotatedAt: string | null;
-}
-
 export default function SendDataPage() {
   const { toast } = useToast();
   const [jobs, setJobs] = useState<PublisherSyncJob[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mobileDevices, setMobileDevices] = useState<MobileDevice[]>([]);
-  const [loadingDevices, setLoadingDevices] = useState(true);
 
   const loadJobs = useCallback(async () => {
     setLoadingJobs(true);
@@ -65,24 +57,11 @@ export default function SendDataPage() {
     }
   }, []);
 
-  const loadMobileDevices = useCallback(async () => {
-    setLoadingDevices(true);
-    try {
-      const response = await fetch('/api/publisher-app/mobile-devices');
-      if (!response.ok) throw new Error('devices');
-      const data = await response.json();
-      setMobileDevices(Array.isArray(data.devices) ? data.devices : []);
-    } catch {
-      setMobileDevices([]);
-    } finally {
-      setLoadingDevices(false);
-    }
-  }, []);
-
+  // La liste des appareils, leur enrôlement et leur révocation vivent dans
+  // MobileDeviceEnrolment, qui gère son propre chargement.
   useEffect(() => {
     loadJobs();
-    loadMobileDevices();
-  }, [loadJobs, loadMobileDevices]);
+  }, [loadJobs]);
 
   const summary = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -217,31 +196,7 @@ export default function SendDataPage() {
           <CardTitle className="text-lg font-semibold">Appareils mobiles enregistrés</CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-          {loadingDevices && (
-            <div className="flex h-[300px] items-center justify-center text-sm text-slate-500">Chargement…</div>
-          )}
-          {!loadingDevices && mobileDevices.length === 0 && (
-            <div className="flex h-[300px] items-center justify-center text-center text-sm text-slate-500">
-              <div>
-                <p className="mb-2">Aucun appareil mobile enregistré.</p>
-                <p className="text-xs text-slate-400">
-                  Les notifications de synchronisation apparaîtront ici lorsque des appareils mobiles seront connectés.
-                </p>
-              </div>
-            </div>
-          )}
-          {!loadingDevices && mobileDevices.length > 0 && (
-            <div className="space-y-2">
-              {mobileDevices.map((device) => (
-                <div key={device.id} className="flex items-center justify-between rounded border border-sky-200 bg-sky-50 px-3 py-2 text-sm">
-                  <span className="font-medium">{device.label}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${device.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'}`}>
-                    {device.status === 'active' ? 'Actif' : 'Révoqué'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+          <MobileDeviceEnrolment />
         </CardContent>
       </Card>
     </div>

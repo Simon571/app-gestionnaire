@@ -7,7 +7,7 @@ import {
   checkRateLimit,
   getRateLimitKey,
 } from '@/lib/rate-limiter';
-import { blobReadGlobal } from '@/lib/blob-store';
+import { blobReadGlobal, blobWriteGlobal } from '@/lib/blob-store';
 import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 export type PublisherSyncRole = 'desktop' | 'mobile' | 'server';
@@ -149,6 +149,99 @@ async function loadDevices(): Promise<PublisherSyncDevice[]> {
 
 const hashApiKey = (apiKey: string) =>
   crypto.createHash('sha256').update(apiKey).digest('hex');
+
+/**
+ * Enregistre un telephone avec sa **propre** cle.
+ *
+ * C'est la sortie de l'identite partagee `mobile-main` : au lieu d'une cle unique
+ * embarquee dans chaque APK, chaque appareil recoit la sienne, rattachee a son
+ * assemblee et revocable seule. La cle en clair n'est retournee qu'ici, une fois :
+ * le registre n'en garde qu'une empreinte SHA-256, donc elle est irrecuperable
+ * ensuite — comme le PIN d'assemblee.
+ */
+export async function registerDevice(input: {
+  label: string;
+  tenantId?: string;
+  role?: PublisherSyncRole;
+  permissions?: PublisherSyncPermission[];
+}): Promise<{ device: PublisherSyncDevice; apiKey: string }> {
+  const label = input.label.trim();
+  if (!label) throw new Error('Un libelle est requis.');
+
+  const apiKey = crypto.randomBytes(32).toString('hex');
+  const device: PublisherSyncDevice = {
+    // Identifiant aleatoire : un identifiant devinable permettrait de sonder le
+    // registre appareil par appareil.
+    id: `mobile-${crypto.randomBytes(6).toString('hex')}`,
+    label,
+    role: input.role ?? 'mobile',
+    status: 'active',
+    apiKeyHash: hashApiKey(apiKey),
+    permissions: input.permissions ?? ['updates', 'incoming', 'ack'],
+    lastRotatedAt: new Date().toISOString(),
+    revokedAt: null,
+    tenantId: input.tenantId,
+  };
+
+  await persistDevices([...(await loadPersistedDevices()), device]);
+  return { device, apiKey };
+}
+
+/**
+ * Revoque un appareil. L'entree est conservee, marquee `revoked` : la supprimer
+ * ferait reapparaitre une entree d'amorcage portant le meme identifiant.
+ */
+export async function revokeDevice(deviceId: string): Promise<boolean> {
+  const devices = await loadPersistedDevices();
+  const known = await loadDevices();
+  const existing = devices.find((entry) => entry.id === deviceId)
+    ?? known.find((entry) => entry.id === deviceId);
+  if (!existing) return false;
+
+  const revoked: PublisherSyncDevice = {
+    ...existing,
+    status: 'revoked',
+    revokedAt: new Date().toISOString(),
+  };
+  await persistDevices([
+    ...devices.filter((entry) => entry.id !== deviceId),
+    revoked,
+  ]);
+  return true;
+}
+
+/** Entrees reellement persistees, hors amorcage et hors fichier livre. */
+async function loadPersistedDevices(): Promise<PublisherSyncDevice[]> {
+  try {
+    const raw = await blobReadGlobal(BLOB_DEVICES_PATH, DEVICE_CONFIG_PATH);
+    return raw ? (JSON.parse(raw) as DevicesFileSchema).devices ?? [] : [];
+  } catch (error) {
+    console.error('publisher-sync-auth: registre illisible', error);
+    return [];
+  }
+}
+
+async function persistDevices(devices: PublisherSyncDevice[]): Promise<void> {
+  await blobWriteGlobal(
+    BLOB_DEVICES_PATH,
+    DEVICE_CONFIG_PATH,
+    JSON.stringify({ devices }, null, 2)
+  );
+  // Le cache porte l'etat d'autorisation : le vider tout de suite, sinon une
+  // revocation ne mordrait qu'apres expiration.
+  cachedDevices = null;
+  cacheMtime = 0;
+}
+
+/** Appareils connus, sans aucun secret : de quoi alimenter une console. */
+export async function listDevices(
+  tenantId?: string
+): Promise<Array<Omit<PublisherSyncDevice, 'apiKeyHash'>>> {
+  const devices = await loadDevices();
+  return devices
+    .filter((device) => (tenantId ? device.tenantId === tenantId : true))
+    .map(({ apiKeyHash: _unused, ...rest }) => rest);
+}
 
 const computeSignature = (secret: string, payload: string) =>
   crypto.createHmac('sha256', secret).update(payload).digest('hex');
