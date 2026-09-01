@@ -97,8 +97,14 @@ async function getRedisClient() {
 
 async function redisGet(key: string): Promise<string | null> {
   const redis = await getRedisClient();
-  const value = await redis.get<string>(key);
-  return value ?? null;
+  const value = await redis.get<unknown>(key);
+  if (value === null || value === undefined) return null;
+  // `@upstash/redis` redeserialise tout seul une valeur qui ressemble a du JSON :
+  // les chaines que `redisSet` a ecrites reviennent donc sous forme d'objet ou de
+  // tableau. Les appelants attendent le contenu textuel du fichier, et
+  // `JSON.parse` d'un objet donne "[object Object]" — c'est ce qui faisait
+  // echouer la lecture du registre des assemblees, donc la connexion.
+  return typeof value === 'string' ? value : JSON.stringify(value);
 }
 
 async function redisSet(key: string, value: string): Promise<void> {
@@ -142,6 +148,13 @@ export async function blobWriteGlobal(
       console.error('blobWriteGlobal Redis error:', (e as Error).message);
       throw e;
     }
+  }
+  if (isVercel) {
+    // Le systeme de fichiers est en lecture seule : ecrire ici ne produirait
+    // qu'un EROFS opaque. Mieux vaut nommer la cause.
+    throw new Error(
+      'Stockage indisponible : UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN absents sur Vercel'
+    );
   }
   await fs.mkdir(path.dirname(localPath), { recursive: true });
   await fs.writeFile(localPath, content, 'utf8');
