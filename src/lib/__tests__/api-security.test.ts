@@ -185,6 +185,33 @@ describe('api-auth-policy', () => {
     expect(decision.warning).toBe('unauthenticated-request-allowed');
   });
 
+  it('refuse une ecriture d administration meme en mode report', async () => {
+    // Le mode 'report' menage les clients deja distribues, mais aucun d'eux
+    // n'ecrit sur ces routes : une ecriture anonyme y est forcement illegitime.
+    process.env.API_AUTH_MODE = 'report';
+    for (const path of ['/api/families', '/api/taches', '/api/attendance', '/api/responsibilities']) {
+      const decision = await evaluateApiRequest(path, headers(), undefined, 'POST');
+      expect(decision.allowed, path).toBe(false);
+      expect(decision.status, path).toBe(401);
+    }
+  });
+
+  it('laisse les lectures d administration regies par API_AUTH_MODE', async () => {
+    // Fermer une lecture couperait l'application mobile, qui lit le programme et
+    // l'annuaire de l'assemblee.
+    process.env.API_AUTH_MODE = 'report';
+    const decision = await evaluateApiRequest('/api/families', headers(), undefined, 'GET');
+    expect(decision.allowed).toBe(true);
+  });
+
+  it('permet de differer la fermeture avec API_ADMIN_ENFORCE=off', async () => {
+    process.env.API_AUTH_MODE = 'report';
+    process.env.API_ADMIN_ENFORCE = 'off';
+    const decision = await evaluateApiRequest('/api/families', headers(), undefined, 'POST');
+    expect(decision.allowed).toBe(true);
+    delete process.env.API_ADMIN_ENFORCE;
+  });
+
   it('delegue uniquement les routes qui verifient la signature d appareil', async () => {
     process.env.API_AUTH_MODE = 'enforce';
     const signed = headers({ 'x-device-id': 'mobile-main', 'x-signature': 'deadbeef' });

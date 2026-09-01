@@ -96,6 +96,64 @@ export function delegatesToDeviceAuth(pathname: string): boolean {
   );
 }
 
+/**
+ * Routes d'administration fermees **quel que soit** `API_AUTH_MODE`.
+ *
+ * Le mode 'report' existe pour ne pas couper le MSI et l'APK deja distribues, qui
+ * ne s'authentifient pas encore. Mais il laisse ouvertes des routes qui ecrivent
+ * les donnees de l'assemblee — annuaire, familles, taches, assistance,
+ * attributions, reparations de fichiers — alors qu'aucun client publie ne les
+ * appelle : elles ne servent qu'au tableau de bord, qui a un cookie de session.
+ *
+ * Les fermer maintenant ne fait donc perdre aucun usage legitime, et rend
+ * effectif tout le cloisonnement par assemblee sans attendre une nouvelle
+ * version des clients.
+ *
+ * La fermeture ne vise que les **methodes mutantes**. Les lectures restent
+ * regies par `API_AUTH_MODE` : l'application mobile lit le programme et
+ * l'annuaire, et une lecture mal fermee couperait un usage reel, alors qu'une
+ * ecriture non authentifiee n'a jamais d'usage legitime.
+ *
+ * CONSEQUENCE A CONNAITRE : un poste MSI qui n'ouvrait jamais la page de
+ * connexion devra s'y connecter avant de modifier quoi que ce soit. C'est le
+ * prix de la fermeture ; pour la differer, `API_ADMIN_ENFORCE=off`.
+ */
+const ADMIN_ONLY_PATHS = [
+  '/api/assign-groups',
+  '/api/attendance',
+  '/api/backup',
+  '/api/export-people-to-publisher',
+  '/api/families',
+  '/api/gdpr',
+  '/api/internal',
+  '/api/preaching-groups',
+  '/api/publisher-app/actionable-jobs',
+  '/api/publisher-app/auto-sync',
+  '/api/publisher-app/cleanup-jobs',
+  '/api/publisher-app/create-sync-job',
+  '/api/publisher-app/mobile-devices',
+  '/api/publisher-app/mobile-users',
+  '/api/publisher-app/users/web-sync',
+  '/api/repair-publisher-users',
+  '/api/responsibilities',
+  '/api/sync-activity',
+  '/api/sync-publisher-users-to-people',
+  '/api/taches',
+  '/api/update-workbook',
+  '/api/vcm',
+];
+
+/** Vrai si la fermeture immediate des routes d'administration est active. */
+function adminEnforcementEnabled(): boolean {
+  return (process.env.API_ADMIN_ENFORCE || '').trim().toLowerCase() !== 'off';
+}
+
+export function isAdminOnlyPath(pathname: string): boolean {
+  return ADMIN_ONLY_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  );
+}
+
 /** Verifie le jeton de service partage, s'il est configure. */
 export function matchServiceToken(headers: Headers): boolean {
   const expected = (process.env.API_ACCESS_TOKEN || '').trim();
@@ -212,6 +270,17 @@ export async function evaluateApiRequest(
   }
 
   if (getAuthMode() === 'enforce') {
+    return deny(401, 'authentication-required');
+  }
+
+  // Ecriture sur une route d'administration : refusee meme en mode 'report'.
+  // Aucun client publie ne l'appelle, et une ecriture anonyme dans les donnees
+  // d'une assemblee ne peut etre legitime.
+  if (
+    adminEnforcementEnabled() &&
+    isAdminOnlyPath(pathname) &&
+    isMutatingMethod(method)
+  ) {
     return deny(401, 'authentication-required');
   }
 
