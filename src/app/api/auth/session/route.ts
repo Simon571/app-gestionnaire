@@ -24,6 +24,7 @@ import { RATE_LIMIT_MAX_REQUESTS, checkRateLimit, getRateLimitKey } from '@/lib/
 import { readPublisherUsersState } from '@/lib/publisher-users-persistence';
 import type { PublisherUser } from '@/lib/publisher-user-data';
 import { getAssembly, verifyAssemblyPin } from '@/lib/tenants/assembly-registry';
+import { StorageUnavailableError } from '@/lib/blob-store';
 import { evaluateSubscription, type SubscriptionState } from '@/lib/tenants/subscription';
 
 export const dynamic = 'force-dynamic';
@@ -74,7 +75,32 @@ function roleForPublisher(user: PublisherUser): SessionPayload['role'] {
   return 'publisher';
 }
 
+/**
+ * Une panne du stockage persistant ne doit pas sortir en 500 sans corps : c'est
+ * indiscernable d'un bug applicatif. Le registre des assemblees vit dans Redis,
+ * donc une base Upstash supprimee ou injoignable empeche toute connexion — il
+ * faut le dire.
+ */
 export async function POST(request: NextRequest) {
+  try {
+    return await handlePost(request);
+  } catch (error) {
+    if (error instanceof StorageUnavailableError) {
+      console.error('auth/session: stockage injoignable', error.message);
+      return NextResponse.json(
+        {
+          error:
+            "Stockage indisponible : le registre des assemblees n'est pas lisible. Verifier UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN.",
+          code: 'storage-unavailable',
+        },
+        { status: 503, headers: { 'Retry-After': '30' } }
+      );
+    }
+    throw error;
+  }
+}
+
+async function handlePost(request: NextRequest) {
   if (!isSessionConfigured()) {
     return NextResponse.json(
       {

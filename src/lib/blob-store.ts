@@ -50,6 +50,24 @@ function hasRedis(): boolean {
 export const TENANT_HEADER = TENANT_HEADER_NAME;
 
 /**
+ * Le stockage persistant est injoignable.
+ *
+ * A distinguer d'une absence de donnees : renvoyer `null` quand Redis ne repond
+ * pas fait croire aux appelants que le fichier est vide. Le registre des
+ * assemblees s'amorcait alors a nouveau et son ecriture echouait, ce qui
+ * produisait un 500 sans corps sur la connexion. Les routes peuvent desormais
+ * reconnaitre cette erreur et repondre 503.
+ */
+export class StorageUnavailableError extends Error {
+  readonly code = 'storage-unavailable';
+
+  constructor(cause: string) {
+    super(`Stockage persistant injoignable : ${cause}`);
+    this.name = 'StorageUnavailableError';
+  }
+}
+
+/**
  * Assemblee courante, ou `null` hors requete HTTP.
  *
  * La resolution est centralisee dans `tenant-scope` : contexte pose par les
@@ -125,7 +143,7 @@ export async function blobReadGlobal(
       return await redisGet(toRedisKey(blobPath));
     } catch (e) {
       console.error('blobReadGlobal Redis error:', (e as Error).message);
-      return null;
+      throw new StorageUnavailableError((e as Error).message);
     }
   }
   try {
@@ -146,14 +164,14 @@ export async function blobWriteGlobal(
       return;
     } catch (e) {
       console.error('blobWriteGlobal Redis error:', (e as Error).message);
-      throw e;
+      throw new StorageUnavailableError((e as Error).message);
     }
   }
   if (isVercel) {
     // Le systeme de fichiers est en lecture seule : ecrire ici ne produirait
     // qu'un EROFS opaque. Mieux vaut nommer la cause.
-    throw new Error(
-      'Stockage indisponible : UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN absents sur Vercel'
+    throw new StorageUnavailableError(
+      'UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN absents sur Vercel'
     );
   }
   await fs.mkdir(path.dirname(localPath), { recursive: true });

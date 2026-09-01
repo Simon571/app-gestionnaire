@@ -12,6 +12,8 @@ const store = new Map<string, unknown>();
 vi.mock('@upstash/redis', () => ({
   Redis: class {
     async get(key: string) {
+      // Simule une base Upstash supprimee : `fetch failed`, comme en production.
+      if (store.has('__throw__')) throw new Error('fetch failed');
       return store.has(key) ? store.get(key) : null;
     }
     async set(key: string, value: unknown) {
@@ -65,10 +67,19 @@ describe('blob-store sur Redis', () => {
   it("nomme la cause quand Redis n'est pas configure sur Vercel", async () => {
     vi.stubEnv('UPSTASH_REDIS_REST_URL', '');
     vi.stubEnv('UPSTASH_REDIS_REST_TOKEN', '');
-    const { blobWriteGlobal } = await loadStore();
+    const { blobWriteGlobal, StorageUnavailableError } = await loadStore();
 
     await expect(
       blobWriteGlobal('platform/assemblies.json', 'ignore', '{}')
-    ).rejects.toThrow(/Stockage indisponible/);
+    ).rejects.toBeInstanceOf(StorageUnavailableError);
+  });
+
+  it('signale une panne de Redis au lieu de la faire passer pour un fichier vide', async () => {
+    const { blobReadGlobal, StorageUnavailableError } = await loadStore();
+    store.set('__throw__', true);
+
+    await expect(
+      blobReadGlobal('platform/assemblies.json', 'ignore')
+    ).rejects.toBeInstanceOf(StorageUnavailableError);
   });
 });
