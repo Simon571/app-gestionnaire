@@ -5,6 +5,8 @@ import { writeJobToFlutterAssets } from '@/lib/publisher-sync-flutter-writer';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { handlePublisherSend } from '@/lib/publisher-send-handler';
 import { PUBLISHER_SYNC_TYPES, PUBLISHER_SYNC_DIRECTIONS } from '@/types/publisher-sync';
+import { readSession } from '@/lib/api-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,11 +24,17 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // Permettre l'accès sans authentification depuis le même serveur (web dashboard)
+  // Deux appelants : le tableau de bord (cookie de session) et un poste porteur
+  // d'une signature d'appareil.
+  //
+  // L'absence d'en-tete `x-device-id` etait auparavant traitee comme la preuve
+  // d'un « acces local depuis le web dashboard » et n'exigeait rien. Comme cette
+  // route figure parmi celles dont le middleware delegue l'authentification au
+  // handler, il suffisait de l'omettre pour pousser n'importe quel programme aux
+  // telephones de l'assemblee.
   const deviceId = request.headers.get('x-device-id');
 
-  if (!deviceId) {
-    // Accès local depuis le web dashboard - créer le job directement
+  const createLocalJob = async () => {
     try {
       const json = await request.json();
       const body = bodySchema.parse(json);
@@ -56,6 +64,20 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+  };
+
+  if (!deviceId) {
+    const session = await readSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Session requise.' }, { status: 401 });
+    }
+    if (session.role === 'publisher') {
+      return NextResponse.json(
+        { error: "Envoi reserve aux anciens et assistants de l'assemblee." },
+        { status: 403 }
+      );
+    }
+    return runWithTenant(session.tenantId, createLocalJob);
   }
 
   // Requête avec device headers - authentification requise

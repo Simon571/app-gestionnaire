@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { PUBLISHER_SYNC_STATUSES } from '@/types/publisher-sync';
+import { readSession } from '@/lib/api-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,11 +20,14 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // Permettre l'accès sans authentification depuis le même serveur (web dashboard)
+  // Deux appelants : le tableau de bord (cookie) et un telephone signant sa
+  // requete. Sans en-tete d'appareil, la route n'exigeait rien : marquer un job
+  // « traite » depuis l'exterieur suffisait a faire disparaitre un envoi.
+  // Contrairement a /send, un proclamateur est admis : accuser reception fait
+  // partie de ce qu'il peut faire (cf. PUBLISHER_WRITABLE_PATHS).
   const deviceIdHeader = request.headers.get('x-device-id');
 
-  if (!deviceIdHeader) {
-    // Accès local depuis le web dashboard
+  const updateLocally = async () => {
     try {
       const json = await request.json();
       const body = bodySchema.parse(json);
@@ -42,6 +47,14 @@ export async function POST(request: NextRequest) {
       console.error('publisher-app/ack local error', error);
       return NextResponse.json({ error: 'Requête invalide.' }, { status: 400 });
     }
+  };
+
+  if (!deviceIdHeader) {
+    const session = await readSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Session requise.' }, { status: 401 });
+    }
+    return runWithTenant(session.tenantId, updateLocally);
   }
 
   // Requête avec device headers - authentification requise

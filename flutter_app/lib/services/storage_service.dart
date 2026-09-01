@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'sync_service.dart' show SyncCredentials;
 import '../models/person.dart';
 
 const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app');
@@ -105,7 +106,7 @@ Future<String> getEffectiveApiBase() async {
         final assembly = await getAssembly();
         assemblyId = assembly?.id ?? '';
       } catch (_) {}
-      final baseUri = '$apiBase/api/publisher-app/users/export';
+      final baseUri = '$apiBase/api/publisher-app/mobile-users';
       final uri = assemblyId.isNotEmpty
           ? Uri.parse('$baseUri?assemblyId=${Uri.encodeComponent(assemblyId)}')
           : Uri.parse(baseUri);
@@ -524,7 +525,7 @@ Future<void> setApiBase(String apiBase) async {
     }
     
     try {
-      final uri = Uri.parse('$apiBase/api/publisher-app/activity');
+      final uri = Uri.parse('$apiBase/api/publisher-app/mobile-reports');
       final body = {
         'userId': userId,
         'pin': pin,
@@ -669,7 +670,7 @@ Future<void> setApiBase(String apiBase) async {
     if (apiBase.isEmpty || actorPin.isEmpty) return false;
     
     try {
-      final uri = Uri.parse('$apiBase/api/publisher-app/activity');
+      final uri = Uri.parse('$apiBase/api/publisher-app/mobile-reports');
       if (kDebugMode) {
         print('📤 StorageService: Sending POST to $uri');
       }
@@ -797,19 +798,14 @@ Future<void> setApiBase(String apiBase) async {
     if (apiBase.isNotEmpty && pin.isNotEmpty) {
       try {
         final uri = Uri.parse('$apiBase/api/publisher-app/incoming');
-        
-        // Charger les credentials pour l'authentification
-        String? deviceId;
-        String? apiKey;
-        try {
-          final prefs = await SharedPreferences.getInstance();
-          deviceId = prefs.getString('sync_device_id') ?? 'mobile-main';
-          apiKey = prefs.getString('sync_api_key') ?? 'mobile-secret-key-456';
-        } catch (e) {
-          deviceId = 'mobile-main';
-          apiKey = 'mobile-secret-key-456';
-        }
-        
+
+        // Cette requête doit être signée : le serveur exige x-timestamp et
+        // x-signature sur /api/publisher-app/incoming. Les envoyer sans
+        // signature donnait un 401 systématique, donc un contact d'urgence
+        // jamais transmis. SyncCredentials produit les mêmes en-têtes que
+        // SyncService, seule implémentation vérifiée côté serveur.
+        final credentials = await SyncCredentials.load();
+
         final body = {
           'type': 'emergency_contacts',
           'payload': {
@@ -824,12 +820,8 @@ Future<void> setApiBase(String apiBase) async {
           'initiator': currentUser.displayName,
           'notify': true,
         };
-        
-        final headers = {
-          'Content-Type': 'application/json',
-          'X-Device-Id': deviceId,
-          'X-Api-Key': apiKey,
-        };
+
+        final headers = credentials.generateAuthHeaders(method: 'POST', uri: uri);
         
         final resp = await http
             .post(uri,
