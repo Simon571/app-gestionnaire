@@ -21,7 +21,8 @@ import {
 } from '@/lib/api-auth';
 import { ADMIN_SESSION_TTL_MS, SESSION_TTL_MS } from '@/lib/session-token';
 import { RATE_LIMIT_MAX_REQUESTS, checkRateLimit, getRateLimitKey } from '@/lib/rate-limiter';
-import { readPublisherUsersState } from '@/lib/publisher-users-persistence';
+import { readPublisherUsers } from '@/lib/publisher-users-store';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 import type { PublisherUser } from '@/lib/publisher-user-data';
 import { getAssembly, verifyAssemblyPin } from '@/lib/tenants/assembly-registry';
 import { StorageUnavailableError } from '@/lib/blob-store';
@@ -43,15 +44,23 @@ function constantTimeEquals(a: string, b: string): boolean {
   return crypto.timingSafeEqual(hashA, hashB);
 }
 
+/**
+ * Fiche du proclamateur qui tente de se connecter.
+ *
+ * Lue par le magasin habituel, donc Redis en tete, et non plus directement dans
+ * Vercel Blob : `readPublisherUsersState` appelle `list()` sur le magasin Blob a
+ * chaque tentative, ce qui compte comme une « advanced operation ». Le forfait
+ * Hobby en accorde 2 000 par mois, et chaque connexion en consommait une — de
+ * quoi bloquer le magasin, ce qui est arrive. Le magasin conserve de toute facon
+ * son propre repli sur Blob si Redis ne repond pas.
+ */
 async function findPublisherUser(
   personId: string,
   tenantId: string
 ): Promise<PublisherUser | null> {
   try {
-    const raw = await readPublisherUsersState(tenantId);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as { users?: PublisherUser[] } | PublisherUser[];
-    const users = Array.isArray(parsed) ? parsed : parsed.users ?? [];
+    const users = (await runWithTenant(tenantId, readPublisherUsers)) as
+      unknown as PublisherUser[];
     return users.find((user) => user.id === personId) ?? null;
   } catch (error) {
     console.error('auth/session: lecture des utilisateurs impossible', error);
