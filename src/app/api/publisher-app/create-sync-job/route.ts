@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 
+// Rendu dynamique obligatoire : la file de synchronisation appartient a une
+// assemblee. Sans `headers()`, l'identifiant d'assemblee est perdu et les jobs
+// de toutes les assemblees se melangent.
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/publisher-app/create-sync-job
  * Crée un job de synchronisation pour une personne modifiée

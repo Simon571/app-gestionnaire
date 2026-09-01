@@ -6,6 +6,13 @@ import { PUBLISHER_SYNC_STATUSES } from '@/types/publisher-sync';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { addAttendanceRecord } from '@/lib/attendance-store';
 import { upsertPreachingReport } from '@/lib/publisher-preaching-store';
+import { readSession } from '@/lib/api-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
+
+// Rendu dynamique obligatoire : cette route ecrit l'assistance et les rapports
+// de predication. `force-static` la priverait de `headers()`, donc de
+// l'identifiant d'assemblee, et toutes les assemblees ecriraient au meme endroit.
+export const dynamic = 'force-dynamic';
 
 const bodySchema = z.object({
   jobId: z.string().min(1),
@@ -14,7 +21,14 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  // Permettre l'accès sans authentification depuis le même serveur (web dashboard)
+  // Deux appelants : le tableau de bord web (cookie de session) et un poste
+  // desktop porteur d'une signature d'appareil.
+  //
+  // La version precedente traitait l'absence d'en-tete `x-device-id` comme la
+  // preuve d'un « acces local depuis le web dashboard » et n'exigeait rien.
+  // Comme cette route figure aussi parmi celles dont le middleware delegue
+  // l'authentification au handler, il suffisait d'omettre l'en-tete pour
+  // enregistrer de l'assistance et des rapports au nom de n'importe qui.
   const deviceId = request.headers.get('x-device-id');
   
   const processImport = async (req: NextRequest) => {
@@ -122,8 +136,20 @@ export async function POST(request: NextRequest) {
   };
   
   if (!deviceId) {
-    // Accès local depuis le web dashboard
-    return processImport(request);
+    // Appel depuis le tableau de bord : une session d'administration suffit,
+    // mais elle est exigee. Un proclamateur n'importe pas les donnees de
+    // l'assemblee.
+    const session = await readSession(request);
+    if (!session) {
+      return NextResponse.json({ error: 'Session requise.' }, { status: 401 });
+    }
+    if (session.role === 'publisher') {
+      return NextResponse.json(
+        { error: "Import reserve aux anciens et assistants de l'assemblee." },
+        { status: 403 }
+      );
+    }
+    return runWithTenant(session.tenantId, () => processImport(request));
   }
   
   // Requête avec device headers - authentification requise
