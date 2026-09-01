@@ -3,6 +3,7 @@ import {
   readPublisherUsers,
   writePublisherUsers,
 } from '@/lib/publisher-users-store';
+import { forMobileClients } from '@/lib/publisher-users-privacy';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -19,11 +20,19 @@ function usersForAssembly(
   });
 }
 
-/** Returns the current user list to the newly built mobile application. */
+/**
+ * Returns the current user list to the newly built mobile application.
+ *
+ * La reponse porte encore le PIN de chaque proclamateur, parce que l'APK publie
+ * verifie l'identite hors ligne. `MOBILE_USERS_INCLUDE_PIN=off` l'en retire, une
+ * fois publie un APK qui appelle `/api/publisher-app/verify-pin`.
+ */
 export async function GET(request: NextRequest) {
   try {
     const assemblyId = request.nextUrl.searchParams.get('assemblyId')?.trim() ?? '';
-    const users = usersForAssembly(await readPublisherUsers(), assemblyId);
+    const users = forMobileClients(
+      usersForAssembly(await readPublisherUsers(), assemblyId)
+    );
 
     return NextResponse.json(
       { users },

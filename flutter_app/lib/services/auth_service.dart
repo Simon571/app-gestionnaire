@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import '../models/person.dart';
 import 'storage_service.dart';
+import 'sync_service.dart' show SyncCredentials;
 import '../utils/logger.dart';
 
 /// Service d'authentification 2 étapes
@@ -58,6 +61,14 @@ class AuthService {
 
   // ===== ETAPE 2: AUTHENTIFICATION UTILISATEUR =====
   /// Valide les données de connexion utilisateur
+  ///
+  /// Deux chemins, dans cet ordre :
+  ///  1. le serveur, via `POST /api/publisher-app/verify-pin`, qui compare le
+  ///     PIN sans que le téléphone ait besoin de le détenir ;
+  ///  2. la liste locale, comme avant, quand il n'y a pas de réseau.
+  ///
+  /// C'est ce premier chemin qui permettra au serveur de cesser d'envoyer les
+  /// PIN de toute l'assemblée à chaque téléphone (`MOBILE_USERS_INCLUDE_PIN=off`).
   Future<bool> validateUser({
     required String firstName,
     required String personalPin,
@@ -68,6 +79,14 @@ class AuthService {
 
       if (name.isEmpty || pin.isEmpty) {
         return false;
+      }
+
+      final remote = await _validateUserOnServer(name, pin);
+      if (remote != null) {
+        _currentUser = remote;
+        await storageService.setCurrentUser(remote);
+        await storageService.setAuthToken(_generateToken());
+        return true;
       }
 
       // Récupérer la liste des utilisateurs
@@ -88,6 +107,45 @@ class AuthService {
     } catch (e) {
       AppLogger.error('Erreur validateUser', e);
       rethrow;
+    }
+  }
+
+  /// Vérifie le PIN auprès du serveur.
+  ///
+  /// Retourne `null` — et non `false` — quand la vérification n'a pas pu avoir
+  /// lieu (pas de réseau, route absente d'un serveur plus ancien) : l'appelant
+  /// doit alors se rabattre sur la liste locale. Un `401` est une réponse, pas
+  /// une panne, mais il laisse aussi la main au chemin hors ligne pour ne rien
+  /// changer au comportement connu des utilisateurs.
+  Future<Person?> _validateUserOnServer(String name, String pin) async {
+    try {
+      final apiBase = await storageService.getEffectiveApiBase();
+      if (apiBase.isEmpty) return null;
+
+      final assembly = _currentAssembly ?? await loadCurrentAssembly();
+      final uri = Uri.parse('$apiBase/api/publisher-app/verify-pin');
+      final credentials = await SyncCredentials.load();
+
+      final response = await http
+          .post(
+            uri,
+            headers: credentials.generateAuthHeaders(method: 'POST', uri: uri),
+            body: jsonEncode({
+              'name': name,
+              'pin': pin,
+              if (assembly != null) 'assemblyId': assembly.id,
+            }),
+          )
+          .timeout(const Duration(seconds: 10));
+
+      if (response.statusCode != 200) return null;
+
+      final decoded = jsonDecode(response.body);
+      if (decoded is! Map || decoded['user'] is! Map) return null;
+      return Person.fromJson(Map<String, dynamic>.from(decoded['user'] as Map));
+    } catch (e) {
+      AppLogger.log('ℹ️ Vérification du PIN hors ligne (serveur injoignable) : $e');
+      return null;
     }
   }
 

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { authenticateDevice, handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { listPreachingReports } from '@/lib/publisher-preaching-store';
+import { forMobileClients } from '@/lib/publisher-users-privacy';
 
 const isLocalHost = (host: string) => {
   const clean = host.toLowerCase().split(':')[0];
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
     
     console.log(`GET /api/publisher-app/users/export: assemblyId=${assemblyId}, returned ${usersWithActivity.length} users`);
     
-    return NextResponse.json({ users: usersWithActivity }, {
+    return NextResponse.json({ users: forMobileClients(usersWithActivity) }, {
       headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' },
     });
   } catch (error) {
