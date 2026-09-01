@@ -1,96 +1,109 @@
-import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-
+/**
+ * POST /api/sync-activity
+ * Reporte l'activite saisie sur la page Personnes vers les rapports de
+ * predication, pour que le proclamateur retrouve sur son telephone ce que
+ * l'assemblee a enregistre pour lui.
+ *
+ * La version precedente ecrivait directement dans `data/publisher-preaching.json`
+ * avec `fs.writeFile`. Deux consequences : l'ecriture echouait sur un
+ * hebergement dont le systeme de fichiers est en lecture seule, et elle passait
+ * a cote du cloisonnement — toutes les assemblees partageaient un seul fichier
+ * de rapports. Tout passe desormais par `publisher-preaching-store`.
+ */
 export const dynamic = 'force-dynamic';
+
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  listPreachingReports,
+  upsertPreachingReport,
+} from '@/lib/publisher-preaching-store';
+import { readSession } from '@/lib/api-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 export async function GET() {
   return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }
 
-/**
- * Endpoint pour synchroniser person.activity[] vers publisher-preaching.json
- * Appelé quand on modifie l'activité d'un proclamateur depuis la page Personnes
- */
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { userId, activity } = body;
+interface MonthActivity {
+  month?: string;
+  participated?: boolean;
+  bibleStudies?: number;
+  hours?: number;
+  credit?: number;
+  isLate?: boolean;
+}
 
-    if (!userId || !Array.isArray(activity)) {
+export async function POST(request: NextRequest) {
+  // Saisir l'activite d'un proclamateur est un acte d'administration : un
+  // proclamateur declare ses heures depuis son telephone, pas ici.
+  const session = await readSession(request);
+  if (!session) {
+    return NextResponse.json({ error: 'Session requise.' }, { status: 401 });
+  }
+  if (session.role === 'publisher') {
+    return NextResponse.json(
+      { error: "Saisie reservee aux anciens et assistants de l'assemblee." },
+      { status: 403 }
+    );
+  }
+  return runWithTenant(session.tenantId, () => handle(request));
+}
+
+async function handle(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const userId = typeof body?.userId === 'string' ? body.userId : '';
+    const activity: MonthActivity[] = Array.isArray(body?.activity) ? body.activity : [];
+
+    if (!userId || !Array.isArray(body?.activity)) {
       return NextResponse.json({ error: 'userId et activity[] requis' }, { status: 400 });
     }
 
-    const preachingPath = path.join(process.cwd(), 'data', 'publisher-preaching.json');
+    const existingReports = await listPreachingReports();
+    let synced = 0;
+    let preserved = 0;
 
-    // Lire le fichier actuel
-    let data: any = { reports: [] };
-    try {
-      const raw = await fs.readFile(preachingPath, 'utf8');
-      data = JSON.parse(raw);
-      if (!data.reports) data.reports = [];
-    } catch {
-      // Fichier n'existe pas encore
-    }
-
-    // Synchroniser chaque mois d'activité
     for (const monthActivity of activity) {
-      const { month, participated, bibleStudies, hours, credit, isLate, remarks } = monthActivity;
-
+      const month = monthActivity?.month;
       if (!month) continue;
 
-      // Chercher un rapport existant
-      const existingIndex = data.reports.findIndex(
-        (r: any) => r.userId === userId && r.month === month
-      );
+      // Un rapport envoye par le proclamateur depuis son telephone fait foi :
+      // il l'a rempli lui-meme. La saisie manuelle ne l'ecrase pas.
+      const existing = existingReports.find((r) => r.userId === userId && r.month === month);
+      const fromMobile =
+        existing?.meta?.['source'] === 'flutter' || Boolean(existing?.meta?.['deviceId']);
+      if (fromMobile) {
+        preserved += 1;
+        continue;
+      }
 
-      // Créer le rapport
-      const report = {
+      const participated = monthActivity.participated ?? false;
+      await upsertPreachingReport({
         userId,
         month,
-        didPreach: participated ?? false,
-        submitted: participated ?? false,
-        status: 'validated', // Les rapports saisis manuellement sont considérés comme validés
-        isLate: isLate ?? false,
+        didPreach: participated,
+        submitted: participated,
+        // Une saisie faite par l'assemblee est validee d'office.
+        status: 'validated',
+        isLate: monthActivity.isLate ?? false,
         totals: {
-          hours: hours ?? 0,
-          bibleStudies: bibleStudies ?? 0,
-          credit: credit ?? 0,
+          hours: monthActivity.hours ?? 0,
+          bibleStudies: monthActivity.bibleStudies ?? 0,
+          credit: monthActivity.credit ?? 0,
         },
-        entries: {},
+        entries: existing?.entries ?? {},
         meta: {
+          ...(existing?.meta ?? {}),
           source: 'manual-entry',
           syncedFrom: 'personnes-page',
         },
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (existingIndex >= 0) {
-        // Mettre à jour le rapport existant (ne pas écraser les données Flutter si elles existent)
-        const existing = data.reports[existingIndex];
-        
-        // Si le rapport vient de Flutter (pas de meta.source = manual-entry), ne pas écraser
-        if (existing.meta?.source === 'flutter' || existing.meta?.deviceId) {
-          // Ne rien faire, les données Flutter ont priorité
-          continue;
-        }
-        
-        data.reports[existingIndex] = report;
-      } else {
-        // Ajouter un nouveau rapport
-        data.reports.push(report);
-      }
+      });
+      synced += 1;
     }
 
-    // Sauvegarder le fichier
-    await fs.mkdir(path.dirname(preachingPath), { recursive: true });
-    await fs.writeFile(preachingPath, JSON.stringify(data, null, 2), 'utf8');
-
-    console.log(`✅ Activité synchronisée vers publisher-preaching.json pour ${userId} (${activity.length} mois)`);
-
-    return NextResponse.json({ ok: true, syncedMonths: activity.length });
+    return NextResponse.json({ ok: true, syncedMonths: synced, preservedMonths: preserved });
   } catch (error) {
-    console.error('❌ Erreur lors de la synchronisation d\'activité:', error);
+    console.error('sync-activity: synchronisation impossible', error);
     return NextResponse.json({ error: 'Sync failed' }, { status: 500 });
   }
 }

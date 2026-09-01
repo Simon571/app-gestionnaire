@@ -2,14 +2,39 @@ import { NextRequest, NextResponse } from 'next/server';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
+import { readSession } from '@/lib/api-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 const FLUTTER_DATA_PATH = path.join(process.cwd(), 'flutter_app', 'assets', 'data', 'programme_week.json');
 
+// Rendu dynamique obligatoire : le job cree appartient a une assemblee, et son
+// identifiant ne se lit que via `headers()`.
+export const dynamic = 'force-dynamic';
+
 /**
- * Internal API route for sending VCM programme data to Flutter.
- * This route bypasses the external API authentication for internal calls.
+ * Envoi d'une semaine de programme vers l'application mobile.
+ *
+ * « Internal » ne designe que l'appelant attendu — le tableau de bord — et non
+ * un reseau de confiance : la route est exposee comme les autres. Le commentaire
+ * precedent annoncait qu'elle « contourne l'authentification pour les appels
+ * internes » ; elle exige desormais une session d'administration, faute de quoi
+ * n'importe qui pouvait pousser un programme aux telephones de l'assemblee.
  */
 export async function POST(request: NextRequest) {
+  const session = await readSession(request);
+  if (!session) {
+    return NextResponse.json({ error: 'Session requise.' }, { status: 401 });
+  }
+  if (session.role === 'publisher') {
+    return NextResponse.json(
+      { error: "Envoi du programme reserve aux anciens et assistants de l'assemblee." },
+      { status: 403 }
+    );
+  }
+  return runWithTenant(session.tenantId, () => handle(request));
+}
+
+async function handle(request: NextRequest) {
   try {
     const body = await request.json();
     const { 
