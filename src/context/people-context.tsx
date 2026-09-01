@@ -72,6 +72,17 @@ export type PublisherDeviceRecord = {
 };
 
 const defaultDevices: PublisherDeviceRecord[] = [];
+const API_REQUEST_TIMEOUT_MS = 15000;
+
+const logApiLoadError = (resource: string, error: unknown) => {
+  if (error instanceof DOMException && error.name === 'TimeoutError') {
+    console.warn(`${resource} API request timed out after ${API_REQUEST_TIMEOUT_MS}ms`);
+    return;
+  }
+
+  console.error(`Failed to load ${resource} from API`, error);
+};
+
 // When data is parsed from JSON, date strings need to be converted back to Date objects.
 // Garantit aussi que person.spiritual et person.spiritual.pioneer ne sont jamais undefined,
 // évitant les crashs "Cannot read properties of undefined" sur toutes les pages.
@@ -249,16 +260,15 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         }
         
         console.log(`Loading data for assemblyId: ${assemblyId}`);
-        
-        // ✅ Pour Tauri/MSI: charger toujours depuis Vercel (qui a les données)
-        // L'API Vercel est publicly accessible sur https://app-gestionnaire.vercel.app/api/...
-        const apiBase = 'https://app-gestionnaire.vercel.app';
-        
+
+        // Web and local development use same-origin APIs; the static MSI uses Vercel.
+        const apiBase = getApiBase();
+
         // Load users from API
         try {
           console.log(`Loading users from: ${apiBase}/api/publisher-app/users/export`);
           const usersResponse = await fetch(`${apiBase}/api/publisher-app/users/export?assemblyId=${assemblyId}`, {
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
           });
           if (usersResponse.ok) {
             const usersData = await usersResponse.json();
@@ -272,13 +282,13 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
             console.warn(`Users API returned status ${usersResponse.status}`);
           }
         } catch (error) {
-          console.error('Failed to load users from API', error);
+          logApiLoadError('users', error);
         }
         
         // Load families from API
         try {
           const familiesResponse = await fetch(`${apiBase}/api/families`, {
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
           });
           if (familiesResponse.ok) {
             const familiesData = await familiesResponse.json();
@@ -290,13 +300,13 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
             console.warn(`Families API returned status ${familiesResponse.status}`);
           }
         } catch (error) {
-          console.error('Failed to load families from API', error);
+          logApiLoadError('families', error);
         }
         
         // Load preaching groups from API
         try {
           const groupsResponse = await fetch(`${apiBase}/api/preaching-groups`, {
-            signal: AbortSignal.timeout(5000),
+            signal: AbortSignal.timeout(API_REQUEST_TIMEOUT_MS),
           });
           if (groupsResponse.ok) {
             const groupsData = await groupsResponse.json();
@@ -308,7 +318,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
             console.warn(`Preaching groups API returned status ${groupsResponse.status}`);
           }
         } catch (error) {
-          console.error('Failed to load preaching groups from API', error);
+          logApiLoadError('preaching groups', error);
         }
       } catch (error) {
         console.error('Error in loadFromApi wrapper:', error);
@@ -357,7 +367,7 @@ export const PeopleProvider = ({ children }: { children: ReactNode }) => {
         console.error('web-sync: échec de sérialisation:', serErr);
         return;
       }
-      const response = await fetch(`${apiBase}/api/publisher-app/users/web-sync`, {
+      const response = await fetch(`${apiBase}/api/publisher-app/mobile-users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ users: safeUsers, assemblyId }),

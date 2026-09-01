@@ -2,7 +2,10 @@ import { NextResponse } from 'next/server';
 import { readPublisherUsers } from '@/lib/publisher-users-store';
 import type { Person } from '@/app/personnes/page';
 
-export const dynamic = "force-static";
+// Rendu dynamique obligatoire : `force-static` priverait la route des API
+// dynamiques (`headers()`), donc de l'identifiant d'assemblee pose par le
+// middleware. Toutes les assemblees ecriraient alors dans le meme fichier.
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 /**

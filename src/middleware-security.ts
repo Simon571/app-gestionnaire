@@ -1,78 +1,41 @@
 /**
- * Middleware de sécurité pour Next.js
- * Ajoute les headers de sécurité nécessaires et applique les règles CSP
+ * Middleware de securite pour Next.js
+ *
+ * Applique les en-tetes de securite et la politique CORS. Ce module est appele
+ * par `src/middleware.ts` : Next.js n'execute qu'un seul middleware par
+ * application, donc toute la logique doit converger vers ce point d'entree
+ * unique.
  */
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { corsHeaders, isOriginAllowed, securityHeaderEntries } from '@/lib/security-config';
 
-export function securityHeaders(response: NextResponse) {
-  // Politique de sécurité du contenu (CSP)
-  response.headers.set(
-    'Content-Security-Policy',
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: https:; " +
-    "font-src 'self' data:; " +
-    "connect-src 'self' https://supabase.co; " +
-    "frame-ancestors 'none'; " +
-    "base-uri 'self'; " +
-    "form-action 'self';"
-  );
-
-  // Empêcher les clics depuis des frames externes
-  response.headers.set('X-Frame-Options', 'DENY');
-
-  // Empêcher la détection de type MIME
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-
-  // Activer le XSS protection
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-
-  // Référrer policy
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-  // Permissions policy (anciennement Feature-Policy)
-  response.headers.set(
-    'Permissions-Policy',
-    'geolocation=(), microphone=(), camera=(), payment=()'
-  );
-
-  // HSTS - Forcer HTTPS
-  if (process.env.NODE_ENV === 'production') {
-    response.headers.set(
-      'Strict-Transport-Security',
-      'max-age=31536000; includeSubDomains; preload'
-    );
+/** Ajoute les en-tetes de securite a une reponse existante. */
+export function securityHeaders(response: NextResponse): NextResponse {
+  for (const [name, value] of Object.entries(securityHeaderEntries())) {
+    response.headers.set(name, value);
   }
-
-  // Désactiver la mise en cache pour les pages sensibles
-  response.headers.set(
-    'Cache-Control',
-    'no-store, no-cache, must-revalidate, proxy-revalidate'
-  );
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-
   return response;
 }
 
-export const middleware = (request: NextRequest) => {
-  const response = NextResponse.next();
+/** Ajoute les en-tetes CORS correspondant a l'origine de la requete. */
+export function applyCors(response: NextResponse, request: NextRequest): NextResponse {
+  const origin = request.headers.get('origin');
+  for (const [name, value] of Object.entries(corsHeaders(origin))) {
+    response.headers.set(name, value);
+  }
+  return response;
+}
 
-  // Appliquer les headers de sécurité
-  return securityHeaders(response as NextResponse);
-};
-
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
-  ],
-};
+/**
+ * Repond a un preflight CORS. Une origine inconnue recoit un 403 sans en-tete
+ * `Access-Control-Allow-Origin`, ce qui bloque la requete reelle cote
+ * navigateur.
+ */
+export function handlePreflight(request: NextRequest): NextResponse {
+  const origin = request.headers.get('origin');
+  const allowed = isOriginAllowed(origin);
+  const response = new NextResponse(null, { status: allowed ? 204 : 403 });
+  return securityHeaders(applyCors(response, request));
+}

@@ -7,7 +7,8 @@ import {
   checkRateLimit,
   getRateLimitKey,
 } from '@/lib/rate-limiter';
-import { blobRead } from '@/lib/blob-store';
+import { blobReadGlobal } from '@/lib/blob-store';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
 
 export type PublisherSyncRole = 'desktop' | 'mobile' | 'server';
 export type PublisherSyncPermission =
@@ -31,6 +32,19 @@ export interface PublisherSyncDevice {
   permissions: PublisherSyncPermission[];
   lastRotatedAt: string | null;
   revokedAt: string | null;
+  /**
+   * Assemblee a laquelle cet appareil est rattache.
+   *
+   * Le middleware ne peut pas la deviner : ces requetes n'ont pas de cookie de
+   * session, seulement une signature verifiable en runtime Node. C'est donc le
+   * registre qui porte l'information, et `handlePublisherSyncRequest` qui
+   * l'applique aux lectures/ecritures.
+   *
+   * Absente pour les appareils enregistres avant le passage en
+   * multi-assemblees : ils continuent de lire le jeu de donnees historique non
+   * prefixe, ce qui evite de couper les installations existantes.
+   */
+  tenantId?: string;
 }
 
 interface DevicesFileSchema {
@@ -41,6 +55,44 @@ const DEVICE_CONFIG_PATH = path.join(process.cwd(), 'data', 'publisher-sync', 'd
 const BLOB_DEVICES_PATH = 'publisher-sync/devices.json';
 const TIMESTAMP_TOLERANCE_MS = 5 * 60 * 1000; // 5 minutes
 
+// Minimum registry required by the released Publisher App. Only the one-way
+// SHA-256 key hash is stored here; the API key itself remains in the client.
+// This also protects authentication when deployment packaging omits data/.
+//
+// LIMITE ASSUMEE, ET COMMENT EN SORTIR
+// ------------------------------------
+// `mobile-main` est une identite *partagee* : la meme cle est embarquee dans
+// chaque APK publie. Elle n'identifie donc pas un telephone, seulement « un
+// client mobile officiel ». Tant qu'elle existe, un seul APK extrait suffit a
+// parler a l'API au nom de n'importe quel appareil. Elle est conservee parce que
+// la supprimer couperait tous les telephones deja installes.
+//
+// Deux leviers, disponibles des maintenant :
+//   - `PUBLISHER_BOOTSTRAP_DEVICE=off` la desactive, une fois un APK publie avec
+//     des cles par appareil (`npm run sync:keys`) ;
+//   - `PUBLISHER_BOOTSTRAP_TENANT` la rattache a une assemblee, sans quoi elle
+//     lit le jeu de donnees historique non prefixe.
+// Ses permissions restent celles dont le client publie a besoin : lui en retirer
+// une couperait l'envoi des rapports depuis les telephones deja installes.
+const BOOTSTRAP_DEVICE_DISABLED =
+  (process.env.PUBLISHER_BOOTSTRAP_DEVICE || '').trim().toLowerCase() === 'off';
+
+const BOOTSTRAP_DEVICES: PublisherSyncDevice[] = BOOTSTRAP_DEVICE_DISABLED
+  ? []
+  : [
+      {
+        id: 'mobile-main',
+        label: 'Téléphone',
+        role: 'mobile',
+        status: 'active',
+        apiKeyHash: '587b2175b3df1f8e06e85c909f6989f1fcd0dfecde58a6bfd27190ef6bf3738c',
+        permissions: ['updates', 'incoming', 'ack'],
+        lastRotatedAt: '2025-12-05T12:26:34.248Z',
+        revokedAt: null,
+        tenantId: (process.env.PUBLISHER_BOOTSTRAP_TENANT || '').trim() || undefined,
+      },
+    ];
+
 const jsonError = (message: string, status = 401) =>
   NextResponse.json({ error: message }, { status });
 
@@ -48,15 +100,44 @@ let cachedDevices: PublisherSyncDevice[] | null = null;
 let cacheMtime = 0;
 
 async function loadDevices(): Promise<PublisherSyncDevice[]> {
-  // Sur Vercel ou en local : utiliser blobRead qui gère les deux cas
+  // Persistent storage may contain an empty/stale device registry after a fresh
+  // Vercel setup. Always merge it with the bundled bootstrap registry so the
+  // credentials shipped with released clients remain recognized.
+  //
+  // Lecture *hors* cloisonnement (`blobReadGlobal`) : ce registre associe un
+  // appareil a son assemblee, il ne peut donc pas etre range dans l'une d'elles
+  // sans rendre l'association introuvable au moment ou on en a besoin.
   try {
-    const raw = await blobRead(BLOB_DEVICES_PATH, DEVICE_CONFIG_PATH);
-    if (!raw) {
-      console.warn('publisher-sync-auth: devices file not found (blob or local)');
-      return [];
+    const persistedRaw = await blobReadGlobal(BLOB_DEVICES_PATH, DEVICE_CONFIG_PATH);
+    const persistedDevices = persistedRaw
+      ? (JSON.parse(persistedRaw) as DevicesFileSchema).devices ?? []
+      : [];
+
+    let bundledDevices: PublisherSyncDevice[] = [];
+    try {
+      const bundledRaw = await fs.readFile(DEVICE_CONFIG_PATH, 'utf8');
+      bundledDevices = (JSON.parse(bundledRaw) as DevicesFileSchema).devices ?? [];
+    } catch (error) {
+      console.warn('publisher-sync-auth: bundled devices file unavailable', error);
     }
-    const parsed = JSON.parse(raw) as DevicesFileSchema;
-    cachedDevices = parsed.devices ?? [];
+
+    const devicesById = new Map<string, PublisherSyncDevice>();
+    for (const device of BOOTSTRAP_DEVICES) {
+      devicesById.set(device.id, device);
+    }
+    for (const device of bundledDevices) {
+      devicesById.set(device.id, device);
+    }
+    // Explicit persisted entries override bootstrap entries with the same ID,
+    // preserving rotations and revocations performed in production.
+    for (const device of persistedDevices) {
+      devicesById.set(device.id, device);
+    }
+
+    cachedDevices = [...devicesById.values()];
+    if (!cachedDevices.length) {
+      console.warn('publisher-sync-auth: no devices found in persistent or bundled registry');
+    }
     return cachedDevices;
   } catch (error) {
     console.error('publisher-sync-auth: unable to load devices file', error);
@@ -190,7 +271,7 @@ export async function handlePublisherSyncRequest(
   const rateLimit = options.rateLimit ?? RATE_LIMIT_MAX_REQUESTS.apiCall;
   const rateId = options.rateLimitId ?? `publisher-sync:${auth.device.id}`;
   const key = getRateLimitKey(request, rateId);
-  const { allowed, remaining, resetTime } = checkRateLimit(key, rateLimit);
+  const { allowed, remaining, resetTime } = await checkRateLimit(key, rateLimit);
 
   if (!allowed) {
     return NextResponse.json(
@@ -210,7 +291,12 @@ export async function handlePublisherSyncRequest(
     );
   }
 
-  const response = await handler({ request, device: auth.device });
+  // Le handler s'execute dans le contexte d'assemblee de l'appareil : sans cela
+  // les rapports envoyes par les telephones de toutes les assemblees
+  // atterriraient dans un seul et meme jeu de donnees.
+  const response = await runWithTenant(auth.device.tenantId, () =>
+    handler({ request, device: auth.device! })
+  );
   response.headers.set('X-RateLimit-Limit', String(rateLimit));
   response.headers.set('X-RateLimit-Remaining', String(Math.max(0, remaining)));
   response.headers.set('X-RateLimit-Reset', String(Math.ceil(resetTime / 1000)));

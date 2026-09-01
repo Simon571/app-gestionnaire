@@ -1,50 +1,66 @@
-
-# Nom du workflow qui apparaîtra dans l'onglet "Actions" de GitHub
-name: Mise à jour mensuelle du cahier VCM
+# Mise a jour continue du cahier « Vie chretienne et ministere ».
+#
+# POURQUOI CE WORKFLOW
+# --------------------
+# L'extraction telecharge les publications .jwpub et les analyse avec
+# `meeting-schedules-parser` : c'est du travail Node lourd, impossible dans une
+# fonction serverless. Elle vit donc ici, et depose son resultat dans
+# l'application via `POST /api/vcm/program` (script `vcm:publish`).
+# L'application n'a plus besoin d'etre redeployee pour servir un programme frais.
+#
+# Cadence hebdomadaire : le programme se prepare au moins une semaine a l'avance,
+# et le magasin se declare « perime » des qu'il reste moins de deux semaines
+# couvertes. Un passage par semaine garde donc toujours de la marge.
+name: Mise à jour du cahier VCM
 
 on:
-  # Permet de lancer ce workflow manuellement depuis l'interface GitHub
   workflow_dispatch:
 
-  # Définit le déclenchement automatique
   schedule:
-    # S'exécute à 5h00 du matin, le 2 de chaque mois.
-    # Le format est "Minute Heure Jour Mois JourDeLaSemaine"
-    - cron: '0 5 2 * *'
+    # Tous les lundis à 4h17 UTC. Minute décalée volontairement : les minutes
+    # rondes sont saturées côté GitHub et les exécutions y sont retardées.
+    - cron: '17 4 * * 1'
 
 jobs:
-  # Nom du "travail" à exécuter
-  scrape-and-update:
-    # Utilise la dernière version d'Ubuntu comme environnement d'exécution
+  update-and-publish:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Récupère le code de votre dépôt
       - name: Récupération du code
         uses: actions/checkout@v4
 
-      # 2. Met en place l'environnement Node.js
       - name: Mise en place de Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Assurez-vous que cela correspond à la version de votre projet
-          cache: 'npm' # Met en cache les dépendances pour accélérer les exécutions futures
+          node-version: '20'
+          cache: 'npm'
 
-      # 3. Installe les dépendances du projet
       - name: Installation des dépendances NPM
-        run: npm install
+        run: npm ci
 
-      # 4. Installe les navigateurs pour Playwright
       - name: Installation des navigateurs Playwright
         run: npx playwright install --with-deps
 
-      # 5. Exécute le script de scraping
-      - name: Lancement du script de mise à jour
+      # Extraction + normalisation + vérification des dates + validation, pour
+      # les deux langues. Si l'une échoue, rien n'est publié : mieux vaut un
+      # programme un peu ancien qu'un programme faux.
+      - name: Extraction du programme (fr + en)
+        run: npm run vcm:update:all
+
+      - name: Dépôt dans l'application déployée
         env:
-          # L'URL de votre application déployée (ex: https://mon-app.vercel.app)
-          API_URL: ${{ secrets.PROD_APP_URL }}
-          # La clé secrète pour authentifier le script auprès de votre API
-          AUTOMATION_API_KEY: ${{ secrets.AUTOMATION_API_KEY }}
+          VCM_PUBLISH_URL: ${{ secrets.PROD_APP_URL }}
+          API_ACCESS_TOKEN: ${{ secrets.API_ACCESS_TOKEN }}
         run: |
-          # Utilise ts-node pour exécuter directement le script TypeScript
-          npx ts-node scripts/scrape-vcm.ts
+          npm run vcm:publish
+          npm run vcm:publish:en
+
+      # Trace utile en cas d'échec du dépôt : le fichier extrait reste
+      # récupérable pour une publication manuelle.
+      - name: Conservation du programme extrait
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcm-program
+          path: public/vcm/**/vcm-program.normalized.json
+          if-no-files-found: warn

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * blob-store.ts
  * Abstraction de stockage persistant pour les fichiers JSON de données.
  *
@@ -8,20 +8,79 @@
  * Variables d'environnement requises sur Vercel :
  *   UPSTASH_REDIS_REST_URL   -> https://xxxxx.upstash.io
  *   UPSTASH_REDIS_REST_TOKEN -> AXxx...
+ *
+ * CLOISONNEMENT MULTI-ASSEMBLEES
+ * ------------------------------
+ * L'application sert plusieurs assemblees. Les chemins recus des stores
+ * (`data/families.json`, …) sont donc prefixes par `tenants/<assemblyId>/`
+ * avant d'atteindre le disque ou Redis. La derivation est centralisee ici : les
+ * onze stores appelants n'ont pas a connaitre la notion d'assemblee.
+ *
+ * L'identifiant est lu dans l'en-tete `x-tenant-id`, pose sur la requete par le
+ * middleware. Hors contexte de requete HTTP (MSI Tauri, scripts de migration,
+ * tests) la lecture echoue : on retombe alors sur le chemin historique non
+ * prefixe, ce qui preserve les installations mono-assemblee.
  */
 import { promises as fs } from 'fs';
 import path from 'path';
+import {
+  TENANT_HEADER as TENANT_HEADER_NAME,
+  safeTenantSegment,
+} from '@/lib/tenants/tenant-context';
+import { resolveTenantId } from '@/lib/tenants/tenant-scope';
 
 const isVercel = process.env.VERCEL === '1';
 
+// Certains fichiers .env exportes sous Windows commencent par un BOM, qui se
+// retrouve collé à la première valeur lue. Ecrit via `fromCharCode` pour que le
+// fichier source reste en ASCII pur.
+const BOM = String.fromCharCode(0xfeff);
+
 function cleanEnv(s: string | undefined): string {
-  return (s ?? '').replace(/^\uFEFF/, '').trim();
+  const value = s ?? '';
+  return (value.startsWith(BOM) ? value.slice(1) : value).trim();
 }
 
 function hasRedis(): boolean {
   const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
   const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
   return url.startsWith('https://') && token.length > 0;
+}
+
+export const TENANT_HEADER = TENANT_HEADER_NAME;
+
+/**
+ * Assemblee courante, ou `null` hors requete HTTP.
+ *
+ * La resolution est centralisee dans `tenant-scope` : contexte pose par les
+ * routes authentifiees par appareil, sinon en-tete `x-tenant-id` du middleware.
+ */
+async function currentTenantId(): Promise<string | null> {
+  return resolveTenantId();
+}
+
+/** Empeche un identifiant d'assemblee de s'echapper de son prefixe. */
+
+async function scopedPaths(
+  blobPath: string,
+  localPath: string
+): Promise<{ blobPath: string; localPath: string }> {
+  const tenantId = await currentTenantId();
+  if (!tenantId) return { blobPath, localPath };
+
+  const segment = safeTenantSegment(tenantId);
+  return {
+    blobPath: `tenants/${segment}/${blobPath}`,
+    // On insere le segment sous data/ plutot qu'avant, pour que l'arborescence
+    // locale reste `data/tenants/<id>/families.json`.
+    localPath: path.join(
+      process.cwd(),
+      'data',
+      'tenants',
+      segment,
+      path.relative(path.join(process.cwd(), 'data'), localPath)
+    ),
+  };
 }
 
 /** Convertit un chemin de fichier en cle Redis valide */
@@ -47,12 +106,19 @@ async function redisSet(key: string, value: string): Promise<void> {
   await redis.set(key, value);
 }
 
-export async function blobRead(blobPath: string, localPath: string): Promise<string | null> {
+/**
+ * Lecture sans cloisonnement, pour les donnees de plateforme (registre des
+ * assemblees) qui sont par nature communes a tous les tenants.
+ */
+export async function blobReadGlobal(
+  blobPath: string,
+  localPath: string
+): Promise<string | null> {
   if (isVercel && hasRedis()) {
     try {
       return await redisGet(toRedisKey(blobPath));
     } catch (e) {
-      console.error('blobRead Redis error:', (e as Error).message);
+      console.error('blobReadGlobal Redis error:', (e as Error).message);
       return null;
     }
   }
@@ -63,16 +129,30 @@ export async function blobRead(blobPath: string, localPath: string): Promise<str
   }
 }
 
-export async function blobWrite(blobPath: string, localPath: string, content: string): Promise<void> {
+export async function blobWriteGlobal(
+  blobPath: string,
+  localPath: string,
+  content: string
+): Promise<void> {
   if (isVercel && hasRedis()) {
     try {
       await redisSet(toRedisKey(blobPath), content);
       return;
     } catch (e) {
-      console.error('blobWrite Redis error:', (e as Error).message);
+      console.error('blobWriteGlobal Redis error:', (e as Error).message);
       throw e;
     }
   }
   await fs.mkdir(path.dirname(localPath), { recursive: true });
   await fs.writeFile(localPath, content, 'utf8');
+}
+
+export async function blobRead(blobPath: string, localPath: string): Promise<string | null> {
+  const scoped = await scopedPaths(blobPath, localPath);
+  return blobReadGlobal(scoped.blobPath, scoped.localPath);
+}
+
+export async function blobWrite(blobPath: string, localPath: string, content: string): Promise<void> {
+  const scoped = await scopedPaths(blobPath, localPath);
+  return blobWriteGlobal(scoped.blobPath, scoped.localPath, content);
 }

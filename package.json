@@ -17,6 +17,9 @@
     "vcm:update:fr": "npm run scrape-vcm -- --lang=fr && npm run normalize-vcm -- --lang=fr && node scripts/verify-dates.js --lang=fr && ts-node --project scripts/tsconfig.json scripts/validate-vcm.ts --lang=fr",
     "vcm:update:en": "npm run scrape-vcm -- --lang=en && npm run normalize-vcm -- --lang=en && node scripts/verify-dates.js --lang=en && ts-node --project scripts/tsconfig.json scripts/validate-vcm.ts --lang=en",
     "vcm:update:all": "npm run vcm:update:fr && npm run vcm:update:en",
+    "vcm:publish": "ts-node --project scripts/tsconfig.json scripts/publish-vcm.ts --lang=fr",
+    "vcm:publish:en": "ts-node --project scripts/tsconfig.json scripts/publish-vcm.ts --lang=en",
+    "vcm:refresh": "npm run vcm:update:fr && npm run vcm:publish",
     "vcm:validate:fr": "ts-node --project scripts/tsconfig.json scripts/validate-vcm.ts --lang=fr",
     "vcm:validate:en": "ts-node --project scripts/tsconfig.json scripts/validate-vcm.ts --lang=en",
     "typecheck": "tsc --noEmit",
@@ -29,6 +32,8 @@
     "postinstall": "patch-package",
     "typecheck:scripts": "tsc -p scripts/tsconfig.json --noEmit",
     "sync:keys": "ts-node --project scripts/tsconfig.json scripts/publisher-sync-keys.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:writer": "vitest run src/lib/__tests__/publisher-sync-flutter-writer.test.ts"
   },
   "dependencies": {

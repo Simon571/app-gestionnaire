@@ -4,7 +4,6 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 import { navItems } from '@/lib/nav-data';
-import { publisherSyncFetch } from '@/lib/publisher-sync-client';
 
 const PublisherAppPage = () => {
     const nav = navItems.find(item => item.id === 'publisherApp');
@@ -18,8 +17,8 @@ const PublisherAppPage = () => {
         const refresh = async () => {
             try {
                 const [incomingRes, outgoingRes] = await Promise.all([
-                    publisherSyncFetch('/api/publisher-app/incoming?status=pending'),
-                    publisherSyncFetch('/api/publisher-app/queue?direction=desktop_to_mobile&status=pending'),
+                    fetch('/api/publisher-app/actionable-jobs?direction=mobile_to_desktop&status=pending', { cache: 'no-store' }),
+                    fetch('/api/publisher-app/actionable-jobs?direction=desktop_to_mobile&status=pending', { cache: 'no-store' }),
                 ]);
 
                 const incomingData = incomingRes.ok ? await incomingRes.json() : null;

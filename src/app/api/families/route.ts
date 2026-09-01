@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
-// Pour Tauri: output: export (static) + NEXT_EXPORT=true en build-tauri
-// Pour Vercel: dynamique, lit families.json en temps réel
-// Tauri build utilise NEXT_EXPORT=true qui change ce comportement au build
-export const dynamic = 'force-static'; // Tauri nécessite static pour next export
+// `force-static` prive la route des API dynamiques (`headers()`), donc de
+// l'identifiant d'assemblee pose par le middleware : toutes les assemblees
+// ecriraient dans le meme fichier. Le build Tauri utilisant desormais
+// `output: 'standalone'` (un vrai serveur Node) et non `next export`, rien
+// n'impose plus le rendu statique ici.
+export const dynamic = 'force-dynamic';
 import { readFamilies, writeFamilies, addFamily, deleteFamily, type Family } from '@/lib/families-store';
 
 const noCacheHeaders = { 'Cache-Control': 'no-store, no-cache, must-revalidate' };

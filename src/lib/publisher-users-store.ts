@@ -1,23 +1,72 @@
 import path from 'path';
 import { blobRead, blobWrite } from './blob-store';
+import {
+  readPublisherUsersState,
+  writePublisherUsersState,
+} from './publisher-users-persistence';
 
 const BLOB_PATH = 'data/publisher-users.json';
 const LOCAL_PATH = path.join(process.cwd(), 'data', 'publisher-users.json');
 
 export type PublisherUserRecord = Record<string, unknown>;
 
+const isVercel = process.env.VERCEL === '1';
+const hasRedisStorage = () =>
+  Boolean(process.env.UPSTASH_REDIS_REST_URL?.trim()) &&
+  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN?.trim());
+const hasVercelBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
+
+const parseUsers = (content: string | null): PublisherUserRecord[] => {
+  if (!content) return [];
+  const parsed = JSON.parse(content);
+  return Array.isArray(parsed) ? parsed as PublisherUserRecord[] : [];
+};
+
 export async function readPublisherUsers(): Promise<PublisherUserRecord[]> {
   try {
-    const content = await blobRead(BLOB_PATH, LOCAL_PATH);
-    if (!content) return [];
-    const parsed = JSON.parse(content);
-    if (!Array.isArray(parsed)) return [];
-    return parsed as PublisherUserRecord[];
-  } catch {
+    // Utiliser Redis lorsqu'il est configuré. Si Redis est indisponible, tenter
+    // Vercel Blob afin de conserver l'accès à la liste historique.
+    if (isVercel && hasRedisStorage()) {
+      try {
+        const redisContent = await blobRead(BLOB_PATH, LOCAL_PATH);
+        if (redisContent) return parseUsers(redisContent);
+      } catch (redisError) {
+        console.warn('Unable to read Publisher users from Redis', redisError);
+      }
+      if (hasVercelBlob()) {
+        return parseUsers(await readPublisherUsersState());
+      }
+      return [];
+    }
+    if (isVercel && hasVercelBlob()) {
+      return parseUsers(await readPublisherUsersState());
+    }
+    return parseUsers(await blobRead(BLOB_PATH, LOCAL_PATH));
+  } catch (error) {
+    console.error('Unable to read Publisher users', error);
     return [];
   }
 }
 
 export async function writePublisherUsers(users: PublisherUserRecord[]): Promise<void> {
-  await blobWrite(BLOB_PATH, LOCAL_PATH, JSON.stringify(users, null, 2));
+  const content = JSON.stringify(users, null, 2);
+  if (isVercel && hasRedisStorage()) {
+    try {
+      await blobWrite(BLOB_PATH, LOCAL_PATH, content);
+      return;
+    } catch (redisError) {
+      if (!hasVercelBlob()) throw redisError;
+      console.warn('Unable to write Publisher users to Redis, using Vercel Blob', redisError);
+      await writePublisherUsersState(content);
+      return;
+    }
+  }
+  if (isVercel && hasVercelBlob()) {
+    await writePublisherUsersState(content);
+    return;
+  }
+  if (isVercel) {
+    throw new Error('Aucun stockage persistant Publisher Users configuré');
+  }
+  await blobWrite(BLOB_PATH, LOCAL_PATH, content);
 }

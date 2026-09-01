@@ -1,5 +1,9 @@
 ﻿import path from 'path';
 import { blobRead, blobWrite } from './blob-store';
+import {
+  readPublisherPreachingState,
+  writePublisherPreachingState,
+} from './publisher-preaching-persistence';
 
 const STORE_BLOB = 'data/publisher-preaching.json';
 const STORE_LOCAL = path.join(process.cwd(), 'data', 'publisher-preaching.json');
@@ -25,9 +29,39 @@ export interface MonthSubmission {
   lateUserIds: string[];
 }
 
+const readReportsState = async (): Promise<string | null> => {
+  if (process.env.VERCEL === '1') {
+    return readPublisherPreachingState('reports');
+  }
+  return blobRead(STORE_BLOB, STORE_LOCAL);
+};
+
+const writeReportsState = async (content: string): Promise<void> => {
+  if (process.env.VERCEL === '1') {
+    await writePublisherPreachingState('reports', content);
+    return;
+  }
+  await blobWrite(STORE_BLOB, STORE_LOCAL, content);
+};
+
+const readSubmissionsState = async (): Promise<string | null> => {
+  if (process.env.VERCEL === '1') {
+    return readPublisherPreachingState('submissions');
+  }
+  return blobRead(SUBMISSION_BLOB, SUBMISSION_LOCAL);
+};
+
+const writeSubmissionsState = async (content: string): Promise<void> => {
+  if (process.env.VERCEL === '1') {
+    await writePublisherPreachingState('submissions', content);
+    return;
+  }
+  await blobWrite(SUBMISSION_BLOB, SUBMISSION_LOCAL, content);
+};
+
 const readFileSafe = async (): Promise<PreachingReportRecord[]> => {
   try {
-    const raw = await blobRead(STORE_BLOB, STORE_LOCAL);
+    const raw = await readReportsState();
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed as PreachingReportRecord[];
@@ -40,7 +74,7 @@ const readFileSafe = async (): Promise<PreachingReportRecord[]> => {
 
 const readSubmissionsSafe = async (): Promise<MonthSubmission[]> => {
   try {
-    const raw = await blobRead(SUBMISSION_BLOB, SUBMISSION_LOCAL);
+    const raw = await readSubmissionsState();
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed as MonthSubmission[];
@@ -70,7 +104,7 @@ export async function upsertPreachingReport(report: Omit<PreachingReportRecord, 
   } else {
     reports.push(record);
   }
-  await blobWrite(STORE_BLOB, STORE_LOCAL, JSON.stringify({ reports }, null, 2));
+  await writeReportsState(JSON.stringify({ reports }, null, 2));
   return record;
 }
 
@@ -96,13 +130,13 @@ export async function markMonthAsSent(month: string, lateUserIds: string[]): Pro
       reports.push({ userId, month, isLate: true, didPreach: false, updatedAt: new Date().toISOString() });
     }
   }
-  await blobWrite(STORE_BLOB, STORE_LOCAL, JSON.stringify({ reports }, null, 2));
+  await writeReportsState(JSON.stringify({ reports }, null, 2));
 
   const idx = submissions.findIndex((s) => s.month === month);
   const submission: MonthSubmission = { month, sentAt: new Date().toISOString(), lateUserIds };
   if (idx >= 0) submissions[idx] = submission;
   else submissions.push(submission);
-  await blobWrite(SUBMISSION_BLOB, SUBMISSION_LOCAL, JSON.stringify({ submissions }, null, 2));
+  await writeSubmissionsState(JSON.stringify({ submissions }, null, 2));
 
   return submission;
 }
@@ -120,9 +154,9 @@ export async function cancelMonthSent(month: string): Promise<void> {
         reports[idx].updatedAt = new Date().toISOString();
       }
     }
-    await blobWrite(STORE_BLOB, STORE_LOCAL, JSON.stringify({ reports }, null, 2));
+    await writeReportsState(JSON.stringify({ reports }, null, 2));
   }
 
   const filtered = submissions.filter((s) => s.month !== month);
-  await blobWrite(SUBMISSION_BLOB, SUBMISSION_LOCAL, JSON.stringify({ submissions: filtered }, null, 2));
+  await writeSubmissionsState(JSON.stringify({ submissions: filtered }, null, 2));
 }

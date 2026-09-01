@@ -1,37 +1,49 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = "force-static";
+// Rendu dynamique obligatoire : `force-static` priverait la route des API
+// dynamiques (`headers()`), donc de l'identifiant d'assemblee pose par le
+// middleware. Toutes les assemblees ecriraient alors dans le meme fichier.
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
-import { promises as fs } from 'fs';
+
 import path from 'path';
+import { blobWrite } from '@/lib/blob-store';
+import { readPublisherUsers } from '@/lib/publisher-users-store';
 
 /**
- * GET /api/backup/publisher-users
- * Crée une sauvegarde horodatée de publisher-users.json
+ * POST /api/backup/publisher-users
+ * Crée une sauvegarde horodatée de la liste des utilisateurs Publisher App.
+ *
+ * Cette route etait exposee en GET alors qu'elle ecrit un fichier. Le
+ * middleware ne verifie l'origine et n'applique le quota de mutation que sur
+ * POST/PUT/PATCH/DELETE : n'importe quelle requete GET, y compris un prefetch
+ * de navigateur, declenchait donc une ecriture sans controle d'origine. Elle est
+ * desormais en POST, ce qui la soumet aussi a la regle « un proclamateur ne
+ * modifie que ses propres donnees ».
+ *
+ * Elle lisait par ailleurs `data/publisher-users.json` directement via `fs`, en
+ * contournant `publisher-users-store` : sur Vercel elle ecrivait donc dans un
+ * systeme de fichiers ephemere (sauvegarde perdue) et ignorait le cloisonnement
+ * par assemblee, contredisant le commentaire ci-dessus. Les deux acces passent
+ * maintenant par les stores, qui choisissent Redis ou le disque selon
+ * l'environnement et prefixent le chemin par l'assemblee courante.
  */
-export async function GET() {
+export async function POST() {
   try {
-    const dataDir = path.join(process.cwd(), 'data');
-    const sourceFile = path.join(dataDir, 'publisher-users.json');
-    const backupDir = path.join(dataDir, 'backups');
-    
-    // Créer le dossier backups s'il n'existe pas
-    await fs.mkdir(backupDir, { recursive: true });
-    
-    // Lire le fichier source
-    const content = await fs.readFile(sourceFile, 'utf-8');
-    const users = JSON.parse(content);
-    
-    // Créer le nom de fichier avec timestamp
+    const users = await readPublisherUsers();
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const backupFile = path.join(backupDir, `publisher-users-${timestamp}.json`);
-    
-    // Sauvegarder
-    await fs.writeFile(backupFile, content, 'utf-8');
-    
+    const relativePath = `data/backups/publisher-users-${timestamp}.json`;
+
+    await blobWrite(
+      relativePath,
+      path.join(process.cwd(), 'data', 'backups', `publisher-users-${timestamp}.json`),
+      JSON.stringify(users, null, 2)
+    );
+
     return NextResponse.json({
       success: true,
-      backupFile: `data/backups/publisher-users-${timestamp}.json`,
+      backupFile: relativePath,
       userCount: users.length,
       message: 'Sauvegarde créée avec succès',
     });

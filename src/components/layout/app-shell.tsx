@@ -5,8 +5,27 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTransition } from 'react';
 import { Loader2, Home, Building2, Users, CalendarDays, Map, Smartphone, User, FileText, Settings, CircleHelp } from 'lucide-react';
 import { navItems as appNavItems } from '@/lib/nav-data';
+import { useSessionRole } from '@/hooks/use-session-role';
 import { cn } from '@/lib/utils';
-import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+
+/**
+ * Modules accessibles a un proclamateur : son programme, son espace personnel,
+ * le tableau de bord et l'aide. Les autres (assemblee, personnes, territoires,
+ * administration de la Publisher App, rapports d'assistance, parametres) sont
+ * reserves aux anciens et assistants.
+ *
+ * Ce filtre n'est qu'un confort d'interface. Le refus qui compte est prononce
+ * cote serveur par le middleware, qui repond 403 `publisher-read-only`.
+ */
+const PUBLISHER_HREFS = new Set(['/', '/programme', '/moi', '/help']);
+
+const ROLE_LABELS: Record<string, string> = {
+  'super-admin': 'plateforme',
+  'assembly-admin': 'administrateur',
+  elder: 'ancien',
+  servant: 'assistant',
+  publisher: 'proclamateur',
+};
 
 const ICON_SIZE = 30;
 const ICON_STROKE = 2.8;
@@ -58,6 +77,7 @@ function Divider() {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { isAdmin, role, displayName } = useSessionRole();
   const [hasPublisherAlert, setHasPublisherAlert] = React.useState(false);
   const isPathActive = (path: string) => {
     if (path === '/') return pathname === path;
@@ -66,12 +86,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   React.useEffect(() => {
+    // Le badge compte des travaux de synchronisation, qui ne concernent que les
+    // responsables : inutile d'interroger l'API pour un proclamateur, dont la
+    // requete serait de toute facon refusee.
+    if (!isAdmin) {
+      setHasPublisherAlert(false);
+      return;
+    }
     let isMounted = true;
     const refreshBadge = async () => {
       try {
         const [incomingRes, outgoingRes] = await Promise.all([
-          publisherSyncFetch('/api/publisher-app/incoming?status=pending').catch(() => null),
-          publisherSyncFetch('/api/publisher-app/queue?direction=desktop_to_mobile&status=pending').catch(() => null),
+          fetch('/api/publisher-app/actionable-jobs?direction=mobile_to_desktop&status=pending', { cache: 'no-store' }).catch(() => null),
+          fetch('/api/publisher-app/actionable-jobs?direction=desktop_to_mobile&status=pending', { cache: 'no-store' }).catch(() => null),
         ]);
 
         const incomingData = incomingRes?.ok ? await incomingRes.json().catch(() => null) : null;
@@ -101,17 +128,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       isMounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [isAdmin]);
 
   const mainGroupHrefs = ['/', '/assembly', '/personnes', '/programme', '/territories', '/publisher-app'];
-  const navItems = appNavItems.map(item => ({ ...item, href: item.href || '' }));
+  const visibleFor = (href: string) => isAdmin || PUBLISHER_HREFS.has(href);
+  const navItems = appNavItems
+    .map(item => ({ ...item, href: item.href || '' }))
+    .filter(item => visibleFor(item.href));
   const mainGroup = navItems.filter(item => mainGroupHrefs.includes(item.href));
   const reportsItem = navItems.find(item => item.href === '/reports');
-  
+
   const secondaryGroup = [
     { href: '/moi', label: 'Moi', icon: User },
     reportsItem,
-    { href: '/parametres', label: 'Paramètres', icon: Settings }
+    ...(isAdmin ? [{ href: '/parametres', label: 'Paramètres', icon: Settings }] : []),
   ].filter(Boolean) as { href: string; label: string; icon: React.ElementType; }[];
 
   return (
@@ -151,10 +181,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="ml-16">
   <header className="sticky top-0 z-30 flex h-14 items-center border-b border-white/10 bg-gradient-to-r from-cyan-400 via-sky-500 to-sky-700 text-white shadow-md no-print">
-          <div className="w-full px-4 sm:px-6">
+          <div className="flex w-full items-center justify-between gap-4 px-4 sm:px-6">
             <h1 className="text-xl font-semibold tracking-wide">
               Gestionnaire d’Assemblée
             </h1>
+            {displayName && (
+              // Rendre le compte actif visible evite de se demander pourquoi un
+              // module a disparu : c'est le role qui le decide.
+              <span className="hidden text-sm text-white/90 sm:inline">
+                {displayName}
+                {role && <span className="ml-2 text-white/70">({ROLE_LABELS[role] ?? role})</span>}
+              </span>
+            )}
           </div>
         </header>
         <main className="flex-1 p-4 sm:p-6 bg-muted/30">{children}</main>

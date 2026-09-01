@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DownloadButton } from "@/components/marketing/download-button";
 
 const COPY: Record<string, any> = {
@@ -91,12 +92,12 @@ export function DownloadPortal({ locale = "fr" }: { locale?: string }) {
       <header className="border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="text-lg font-semibold">{lang === 'fr' ? 'Gestionnaire d\'Assemblée' : 'Assembly Manager'}</div>
-          <a 
-            href="/connexion" 
+          <Link
+            href="/connexion"
             className="rounded-lg bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700 transition-colors"
           >
             {t.login}
-          </a>
+          </Link>
         </div>
       </header>
 

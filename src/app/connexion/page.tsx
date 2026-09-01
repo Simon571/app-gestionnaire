@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { getApiBase } from "@/lib/api-base"
 
 interface Person {
   id: string;
@@ -39,9 +40,26 @@ export default function LoginPage() {
   const [selectedPersonId, setSelectedPersonId] = useState("");
   const [pin, setPin] = useState("");
   const [assemblyId, setAssemblyId] = useState("");
+  /**
+   * L'application sert plusieurs assemblees : un proclamateur doit indiquer
+   * laquelle, sinon le serveur ne sait pas dans quel jeu de donnees chercher son
+   * compte. Prerempli depuis la derniere connexion sur cet appareil.
+   */
+  const [personAssemblyId, setPersonAssemblyId] = useState("");
   const [assemblyPin, setAssemblyPin] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [loginMode, setLoginMode] = useState<'person' | 'assembly'>('person');
+
+  useEffect(() => {
+    // Identifiant d'assemblee memorise sur l'appareil : ce n'est pas un secret
+    // (le PIN, lui, n'est jamais stocke), et le resaisir a chaque connexion
+    // serait penible sur mobile.
+    const remembered = localStorage.getItem('lastAssemblyId');
+    if (remembered) {
+      setPersonAssemblyId(remembered);
+      setAssemblyId(remembered);
+    }
+  }, []);
 
   useEffect(() => {
     // Log au chargement pour vérifier que la page charge
@@ -85,28 +103,64 @@ export default function LoginPage() {
         return;
       }
 
-      if (selectedPerson.pin === pin) {
-        localStorage.setItem('admin_session', JSON.stringify({
+      // On tente d'abord la verification serveur, qui delivre un cookie de
+      // session utilisable par l'API. Tant que les PIN ne sont pas synchronises
+      // cote serveur, la route repond 409 et on retombe sur la verification
+      // locale : la personne peut se connecter a l'interface, mais sans session
+      // serveur.
+      const response = await fetch(`${getApiBase()}/api/auth/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          mode: 'person',
           personId: selectedPerson.id,
-          displayName: selectedPerson.displayName,
-          function: selectedPerson.spiritual?.function || 'publisher',
-          loggedInAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        }));
+          pin,
+          assemblyId: personAssemblyId,
+        }),
+      });
 
-        toast({
-          title: "Connexion réussie",
-          description: `Bienvenue, ${selectedPerson.displayName}!`,
-        });
+      const serverAuthenticated = response.ok;
+      const pinRejected = response.status === 401;
+      const result = serverAuthenticated ? await response.json().catch(() => ({})) : {};
 
-        router.push('/');
-      } else {
+      if (pinRejected || (!serverAuthenticated && selectedPerson.pin !== pin)) {
         toast({
           title: "Échec de connexion",
           description: "PIN incorrect.",
           variant: "destructive"
         });
+        return;
       }
+
+      if (!serverAuthenticated) {
+        console.warn(
+          'Connexion validee localement : aucun PIN enregistre cote serveur pour cette personne. ' +
+            'Les appels API resteront non authentifies.'
+        );
+      } else {
+        localStorage.setItem('lastAssemblyId', personAssemblyId);
+      }
+
+      localStorage.setItem('admin_session', JSON.stringify({
+        personId: selectedPerson.id,
+        displayName: selectedPerson.displayName,
+        // Le role vient du serveur, qui l'a deduit de la fonction inscrite sur la
+        // fiche. C'est lui qui decide des modules affiches ; la valeur locale
+        // n'est qu'un affichage immediat, revalide au chargement suivant.
+        role: result?.session?.role ?? undefined,
+        function: selectedPerson.spiritual?.function || 'publisher',
+        loggedInAt: new Date().toISOString(),
+        expiresAt: result?.session?.expiresAt
+          ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      }));
+
+      toast({
+        title: "Connexion réussie",
+        description: `Bienvenue, ${selectedPerson.displayName}!`,
+      });
+
+      router.push('/');
     } catch (error) {
       toast({
         title: "Erreur",
@@ -123,52 +177,47 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Identifiants valides pour l'administrateur (KIN YOLO EST)
-      const VALID_ASSEMBLY_ID = 'KINYOL-WGHK';
-      const VALID_ASSEMBLY_PIN = '136573';
-      const VALID_ASSEMBLY_NAME = 'KIN YOLO EST Français';
+      // Les identifiants sont verifies par le serveur (/api/auth/session), qui
+      // pose un cookie de session HttpOnly. Ils ne sont plus presents dans le
+      // bundle client.
+      const response = await fetch(`${getApiBase()}/api/auth/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ mode: 'assembly', assemblyId, assemblyPin }),
+      });
 
-      // DEBUG: Log les valeurs entrées et attendues
-      console.log('🔐 Tentative de connexion administrateur:');
-      console.log('  Entrée ID:', assemblyId, '| Attendu:', VALID_ASSEMBLY_ID, '| Match:', assemblyId === VALID_ASSEMBLY_ID);
-      console.log('  Entrée PIN:', assemblyPin, '| Attendu:', VALID_ASSEMBLY_PIN, '| Match:', assemblyPin === VALID_ASSEMBLY_PIN);
-      console.log('  Les deux match?', assemblyId === VALID_ASSEMBLY_ID && assemblyPin === VALID_ASSEMBLY_PIN);
+      const result = await response.json().catch(() => ({}));
 
-      // Vérifier les identifiants
-      if (assemblyId === VALID_ASSEMBLY_ID && assemblyPin === VALID_ASSEMBLY_PIN) {
-        console.log('✅ Identifiants corrects! Création session...');
-        localStorage.setItem('admin_session', JSON.stringify({
-          assemblyId: VALID_ASSEMBLY_ID,
-          displayName: VALID_ASSEMBLY_NAME,
-          role: 'assembly-admin',
-          loggedInAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-        }));
-
-        // Aussi initialiser appSettings pour future référence
-        localStorage.setItem('appSettings', JSON.stringify({
-          assemblyId: VALID_ASSEMBLY_ID,
-          assemblyPin: VALID_ASSEMBLY_PIN,
-          assemblyName: VALID_ASSEMBLY_NAME
-        }));
-
-        toast({
-          title: "Connexion réussie",
-          description: `Bienvenue, administrateur de ${VALID_ASSEMBLY_NAME}!`,
-        });
-
-        console.log('🚀 Redirection vers accueil...');
-        router.push('/');
-      } else {
-        console.log('❌ Identifiants incorrects');
+      if (!response.ok) {
         toast({
           title: "Échec de connexion",
-          description: "ID ou PIN de l'assemblée incorrect.",
+          description: result?.error ?? "ID ou PIN de l'assemblée incorrect.",
           variant: "destructive"
         });
+        return;
       }
+
+      const session = result.session ?? {};
+      localStorage.setItem('lastAssemblyId', session.sub ?? assemblyId);
+
+      // Le cookie porte l'authentification cote serveur. localStorage ne sert
+      // plus qu'a l'affichage de l'interface (AppShell, nom affiche).
+      localStorage.setItem('admin_session', JSON.stringify({
+        assemblyId: session.sub ?? assemblyId,
+        displayName: session.displayName ?? assemblyId,
+        role: session.role ?? 'assembly-admin',
+        loggedInAt: new Date().toISOString(),
+        expiresAt: session.expiresAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+      }));
+
+      toast({
+        title: "Connexion réussie",
+        description: `Bienvenue, administrateur de ${session.displayName ?? assemblyId}!`,
+      });
+
+      router.push('/');
     } catch (error) {
-      console.error('❌ Erreur lors de la connexion:', error);
       toast({
         title: "Erreur",
         description: "Une erreur s'est produite lors de la connexion.",
@@ -200,6 +249,22 @@ export default function LoginPage() {
             {/* Mode Individu */}
             <TabsContent value="person">
               <form onSubmit={handlePersonLogin} className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="person-assembly">Identifiant de l&apos;assemblée</Label>
+                  <Input
+                    id="person-assembly"
+                    placeholder="Ex: ASSEMB-XXXX"
+                    value={personAssemblyId}
+                    onChange={(e) => setPersonAssemblyId(e.target.value.trim().toUpperCase())}
+                    required
+                    disabled={isLoading}
+                    className="uppercase"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Fourni par l&apos;ancien de votre assemblée. Il détermine les données
+                    auxquelles votre compte accède.
+                  </p>
+                </div>
                 <div className="grid gap-2">
                   <Label htmlFor="person">Sélectionner une personne</Label>
                   <Select
@@ -235,7 +300,7 @@ export default function LoginPage() {
                     className="text-center text-2xl tracking-widest"
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading || !selectedPersonId || pin.length !== 4}>
+                <Button type="submit" className="w-full" disabled={isLoading || !selectedPersonId || pin.length !== 4 || !personAssemblyId}>
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -261,7 +326,7 @@ export default function LoginPage() {
                   <Input
                     id="assembly-id"
                     type="text"
-                    placeholder="ex: KINYOL-WGHK"
+                    placeholder="ex: ASSEMB-XXXX"
                     value={assemblyId}
                     onChange={(e) => setAssemblyId(e.target.value)}
                     required
@@ -275,7 +340,7 @@ export default function LoginPage() {
                     type="password"
                     inputMode="numeric"
                     pattern="[0-9]+"
-                    placeholder="ex: 136573"
+                    placeholder="Code à 6 chiffres"
                     value={assemblyPin}
                     onChange={(e) => setAssemblyPin(e.target.value.replace(/\D/g, ''))}
                     required

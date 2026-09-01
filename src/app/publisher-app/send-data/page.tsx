@@ -13,6 +13,7 @@ import {
   PublisherSyncType,
 } from '@/types/publisher-sync';
 import { publisherSyncFetch } from '@/lib/publisher-sync-client';
+import { isActionablePublisherJob } from '@/lib/publisher-sync-actionable';
 
 const typeLabels: Record<PublisherSyncType, string> = {
   programme_week: 'Programme Vie et ministère',
@@ -55,7 +56,7 @@ export default function SendDataPage() {
       );
       if (!response.ok) throw new Error('jobs');
       const data = await response.json();
-      setJobs(Array.isArray(data.jobs) ? data.jobs : []);
+      setJobs(Array.isArray(data.jobs) ? data.jobs.filter(isActionablePublisherJob) : []);
     } catch (err) {
       console.error(err);
       setError('Impossible de charger les données à envoyer.');

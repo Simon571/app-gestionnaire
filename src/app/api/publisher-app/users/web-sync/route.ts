@@ -1,7 +1,10 @@
 // Pour Tauri (NEXT_EXPORT): static; pour Vercel: dynamic
 // force-dynamic pour Vercel: lire le body du POST en temps réel
-// force-static pour Tauri: compatible avec output: 'export'
-export const dynamic = 'force-static';
+// Rendu dynamique obligatoire : `force-static` priverait la route de
+// `headers()`, donc de l identifiant d assemblee pose par le middleware, et
+// toutes les assemblees partageraient les memes donnees. Le build Tauri passe
+// par `output: standalone`, plus par `next export`.
+export const dynamic = 'force-dynamic';
 import { NextRequest, NextResponse } from 'next/server';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 

@@ -15,6 +15,10 @@
 import { randomUUID } from 'crypto';
 import { blobRead, blobWrite } from '@/lib/blob-store';
 import {
+  readPublisherSyncState,
+  writePublisherSyncState,
+} from '@/lib/publisher-sync-persistence';
+import {
   PublisherSyncDirection,
   PublisherSyncJob,
   PublisherSyncNotification,
@@ -24,6 +28,11 @@ import {
 
 // ─── Chemins de stockage ────────────────────────────────────────────
 const BLOB_PATH = 'publisher-sync/state.json';
+const isVercel = process.env.VERCEL === '1';
+const hasRedisStorage = () =>
+  Boolean(process.env.UPSTASH_REDIS_REST_URL?.trim()) &&
+  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN?.trim());
+const hasVercelBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 const LOCAL_PATH = (() => {
   // Utiliser path.join seulement côté serveur
   try {
@@ -49,7 +58,25 @@ const EMPTY_STATE: PersistedState = { jobs: [], notifications: [] };
 
 async function readState(): Promise<PersistedState> {
   try {
-    const raw = await blobRead(BLOB_PATH, LOCAL_PATH);
+    // En production, Redis est prioritaire comme dans les autres stores de
+    // l'application. Vercel Blob reste pris en charge pour les déploiements
+    // qui utilisent encore BLOB_READ_WRITE_TOKEN.
+    let raw: string | null;
+    if (isVercel && hasRedisStorage()) {
+      raw = await blobRead(BLOB_PATH, LOCAL_PATH);
+      // Redis peut être configuré mais vide ou momentanément inaccessible.
+      // Utiliser Blob en repli évite de bloquer toute création de job.
+      if (!raw && hasVercelBlob()) {
+        raw = await readPublisherSyncState();
+      }
+    } else if (isVercel && hasVercelBlob()) {
+      raw = await readPublisherSyncState();
+    } else if (isVercel) {
+      throw new Error('Aucun stockage persistant de synchronisation configuré');
+    } else {
+      raw = await blobRead(BLOB_PATH, LOCAL_PATH);
+    }
+
     if (!raw) return { ...EMPTY_STATE };
     const parsed = JSON.parse(raw) as Partial<PersistedState>;
     return {
@@ -58,7 +85,7 @@ async function readState(): Promise<PersistedState> {
     };
   } catch (error) {
     console.error('publisher-sync-store: failed to read state', error);
-    return { ...EMPTY_STATE };
+    throw error;
   }
 }
 
@@ -70,7 +97,21 @@ async function writeState(state: PersistedState): Promise<void> {
       notifications: state.notifications.slice(0, MAX_NOTIFICATIONS),
     };
     const content = JSON.stringify(trimmedState, null, 2);
-    await blobWrite(BLOB_PATH, LOCAL_PATH, content);
+    if (isVercel && hasRedisStorage()) {
+      try {
+        await blobWrite(BLOB_PATH, LOCAL_PATH, content);
+      } catch (redisError) {
+        if (!hasVercelBlob()) throw redisError;
+        console.warn('publisher-sync-store: Redis write failed, using Vercel Blob', redisError);
+        await writePublisherSyncState(content);
+      }
+    } else if (isVercel && hasVercelBlob()) {
+      await writePublisherSyncState(content);
+    } else if (isVercel) {
+      throw new Error('Aucun stockage persistant de synchronisation configuré');
+    } else {
+      await blobWrite(BLOB_PATH, LOCAL_PATH, content);
+    }
   } catch (error) {
     console.error('publisher-sync-store: failed to write state', error);
     throw error;

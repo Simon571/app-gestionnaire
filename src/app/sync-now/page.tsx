@@ -28,7 +28,7 @@ export default function SyncNow() {
 
       setStatus(`📤 Envoi de ${people.length} personnes (assemblyId=${assemblyId})...`);
 
-      const resp = await fetch(`${VERCEL_URL}/api/publisher-app/users/web-sync`, {
+      const resp = await fetch(`${VERCEL_URL}/api/publisher-app/mobile-users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ users: people, assemblyId }),

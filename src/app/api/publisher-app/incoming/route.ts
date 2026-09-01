@@ -97,7 +97,16 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ job }, { status: 201 });
       } catch (error) {
         console.error('publisher-app/incoming POST error', error);
-        return NextResponse.json({ error: 'Requête invalide.' }, { status: 400 });
+        const isValidationError = error instanceof z.ZodError;
+        return NextResponse.json(
+          {
+            error: isValidationError
+              ? 'Requête invalide.'
+              : 'Impossible d’enregistrer les données de synchronisation.',
+            details: error instanceof Error ? error.message : String(error),
+          },
+          { status: isValidationError ? 400 : 500 }
+        );
       }
     },
     { roles: ['mobile', 'server'], permissions: ['incoming'], methods: ['POST'] }

@@ -4,6 +4,18 @@ import { parseISO, isWithinInterval, endOfDay } from 'date-fns';
 
 type VcmProgram = {
   weeks: VcmWeek[];
+  /** Etat de fraicheur renvoye par /api/vcm/program, absent du fichier statique. */
+  coverage?: {
+    weekCount: number;
+    firstWeek: string | null;
+    lastWeek: string | null;
+    weeksAhead: number;
+    missingCurrentWeek: boolean;
+    stale: boolean;
+    scrapedAt: string | null;
+    storedAt: string | null;
+  };
+  origin?: 'store' | 'bundled';
 };
 
 // User-defined MwbWeek type
@@ -30,7 +42,13 @@ async function fetchVcmProgram(): Promise<VcmProgram | null> {
   } catch {}
   if (!langs.length) langs.push('fr');
 
+  // L'API vient en premier : elle sert le programme rafraichi sans
+  // redeploiement. Les fichiers statiques restent le repli, notamment pour le
+  // MSI hors ligne et pour une installation qui n'a encore rien recu.
   const candidates: string[] = [];
+  for (const l of langs) {
+    candidates.push(`/api/vcm/program?lang=${encodeURIComponent(l)}`);
+  }
   for (const l of langs) {
     candidates.push(`/vcm/${l}/vcm-program.normalized.json`);
   }
@@ -39,14 +57,21 @@ async function fetchVcmProgram(): Promise<VcmProgram | null> {
 
   for (const url of candidates) {
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: 'no-store' });
       if (res.ok) {
-        return await res.json();
+        const data = (await res.json()) as VcmProgram;
+        if (Array.isArray(data?.weeks) && data.weeks.length) return data;
       }
     } catch {}
   }
   console.error('Failed to fetch any VCM program JSON from candidates:', candidates);
   return null;
+}
+
+/** Etat de couverture du programme, pour avertir quand il n'est plus a jour. */
+export async function loadVcmCoverage(): Promise<VcmProgram['coverage'] | null> {
+  const program = await fetchVcmProgram();
+  return program?.coverage ?? null;
 }
 
 // Main function to fetch and process VCM data

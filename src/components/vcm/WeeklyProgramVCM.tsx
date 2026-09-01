@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { usePeople } from "@/context/people-context";
 import { Person } from "@/app/personnes/page";
 import { WolButton } from "@/components/vcm/WolButton";
+import { VcmCoverageBanner } from "@/components/vcm/vcm-coverage-banner";
 
 const NONE = "__none__";
 type AssignmentPayload = { itemId: string; personId: string | null; role: string; override?: { duration?: number | null; songNumber?: number | null }; };
@@ -77,7 +78,14 @@ export default function WeeklyProgramVCM(props: { weekStartIso: string; people: 
 
   if (loading) return <div>Chargement...</div>;
   if (error) return <div className="text-red-600">Erreur: {error}</div>;
-  if (!week) return <div>Aucun programme trouvé pour la semaine {props.weekStartIso}.</div>;
+  // Sans semaine trouvee, le bandeau est la seule explication disponible :
+  // le plus souvent la couverture est simplement epuisee.
+  if (!week) return (
+    <div className="space-y-4">
+      <VcmCoverageBanner />
+      <div>Aucun programme trouvé pour la semaine {props.weekStartIso}.</div>
+    </div>
+  );
 
   const joyauxItems = week.sections.filter(s => bucketForSectionTitle(s.title) === 'joyaux').flatMap(s => s.items);
   const discours = findItem(joyauxItems, 'discours');
@@ -87,6 +95,7 @@ export default function WeeklyProgramVCM(props: { weekStartIso: string; people: 
 
   return (
     <div className="space-y-6">
+        <VcmCoverageBanner />
         <div className="sticky top-2 z-10 no-print rounded-xl border bg-white/90 backdrop-blur p-3 shadow">
             <div className="flex flex-wrap items-center gap-2">
                 <div className="font-semibold text-lg">Programme : {week.weekTitle} ({week.startDate} → {week.endDate})</div>

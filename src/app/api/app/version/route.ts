@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export const dynamic = "force-static";
+// Cette route lit `public/app/version.json` a chaque appel et renvoie des
+// en-tetes `no-store` : elle doit donc etre dynamique. Avec `force-static` le
+// fichier etait lu une seule fois au build et fige dans la reponse, ce qui
+// obligeait a redeployer pour publier une mise a jour de l'APK — alors que
+// c'est precisement l'endpoint que l'application Android interroge pour
+// detecter une nouvelle version.
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import fs from 'fs';
 import path from 'path';

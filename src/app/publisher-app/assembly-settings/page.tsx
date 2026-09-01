@@ -69,7 +69,7 @@ export default function AssemblySettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">ID Assemblée</label>
               <Input
-                placeholder="Ex: KINYOL-WGHK"
+                placeholder="Ex: ASSEMB-XXXX"
                 value={assemblyId}
                 onChange={(e) => setAssemblyId(e.target.value)}
               />
@@ -81,7 +81,7 @@ export default function AssemblySettingsPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">PIN Assemblée</label>
               <Input
-                placeholder="Ex: 136573"
+                placeholder="6 chiffres"
                 type="password"
                 value={assemblyPin}
                 onChange={(e) => setAssemblyPin(e.target.value)}
@@ -133,11 +133,12 @@ export default function AssemblySettingsPage() {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Configuration pour KIN YOLO EST:</strong>
-            <ul className="mt-2 space-y-1 text-sm">
-              <li>ID Assemblée: <code className="bg-gray-100 px-1">KINYOL-WGHK</code></li>
-              <li>PIN Assemblée: <code className="bg-gray-100 px-1">136573</code></li>
-            </ul>
+            <strong>Identifiants de l&apos;assemblée</strong>
+            <p className="mt-2 text-sm">
+              L&apos;ID et le PIN de votre assemblée vous sont communiqués séparément.
+              Ne les affichez pas dans l&apos;interface et ne les partagez pas :
+              ils donnent accès aux données des proclamateurs.
+            </p>
           </AlertDescription>
         </Alert>
       </div>

@@ -1,18 +1,16 @@
 /**
  * Rate limiter middleware pour les API routes
  * Prévient les attaques par force brute et DoS
+ *
+ * Les compteurs vivent dans `rate-limit-store` : Redis (Upstash) quand il est
+ * configuré, sinon mémoire locale. En serverless, seul le mode Redis est
+ * réellement efficace — un compteur en mémoire est remis à zéro à chaque
+ * démarrage à froid et n'est pas partagé entre instances.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-
-interface RateLimitStore {
-  [key: string]: {
-    count: number;
-    resetTime: number;
-  };
-}
-
-const rateLimitStore: RateLimitStore = {};
+import { consumeRateLimit } from '@/lib/rate-limit-store';
+import { isOriginAllowed } from '@/lib/security-config';
 
 const RATE_LIMIT_WINDOW = 15 * 60 * 1000; // 15 minutes
 export const RATE_LIMIT_MAX_REQUESTS = {
@@ -21,49 +19,29 @@ export const RATE_LIMIT_MAX_REQUESTS = {
   apiCall: 100,       // 100 appels génériques par 15 min
   dataExport: 2,      // 2 exports de données par 15 min
   dataDelete: 1,      // 1 suppression par 15 min
+  mutation: 60,       // 60 écritures par 15 min
 } as const;
 
 export function getRateLimitKey(
   request: NextRequest,
   identifier: string = 'default'
 ): string {
-  const ip = request.headers.get('x-forwarded-for') || 
-             request.headers.get('x-real-ip') || 
+  const ip = request.headers.get('x-forwarded-for') ||
+             request.headers.get('x-real-ip') ||
              'unknown';
   return `${ip}:${identifier}`;
 }
 
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   limit: number = RATE_LIMIT_MAX_REQUESTS.apiCall
-): { allowed: boolean; remaining: number; resetTime: number } {
-  const now = Date.now();
-  const current = rateLimitStore[key];
-
-  // Initialiser ou réinitialiser après la fenêtre
-  if (!current || now > current.resetTime) {
-    rateLimitStore[key] = {
-      count: 1,
-      resetTime: now + RATE_LIMIT_WINDOW
-    };
-    return {
-      allowed: true,
-      remaining: limit - 1,
-      resetTime: rateLimitStore[key].resetTime
-    };
-  }
-
-  // Incrémenter le compteur
-  current.count++;
-
-  const allowed = current.count <= limit;
-  const remaining = Math.max(0, limit - current.count);
-
-  return {
-    allowed,
-    remaining,
-    resetTime: current.resetTime
-  };
+): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
+  const { allowed, remaining, resetTime } = await consumeRateLimit(
+    key,
+    limit,
+    RATE_LIMIT_WINDOW
+  );
+  return { allowed, remaining, resetTime };
 }
 
 export function rateLimitMiddleware(
@@ -73,14 +51,7 @@ export function rateLimitMiddleware(
   return (handler: Function) => {
     return async (request: NextRequest) => {
       const key = getRateLimitKey(request, identifier);
-      const { allowed, remaining, resetTime } = checkRateLimit(key, limit);
-
-      const response = await handler(request);
-
-      // Ajouter les headers de rate limiting
-      response.headers.set('X-RateLimit-Limit', String(limit));
-      response.headers.set('X-RateLimit-Remaining', String(remaining));
-      response.headers.set('X-RateLimit-Reset', String(Math.ceil(resetTime / 1000)));
+      const { allowed, remaining, resetTime } = await checkRateLimit(key, limit);
 
       if (!allowed) {
         const resetDate = new Date(resetTime).toISOString();
@@ -101,6 +72,13 @@ export function rateLimitMiddleware(
           }
         );
       }
+
+      const response = await handler(request);
+
+      // Ajouter les headers de rate limiting
+      response.headers.set('X-RateLimit-Limit', String(limit));
+      response.headers.set('X-RateLimit-Remaining', String(remaining));
+      response.headers.set('X-RateLimit-Reset', String(Math.ceil(resetTime / 1000)));
 
       return response;
     };
@@ -127,11 +105,12 @@ export function validateApiRequest(
     }
   }
 
-  // Vérifier les headers de sécurité
+  // Vérifier l'origine contre la liste blanche partagée. L'absence d'en-tête
+  // Origin correspond à une requête same-origin ou à un client non navigateur
+  // (MSI, app Flutter) : ces cas sont couverts par l'authentification, pas par
+  // le CORS.
   const origin = request.headers.get('origin');
-  const expectedOrigin = process.env.NEXT_PUBLIC_CORS_ORIGIN || 'http://localhost:3000';
-  
-  if (origin && !origin.includes(expectedOrigin)) {
+  if (!isOriginAllowed(origin)) {
     return { valid: false, error: 'CORS origin not allowed' };
   }
 
@@ -169,7 +148,7 @@ export async function secureApiRoute(
 
   // 2. Vérifier le rate limiting
   const key = getRateLimitKey(request, rateLimitId);
-  const { allowed, remaining, resetTime } = checkRateLimit(key, rateLimit);
+  const { allowed, remaining, resetTime } = await checkRateLimit(key, rateLimit);
 
   if (!allowed) {
     return NextResponse.json(

@@ -3,7 +3,9 @@ import { PublisherSyncStore } from '@/lib/publisher-sync-store';
 import { handlePublisherSyncRequest } from '@/lib/publisher-sync-auth';
 import { PublisherSyncType, PUBLISHER_SYNC_TYPES } from '@/types/publisher-sync';
 
-export const dynamic = "force-static";
+// Device authentication depends on request headers and must run for every call.
+// A static route can cache a build-time 401 response where these headers are absent.
+export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 const sanitizeTypes = (params: URLSearchParams): PublisherSyncType[] | undefined => {

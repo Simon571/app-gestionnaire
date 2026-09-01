@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, Loader } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -45,7 +46,7 @@ export function DataErrorState({
         </AlertDescription>
       </Alert>
       <div className="text-sm text-muted-foreground">
-        <p>Consultez la page de <a href="/diagnostics" className="underline text-blue-500">diagnostic</a> pour plus d'informations.</p>
+        <p>Consultez la page de <Link href="/diagnostics" className="underline text-blue-500">diagnostic</Link> pour plus d&apos;informations.</p>
       </div>
     </div>
   );

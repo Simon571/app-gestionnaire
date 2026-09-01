@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';
 import { readPublisherUsers, writePublisherUsers } from '@/lib/publisher-users-store';
 import { PublisherSyncStore } from '@/lib/publisher-sync-store';
+import { findPublisher, publisherDisplayName, verifyPublisherPin } from '@/lib/publisher-auth';
+import { authenticateDevice } from '@/lib/publisher-sync-auth';
+import { runWithTenant } from '@/lib/tenants/tenant-scope';
+
+export const dynamic = 'force-dynamic';
 
 const contactSchema = z.object({
   id: z.string().optional(),
@@ -28,7 +33,7 @@ const bodySchema = z.object({
     .default({ personName: '', notes: '', disasterAccommodations: false, contacts: [] }),
 });
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const parsed = bodySchema.safeParse(body);
   if (!parsed.success) {
@@ -38,58 +43,68 @@ export async function POST(request: Request) {
     );
   }
 
-  const { userId, pin, emergency } = parsed.data;
-  const users = await readPublisherUsers();
-  const userIndex = users.findIndex((user) => user['id'] === userId);
-  const user = userIndex >= 0 ? users[userIndex] : null;
+  const deviceAuth = await authenticateDevice(request, { permissions: ['incoming'] });
+  const device = !deviceAuth.response ? deviceAuth.device : undefined;
 
-  if (!user || user['pin'] !== pin) {
-    return NextResponse.json({ error: 'Utilisateur ou PIN invalide.' }, { status: 401 });
-  }
+  return runWithTenant(device?.tenantId, async () => {
+    const { userId, pin, emergency } = parsed.data;
+    const users = await readPublisherUsers();
+    const userIndex = users.findIndex((entry) => String(entry['id'] ?? '') === userId);
+    const user = findPublisher(users, userId);
 
-  const normalizedContacts = emergency.contacts.map((contact, index) => ({
-    ...contact,
-    id: contact.id && contact.id.trim().length > 0 ? contact.id : `emg-${randomUUID()}-${index}`,
-    isCongregationMember: contact.isCongregationMember ?? false,
-    mobile: contact.mobile ?? '',
-    phone: contact.phone ?? '',
-    email: contact.email ?? '',
-    relationship: contact.relationship ?? '',
-    notes: contact.notes ?? '',
-  }));
+    if (!user || !verifyPublisherPin(user, pin)) {
+      return NextResponse.json({ error: 'Utilisateur ou PIN invalide.' }, { status: 401 });
+    }
 
-  const updatedEmergency = {
-    personName: emergency.personName ?? '',
-    notes: emergency.notes ?? '',
-    disasterAccommodations: emergency.disasterAccommodations ?? false,
-    contacts: normalizedContacts,
-  };
+    const normalizedContacts = emergency.contacts.map((contact, index) => ({
+      ...contact,
+      id:
+        contact.id && contact.id.trim().length > 0
+          ? contact.id
+          : `emg-${randomUUID()}-${index}`,
+      isCongregationMember: contact.isCongregationMember ?? false,
+      mobile: contact.mobile ?? '',
+      phone: contact.phone ?? '',
+      email: contact.email ?? '',
+      relationship: contact.relationship ?? '',
+      notes: contact.notes ?? '',
+    }));
 
-  const updatedUsers = [...users];
-  updatedUsers[userIndex] = {
-    ...user,
-    emergency: updatedEmergency,
-    updatedAt: new Date().toISOString(),
-  };
+    const updatedEmergency = {
+      personName: emergency.personName ?? '',
+      notes: emergency.notes ?? '',
+      disasterAccommodations: emergency.disasterAccommodations ?? false,
+      contacts: normalizedContacts,
+    };
 
-  await writePublisherUsers(updatedUsers);
+    const updatedUsers = [...users];
+    updatedUsers[userIndex] = {
+      ...user,
+      emergency: updatedEmergency,
+      updatedAt: new Date().toISOString(),
+    };
 
-  try {
-    await PublisherSyncStore.addJob({
-      type: 'emergency_contacts',
-      direction: 'mobile_to_desktop',
-      payload: {
-        userId,
-        displayName: typeof user['displayName'] === 'string' ? user['displayName'] : userId,
-        emergency: updatedEmergency,
-        updatedAt: new Date().toISOString(),
-      },
-      initiator: typeof user['displayName'] === 'string' ? user['displayName'] : userId,
-      notify: true,
-    });
-  } catch (error) {
-    console.error('emergency-contacts: unable to enqueue sync job', error);
-  }
+    await writePublisherUsers(updatedUsers);
 
-  return NextResponse.json({ ok: true, emergency: updatedEmergency });
+    const displayName = publisherDisplayName(user, userId);
+
+    try {
+      await PublisherSyncStore.addJob({
+        type: 'emergency_contacts',
+        direction: 'mobile_to_desktop',
+        payload: {
+          userId,
+          displayName,
+          emergency: updatedEmergency,
+          updatedAt: new Date().toISOString(),
+        },
+        initiator: displayName,
+        notify: true,
+      });
+    } catch (error) {
+      console.error('emergency-contacts: unable to enqueue sync job', error);
+    }
+
+    return NextResponse.json({ ok: true, emergency: updatedEmergency });
+  });
 }
