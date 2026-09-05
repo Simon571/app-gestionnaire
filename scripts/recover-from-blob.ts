@@ -1,22 +1,29 @@
 /**
  * scripts/recover-from-blob.ts
  *
- * Remet dans Redis les donnees restees dans Vercel Blob.
+ * Remet en service les donnees restees dans Vercel Blob.
  *
  * Contexte : la base Upstash de production a disparu, et avec elle tout ce qui
  * y avait ete ecrit. Vercel Blob detient encore les memes donnees : ce script
- * les telecharge et les reecrit dans la nouvelle base, sous le prefixe de
- * l'assemblee.
+ * les telecharge et les reecrit la ou l'application les cherche desormais.
  *
- *   npm run recover:blob                          (simulation)
+ * Deux destinations, selon l'hebergement :
+ *
+ *   --to=redis   (defaut) Redis Upstash, pour un deploiement Vercel.
+ *   --to=files             les fichiers du dossier data/, pour un serveur
+ *                          propre — aucun compte Upstash n'est alors requis.
+ *
+ *   npm run recover:blob                                  (simulation, Redis)
  *   npm run recover:blob -- --apply
+ *   npm run recover:blob -- --to=files --apply
  *   npm run recover:blob -- --apply --backup=sauvegarde
  *   npm run recover:blob -- --apply --id=ASSEMB-XXXX --force
  *
- * Prerequis : BLOB_READ_WRITE_TOKEN, UPSTASH_REDIS_REST_URL et
- * UPSTASH_REDIS_REST_TOKEN dans l'environnement (`vercel env pull`).
+ * Prerequis : BLOB_READ_WRITE_TOKEN dans tous les cas ; en plus
+ * UPSTASH_REDIS_REST_URL et UPSTASH_REDIS_REST_TOKEN pour `--to=redis`
+ * (`vercel env pull`).
  *
- * Le blob n'est jamais modifie, et une cle Redis deja remplie n'est jamais
+ * Le blob n'est jamais modifie, et une destination deja remplie n'est jamais
  * ecrasee sans --force : une reprise ratee ne doit pas detruire ce qui marche.
  */
 import { promises as fs } from 'fs';
@@ -30,6 +37,12 @@ const arg = (name: string): string | undefined =>
 
 const tenantId = (arg('id') || process.env.ASSEMBLY_ID || 'KINYOL-WGHK').trim();
 const backupDir = arg('backup');
+const destinationName = (arg('to') || 'redis').trim();
+
+if (destinationName !== 'redis' && destinationName !== 'files') {
+  console.error(`--to=${destinationName} inconnu. Valeurs possibles : redis, files.`);
+  process.exit(1);
+}
 
 function cleanEnv(s: string | undefined): string {
   const BOM = String.fromCharCode(0xfeff);
@@ -57,9 +70,84 @@ const SNAPSHOTS = [
 /** Reste d'un essai, sans interet. */
 const IGNORED = new Set(['data/debug-test.json']);
 
+/**
+ * Les donnees de plateforme ne sont pas cloisonnees par assemblee : le registre
+ * est commun a toutes (cf. `blobReadGlobal` dans blob-store.ts).
+ */
+const isGlobal = (target: string): boolean => target.startsWith('platform/');
+
 /** `data/families.json` -> `app:tenants:<id>:data:families.json`, comme blob-store. */
 function redisKeyFor(target: string): string {
-  return `app:tenants:${tenantId}:${target}`.replace(/\//g, ':');
+  const scoped = isGlobal(target) ? target : `tenants:${tenantId}:${target}`;
+  return `app:${scoped}`.replace(/\//g, ':');
+}
+
+/**
+ * `data/families.json` -> `data/tenants/<id>/families.json`.
+ *
+ * Reproduit exactement `scopedPaths` de blob-store : le segment de l'assemblee
+ * s'insere *sous* `data/`, pas avant. Se tromper ici ecrirait des fichiers que
+ * l'application ne lira jamais.
+ */
+function filePathFor(target: string): string {
+  const sousData = target.startsWith('data/') ? target.slice('data/'.length) : target;
+  const relatif = isGlobal(target)
+    ? path.join('data', target)
+    : path.join('data', 'tenants', tenantId, sousData);
+  return path.join(process.cwd(), relatif);
+}
+
+/** Ou ecrire les donnees recuperees. */
+interface Destination {
+  readonly nom: string;
+  /** Ce qui sera ecrit, affiche a l'utilisateur. */
+  cible(target: string): string;
+  /** Deja rempli ? Une destination remplie n'est pas ecrasee sans --force. */
+  rempli(target: string): Promise<boolean>;
+  ecrire(target: string, content: string): Promise<void>;
+}
+
+async function redisDestination(): Promise<Destination> {
+  const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
+  const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
+  if (!url.startsWith('https://') || !token) {
+    throw new Error(
+      'UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN absents. ' +
+        'Sur un serveur propre, utiliser --to=files.'
+    );
+  }
+
+  const { Redis } = await import('@upstash/redis');
+  const redis = new Redis({ url, token });
+
+  return {
+    nom: `Redis (${new URL(url).host})`,
+    cible: (target) => redisKeyFor(target),
+    rempli: async (target) => Boolean(await redis.exists(redisKeyFor(target))),
+    ecrire: async (target, content) => {
+      await redis.set(redisKeyFor(target), content);
+    },
+  };
+}
+
+function filesDestination(): Destination {
+  return {
+    nom: `fichiers (${path.relative(process.cwd(), filePathFor('data/'))}…)`,
+    cible: (target) => path.relative(process.cwd(), filePathFor(target)).replace(/\\/g, '/'),
+    rempli: async (target) => {
+      try {
+        const stat = await fs.stat(filePathFor(target));
+        return stat.size > 0;
+      } catch {
+        return false;
+      }
+    },
+    ecrire: async (target, content) => {
+      const destination = filePathFor(target);
+      await fs.mkdir(path.dirname(destination), { recursive: true });
+      await fs.writeFile(destination, content, 'utf8');
+    },
+  };
 }
 
 type Plan = {
@@ -129,16 +217,11 @@ const age = (date: Date): string =>
   `${Math.round((Date.now() - date.getTime()) / 86_400_000)} j`;
 
 async function main(): Promise<void> {
-  const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
-  const redisToken = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
-  if (!url.startsWith('https://') || !redisToken) {
-    throw new Error('UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN absents');
-  }
-
-  const { Redis } = await import('@upstash/redis');
-  const redis = new Redis({ url, token: redisToken });
+  const destination =
+    destinationName === 'files' ? filesDestination() : await redisDestination();
 
   console.log(`Assemblee cible : ${tenantId}`);
+  console.log(`Destination     : ${destination.nom}`);
   console.log(apply ? 'Mode : APPLICATION\n' : 'Mode : SIMULATION (--apply pour ecrire)\n');
 
   const plans = await buildPlan();
@@ -147,11 +230,10 @@ async function main(): Promise<void> {
   let failed = 0;
 
   for (const plan of plans) {
-    const key = redisKeyFor(plan.target);
     const kb = (plan.size / 1024).toFixed(1).padStart(8);
     const from = plan.origin === plan.target ? '' : `  (depuis ${plan.origin})`;
 
-    if ((await redis.exists(key)) && !force) {
+    if ((await destination.rempli(plan.target)) && !force) {
       console.log(`  = ${kb} ko  ${plan.target} : deja rempli, ignore`);
       skipped += 1;
       continue;
@@ -173,9 +255,10 @@ async function main(): Promise<void> {
       await fs.writeFile(target, content, 'utf8');
     }
 
-    if (apply) await redis.set(key, content);
+    if (apply) await destination.ecrire(plan.target, content);
     console.log(
-      `  ${apply ? '+' : '~'} ${kb} ko  ${plan.target}  [${age(plan.uploadedAt)}]${from}`
+      `  ${apply ? '+' : '~'} ${kb} ko  ${plan.target}  [${age(plan.uploadedAt)}]` +
+        `${from}\n${' '.repeat(15)}-> ${destination.cible(plan.target)}`
     );
     restored += 1;
   }

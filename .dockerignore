@@ -1,0 +1,39 @@
+# Ce qui ne doit pas entrer dans l'image Docker : soit inutile (donc image plus
+# lourde et construction plus lente), soit secret, soit reconstruit de toute
+# facon par `next build`.
+
+node_modules
+.next
+.next-tauri
+out
+
+# Le client Windows et le client Android se construisent ailleurs.
+src-tauri
+flutter_app
+releases
+
+.git
+.gitignore
+.github
+
+# Secrets : ils arrivent par `docker compose --env-file`, jamais dans l'image.
+.env
+.env.*
+!.env.example
+!.env.server.example
+.secrets-bootstrap.env
+*.pem
+*.key
+
+# Travail local
+docs
+sauvegarde
+tmp-*
+*.log
+npm-debug.log*
+coverage
+.vscode
+.idea
+Dockerfile
+docker-compose.yml
+.dockerignore

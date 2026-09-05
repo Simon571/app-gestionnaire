@@ -3,7 +3,7 @@
  *
  * Genere la valeur de SUPER_ADMIN_PASSWORD_HASH.
  *
- *   npx tsx scripts/hash-password.ts
+ *   npm run hash:password
  *
  * Le mot de passe est demande en entree interactive et n'apparait ni dans les
  * arguments de la commande ni dans l'historique du shell.

@@ -45,4 +45,7 @@ app.*.map.json
 /android/app/release
 
 # Local config for assembly credentials used for testing (do not commit)
-config/
+# La barre oblique initiale limite la regle a flutter_app/config/ : sans elle,
+# `lib/config/` etait ignore aussi, et api_config.dart n'aurait jamais ete
+# versionne — la compilation de l'APK echouerait sur un clone neuf.
+/config/

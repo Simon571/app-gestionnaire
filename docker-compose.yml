@@ -1,0 +1,83 @@
+# Pile complete pour un serveur propre (VPS) : le site, la base de donnees, et
+# un proxy qui obtient tout seul le certificat HTTPS.
+#
+#   cp .env.server.example .env      puis remplir .env
+#   docker compose up -d --build
+#
+# Seul Caddy est joignable depuis l'internet (ports 80 et 443). L'application et
+# la base ne sont accessibles que depuis l'interieur du reseau Docker : meme si
+# le pare-feu du serveur est mal regle, la base n'est pas exposee.
+#
+# Voir docs/deploiement/SERVEUR-VPS.md.
+
+services:
+  app:
+    build:
+      context: .
+      # Les adresses publiques sont figees dans le JavaScript du navigateur au
+      # moment de la compilation. Changer DOMAIN impose donc `--build`.
+      args:
+        NEXT_PUBLIC_SITE_URL: "https://${DOMAIN}"
+        NEXT_PUBLIC_API_URL: "https://${DOMAIN}"
+    image: app-gestionnaire:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      # VERCEL n'est volontairement pas defini : c'est ce qui fait ecrire les
+      # donnees dans des fichiers du volume `./data` plutot que dans Redis ou
+      # Vercel Blob. Plus de quota, plus de dependance exterieure.
+      NEXT_PUBLIC_SITE_URL: "https://${DOMAIN}"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+    volumes:
+      # Les donnees de l'application vivent sur le disque du serveur, pas dans
+      # l'image : `docker compose build` ne les touche pas.
+      - ./data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [interne]
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      # Sans cela, les tris et comparaisons de texte accentue sont surprenants.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [interne]
+
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      # Les certificats sont conserves : sans ce volume, chaque redemarrage en
+      # redemanderait un, et Let's Encrypt limite le nombre de demandes.
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+    networks: [interne]
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+networks:
+  interne:

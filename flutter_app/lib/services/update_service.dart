@@ -1,13 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:dio/dio.dart';
+import '../config/api_config.dart';
 import '../utils/logger.dart';
 
 class UpdateService {
-  // URL du serveur de production
-  static const String updateCheckUrl = 'https://app-gestionnaire.vercel.app/api/app/version';
+  // Adresse du serveur, fixee a la construction de l'APK
+  // (--dart-define=API_BASE=...), pas ecrite en dur ici.
+  static const String updateCheckUrl = '$defaultApiBase/api/app/version';
   
   /// Vérifie s'il existe une nouvelle version disponible
   static Future<UpdateInfo?> checkForUpdate() async {

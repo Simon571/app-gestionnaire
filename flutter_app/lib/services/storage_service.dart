@@ -7,10 +7,10 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 import 'sync_service.dart' show SyncCredentials;
+import '../config/api_config.dart';
 import '../models/person.dart';
 
-const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app');
-const String _prodApiBase = 'https://app-gestionnaire.vercel.app';
+const String _defaultApiBase = defaultApiBase;
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();

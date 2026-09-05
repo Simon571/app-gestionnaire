@@ -35,6 +35,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:writer": "vitest run src/lib/__tests__/publisher-sync-flutter-writer.test.ts",
+    "hash:password": "ts-node --project scripts/tsconfig.json scripts/hash-password.ts",
+    "msi:url": "node scripts/set-desktop-url.js",
     "recover:blob": "ts-node --project scripts/tsconfig.json scripts/recover-from-blob.ts"
   },
   "dependencies": {

@@ -1,0 +1,48 @@
+# Configuration du proxy Caddy.
+#
+# Caddy demande et renouvelle tout seul le certificat HTTPS aupres de Let's
+# Encrypt, gratuitement. Il n'y a rien a faire d'autre que pointer le nom de
+# domaine vers l'adresse IP du serveur *avant* de demarrer : la validation du
+# certificat passe par ce nom de domaine.
+#
+# Un certificat ne peut pas etre delivre pour une adresse IP nue. Le nom de
+# domaine n'est donc pas optionnel — l'application Android refuse le HTTP simple.
+
+{
+	email {$ADMIN_EMAIL}
+}
+
+{$DOMAIN} {
+	encode zstd gzip
+
+	# En-tetes de securite. La politique de contenu (CSP) reste geree par
+	# l'application elle-meme (src/middleware-security.ts) : la dupliquer ici
+	# donnerait deux sources de verite qui se contrediraient.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy app:3000 {
+		# Sans ces en-tetes, l'application croit toutes les requetes en HTTP et
+		# le cookie de session marque `Secure` n'est jamais accepte.
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-For {remote_host}
+		header_up X-Real-IP {remote_host}
+	}
+
+	# Les televersements de fichiers (import de classeur VCM) depassent la
+	# limite par defaut.
+	request_body {
+		max_size 25MB
+	}
+
+	log {
+		output file /data/acces.log {
+			roll_size 10MB
+			roll_keep 5
+		}
+	}
+}

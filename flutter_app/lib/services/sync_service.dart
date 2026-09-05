@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
+import '../config/api_config.dart';
 import 'storage_service.dart';
 
-const String _defaultApiBase = String.fromEnvironment('API_BASE', defaultValue: 'https://app-gestionnaire.vercel.app'); // ✅ URL Vercel - Mise à jour Fév 2026
-const String _prodApiBase = 'https://app-gestionnaire.vercel.app';
+const String _defaultApiBase = defaultApiBase;
 
 String _normalizeApiBase(String raw) {
   final trimmed = raw.trim();
@@ -43,7 +43,14 @@ class SyncCredentials {
     return SyncCredentials(
       deviceId: json['deviceId'] as String? ?? 'mobile-main',
       apiKey: json['apiKey'] as String? ?? '',
-      apiBase: _normalizeApiBase(json['apiBase'] as String? ?? _defaultApiBase),
+      // Une adresse passee a la compilation (`--dart-define=API_BASE`) prime sur
+      // celle du fichier d'assets : c'est elle qui suit le serveur en cas de
+      // changement d'hebergeur, alors que l'asset reste figee dans le depot.
+      apiBase: _normalizeApiBase(
+        envApiBase.isNotEmpty
+            ? envApiBase
+            : (json['apiBase'] as String? ?? _defaultApiBase),
+      ),
     );
   }
 
@@ -268,7 +275,7 @@ class SyncJob {
       case 'emergency_contacts':
         return SyncJobType.emergencyContacts;
       default:
-        return SyncJobType.communications;
+        throw FormatException('Type de synchronisation non pris en charge: $type');
     }
   }
 
@@ -623,6 +630,7 @@ class SyncService {
     final errors = <String>[];
 
     for (final job in result.jobs) {
+      if (job.direction != 'desktop_to_mobile') continue;
       final success = await processJob(job);
       
       if (success) {
@@ -669,17 +677,19 @@ class SyncService {
 
       // Normalize incoming payload to an array of weeks
       final incomingWeeks = <Map<String, dynamic>>[];
-      if (job.payload is Map && job.payload['weeks'] is List) {
+      if (job.payload['weeks'] is List) {
         for (final w in job.payload['weeks']) {
-          if (w is Map<String, dynamic>) incomingWeeks.add(w);
+          if (w is Map) incomingWeeks.add(Map<String, dynamic>.from(w));
         }
-      } else if (job.payload is Map) {
-        // treat the payload as a single week object
+      } else {
         incomingWeeks.add(Map<String, dynamic>.from(job.payload));
       }
 
       existing ??= <String, dynamic>{'weeks': []};
-      final existingWeeks = (existing['weeks'] as List? ?? []).cast<Map<String, dynamic>>();
+      final existingWeeks = (existing['weeks'] as List? ?? const [])
+          .whereType<Map>()
+          .map((week) => Map<String, dynamic>.from(week))
+          .toList();
 
       // Replace or append incoming weeks according to weekStart
       for (final week in incomingWeeks) {
@@ -760,7 +770,7 @@ class SyncService {
         print('SyncService: failed to merge programme_week: $e');
       }
     }
-    return true;
+    return await storageService.getGenericData('programme_week') != null;
   }
 
   Future<bool> _processProgrammeWeekend(SyncJob job) async {
@@ -774,8 +784,21 @@ class SyncService {
   }
 
   Future<bool> _processCommunications(SyncJob job) async {
-    // Stocker les communications
-    final communications = job.payload['communications'] as List? ?? [];
+    final incoming = (job.payload['communications'] as List? ?? const [])
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+    final existing = await storageService.getGenericData('communications');
+    final current = (existing?['items'] as List? ?? const [])
+        .whereType<Map>()
+        .map((item) => Map<String, dynamic>.from(item))
+        .toList();
+    final byId = <String, Map<String, dynamic>>{};
+    for (final item in [...current, ...incoming]) {
+      final id = item['id']?.toString();
+      if (id != null && id.isNotEmpty) byId[id] = item;
+    }
+    final communications = byId.values.toList();
     await storageService.saveGenericData('communications', {
       'updatedAt': DateTime.now().toIso8601String(),
       'items': communications,
