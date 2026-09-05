@@ -24,19 +24,24 @@ const parseUsers = (content: string | null): PublisherUserRecord[] => {
 
 export async function readPublisherUsers(): Promise<PublisherUserRecord[]> {
   try {
-    // Utiliser Redis lorsqu'il est configuré. Si Redis est indisponible, tenter
-    // Vercel Blob afin de conserver l'accès à la liste historique.
+    // Redis est la source de verite quand il est configure. Vercel Blob ne sert
+    // de repli que s'il est *en panne*, jamais quand il repond « rien ici » :
+    // `readPublisherUsersState` appelle `list()` sur le magasin Blob, ce que le
+    // forfait Hobby compte comme une « advanced operation » et n'en accorde que
+    // 2 000 par mois. Sur une base Redis encore vide, l'ancien code en
+    // declenchait une a chaque lecture — de quoi bloquer le magasin, et c'est
+    // ce qui est arrive. La recuperation des donnees restees dans Blob se fait
+    // explicitement, par `npm run recover:blob`.
     if (isVercel && hasRedisStorage()) {
       try {
-        const redisContent = await blobRead(BLOB_PATH, LOCAL_PATH);
-        if (redisContent) return parseUsers(redisContent);
+        return parseUsers(await blobRead(BLOB_PATH, LOCAL_PATH));
       } catch (redisError) {
         console.warn('Unable to read Publisher users from Redis', redisError);
+        if (hasVercelBlob()) {
+          return parseUsers(await readPublisherUsersState());
+        }
+        return [];
       }
-      if (hasVercelBlob()) {
-        return parseUsers(await readPublisherUsersState());
-      }
-      return [];
     }
     if (isVercel && hasVercelBlob()) {
       return parseUsers(await readPublisherUsersState());

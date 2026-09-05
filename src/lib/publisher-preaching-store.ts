@@ -1,5 +1,23 @@
-﻿import path from 'path';
-import { blobRead, blobWrite } from './blob-store';
+﻿/**
+ * publisher-preaching-store.ts
+ *
+ * Rapports d'activite (predication) et envois mensuels au Bethel.
+ *
+ * Sur Vercel, la source de verite est Redis, comme pour les autres magasins.
+ * Vercel Blob n'intervient qu'en repli, et seulement si Redis est *en panne* :
+ * `readPublisherPreachingState` appelle `list()` sur le magasin Blob, ce que le
+ * forfait Hobby compte comme une « advanced operation » et n'en accorde que
+ * 2 000 par mois. Ce module lisait auparavant *uniquement* dans Blob des qu'il
+ * tournait sur Vercel : une operation avancee par lecture de rapports, ce qui a
+ * fini par bloquer le magasin. La recuperation des donnees restees dans Blob se
+ * fait explicitement, par `npm run recover:blob`.
+ *
+ * Passer par `blobRead`/`blobWrite` cloisonne aussi les rapports par assemblee
+ * (`tenants/<id>/data/publisher-preaching.json`), ce que l'acces direct a Blob
+ * ne faisait pas : toutes les assemblees partageaient le meme fichier.
+ */
+import path from 'path';
+import { StorageUnavailableError, blobRead, blobWrite } from './blob-store';
 import {
   readPublisherPreachingState,
   writePublisherPreachingState,
@@ -9,6 +27,12 @@ const STORE_BLOB = 'data/publisher-preaching.json';
 const STORE_LOCAL = path.join(process.cwd(), 'data', 'publisher-preaching.json');
 const SUBMISSION_BLOB = 'data/publisher-preaching-submissions.json';
 const SUBMISSION_LOCAL = path.join(process.cwd(), 'data', 'publisher-preaching-submissions.json');
+
+const isVercel = process.env.VERCEL === '1';
+const hasRedisStorage = () =>
+  Boolean(process.env.UPSTASH_REDIS_REST_URL?.trim()) &&
+  Boolean(process.env.UPSTASH_REDIS_REST_TOKEN?.trim());
+const hasVercelBlob = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN?.trim());
 
 export interface PreachingReportRecord {
   userId: string;
@@ -30,14 +54,34 @@ export interface MonthSubmission {
 }
 
 const readReportsState = async (): Promise<string | null> => {
-  if (process.env.VERCEL === '1') {
+  if (isVercel && hasRedisStorage()) {
+    try {
+      return await blobRead(STORE_BLOB, STORE_LOCAL);
+    } catch (redisError) {
+      if (!hasVercelBlob()) throw redisError;
+      console.warn('publisher-preaching-store: Redis indisponible, repli sur Blob', redisError);
+      return readPublisherPreachingState('reports');
+    }
+  }
+  if (isVercel && hasVercelBlob()) {
     return readPublisherPreachingState('reports');
   }
   return blobRead(STORE_BLOB, STORE_LOCAL);
 };
 
 const writeReportsState = async (content: string): Promise<void> => {
-  if (process.env.VERCEL === '1') {
+  if (isVercel && hasRedisStorage()) {
+    try {
+      await blobWrite(STORE_BLOB, STORE_LOCAL, content);
+      return;
+    } catch (redisError) {
+      if (!hasVercelBlob()) throw redisError;
+      console.warn('publisher-preaching-store: ecriture Redis impossible, repli sur Blob', redisError);
+      await writePublisherPreachingState('reports', content);
+      return;
+    }
+  }
+  if (isVercel && hasVercelBlob()) {
     await writePublisherPreachingState('reports', content);
     return;
   }
@@ -45,20 +89,48 @@ const writeReportsState = async (content: string): Promise<void> => {
 };
 
 const readSubmissionsState = async (): Promise<string | null> => {
-  if (process.env.VERCEL === '1') {
+  if (isVercel && hasRedisStorage()) {
+    try {
+      return await blobRead(SUBMISSION_BLOB, SUBMISSION_LOCAL);
+    } catch (redisError) {
+      if (!hasVercelBlob()) throw redisError;
+      console.warn('publisher-preaching-store: Redis indisponible, repli sur Blob', redisError);
+      return readPublisherPreachingState('submissions');
+    }
+  }
+  if (isVercel && hasVercelBlob()) {
     return readPublisherPreachingState('submissions');
   }
   return blobRead(SUBMISSION_BLOB, SUBMISSION_LOCAL);
 };
 
 const writeSubmissionsState = async (content: string): Promise<void> => {
-  if (process.env.VERCEL === '1') {
+  if (isVercel && hasRedisStorage()) {
+    try {
+      await blobWrite(SUBMISSION_BLOB, SUBMISSION_LOCAL, content);
+      return;
+    } catch (redisError) {
+      if (!hasVercelBlob()) throw redisError;
+      console.warn('publisher-preaching-store: ecriture Redis impossible, repli sur Blob', redisError);
+      await writePublisherPreachingState('submissions', content);
+      return;
+    }
+  }
+  if (isVercel && hasVercelBlob()) {
     await writePublisherPreachingState('submissions', content);
     return;
   }
   await blobWrite(SUBMISSION_BLOB, SUBMISSION_LOCAL, content);
 };
 
+/**
+ * Un stockage injoignable n'est pas un stockage vide.
+ *
+ * Ces lectures alimentent des cycles lecture-modification-ecriture
+ * (`upsertPreachingReport`, `markMonthAsSent`) : renvoyer `[]` sur une panne
+ * ferait reecrire l'etat complet avec le seul enregistrement en cours, donc
+ * effacerait tous les rapports. La panne remonte, les donnees restent.
+ */
 const readFileSafe = async (): Promise<PreachingReportRecord[]> => {
   try {
     const raw = await readReportsState();
@@ -67,7 +139,8 @@ const readFileSafe = async (): Promise<PreachingReportRecord[]> => {
     if (Array.isArray(parsed)) return parsed as PreachingReportRecord[];
     if (parsed?.reports && Array.isArray(parsed.reports)) return parsed.reports as PreachingReportRecord[];
     return [];
-  } catch {
+  } catch (error) {
+    if (error instanceof StorageUnavailableError) throw error;
     return [];
   }
 };
@@ -80,7 +153,8 @@ const readSubmissionsSafe = async (): Promise<MonthSubmission[]> => {
     if (Array.isArray(parsed)) return parsed as MonthSubmission[];
     if (parsed?.submissions && Array.isArray(parsed.submissions)) return parsed.submissions as MonthSubmission[];
     return [];
-  } catch {
+  } catch (error) {
+    if (error instanceof StorageUnavailableError) throw error;
     return [];
   }
 };

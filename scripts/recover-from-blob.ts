@@ -47,6 +47,11 @@ function cleanEnv(s: string | undefined): string {
 const SNAPSHOTS = [
   { prefix: 'publisher-users/state/', target: 'data/publisher-users.json' },
   { prefix: 'publisher-sync/state/', target: 'publisher-sync/state.json' },
+  { prefix: 'publisher-preaching/reports/', target: 'data/publisher-preaching.json' },
+  {
+    prefix: 'publisher-preaching/submissions/',
+    target: 'data/publisher-preaching-submissions.json',
+  },
 ] as const;
 
 /** Reste d'un essai, sans interet. */

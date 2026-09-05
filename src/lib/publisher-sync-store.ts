@@ -63,10 +63,16 @@ async function readState(): Promise<PersistedState> {
     // qui utilisent encore BLOB_READ_WRITE_TOKEN.
     let raw: string | null;
     if (isVercel && hasRedisStorage()) {
-      raw = await blobRead(BLOB_PATH, LOCAL_PATH);
-      // Redis peut être configuré mais vide ou momentanément inaccessible.
-      // Utiliser Blob en repli évite de bloquer toute création de job.
-      if (!raw && hasVercelBlob()) {
+      // Repli sur Blob seulement si Redis est *en panne*, pas s'il repond
+      // « rien ici » : `readPublisherSyncState` appelle `list()` sur le magasin
+      // Blob, compte comme une « advanced operation », et le forfait Hobby n'en
+      // accorde que 2 000 par mois. Declenche a chaque lecture sur une base
+      // encore vide, cela bloque le magasin — ce qui est arrive une fois.
+      try {
+        raw = await blobRead(BLOB_PATH, LOCAL_PATH);
+      } catch (redisError) {
+        if (!hasVercelBlob()) throw redisError;
+        console.warn('publisher-sync-store: Redis indisponible, repli sur Blob', redisError);
         raw = await readPublisherSyncState();
       }
     } else if (isVercel && hasVercelBlob()) {
