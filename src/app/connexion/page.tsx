@@ -160,7 +160,10 @@ export default function LoginPage() {
         description: `Bienvenue, ${selectedPerson.displayName}!`,
       });
 
-      router.push('/');
+      // Direction /desktop et non la racine : a l'adresse du domaine, la racine
+      // est la page publique de telechargement. /desktop est l'accueil de
+      // l'application, et c'est aussi l'adresse qu'ouvre le poste installe.
+      router.push('/desktop');
     } catch (error) {
       toast({
         title: "Erreur",
@@ -216,7 +219,9 @@ export default function LoginPage() {
         description: `Bienvenue, administrateur de ${session.displayName ?? assemblyId}!`,
       });
 
-      router.push('/');
+      // Meme raison que pour la connexion d'une personne : la racine du domaine
+      // est la page de telechargement publique.
+      router.push('/desktop');
     } catch (error) {
       toast({
         title: "Erreur",
@@ -328,7 +333,7 @@ export default function LoginPage() {
                     type="text"
                     placeholder="ex: ASSEMB-XXXX"
                     value={assemblyId}
-                    onChange={(e) => setAssemblyId(e.target.value)}
+                    onChange={(e) => setAssemblyId(e.target.value.trim().toUpperCase())}
                     required
                     disabled={isLoading}
                   />

@@ -88,3 +88,19 @@ node.exe
 /LISTE DES PROCLAMATEURS.txt
 .secrets-bootstrap.json
 .secrets-bootstrap.env
+
+# Artefacts locaux et donnees d'appareil (vraies donnees personnelles) : rien
+# de tout cela ne doit finir sur GitHub. `export/` reste versionne (images du
+# programme), donc on ignore uniquement les fichiers d'export nominatifs.
+/releases/
+people-export.json
+export/*.jwpub
+
+# Donnees personnelles et identifiants de l'appareil Flutter : jamais sur GitHub.
+flutter_app/config/local_users.json
+flutter_app/config/sync_credentials.json
+flutter_app/config/local_assembly.json
+flutter_app/assets/data/local_users.json
+
+# Artefact TypeScript de suivi (regenerable, deja ignore par *.tsbuildinfo).
+tsconfig.tsbuildinfo

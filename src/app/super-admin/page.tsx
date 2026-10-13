@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { KeyRound, Loader2, Plus, RefreshCw, ShieldCheck } from 'lucide-react';
 import { getApiBase } from '@/lib/api-base';
+import { cn } from '@/lib/utils';
 import type { AssemblySummary } from '@/lib/tenants/assembly-registry';
 import type { SubscriptionPlan } from '@/lib/tenants/subscription';
 
@@ -170,8 +171,56 @@ export default function SuperAdminConsolePage() {
       setRevealedPin({ name: assembly.name, id: assembly.id, pin: data.pin });
     });
 
+  // Les quatre actions sont partagees par le tableau (ordinateur) et les cartes
+  // (telephone) : sur un ecran etroit, un tableau de six colonnes oblige a
+  // defiler horizontalement et les boutons deviennent trop petits pour le doigt.
+  const renderActions = (assembly: AssemblySummary) => {
+    const busy = busyId === assembly.id;
+    const isSuspended = assembly.subscription.status === 'suspended';
+    return (
+      <>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-10"
+          disabled={busy}
+          onClick={() => void renew(assembly, 'monthly')}
+        >
+          +1 mois
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-10"
+          disabled={busy}
+          onClick={() => void renew(assembly, 'yearly')}
+        >
+          +1 an
+        </Button>
+        <Button
+          size="sm"
+          variant={isSuspended ? 'default' : 'destructive'}
+          className="h-10"
+          disabled={busy}
+          onClick={() => void toggleSuspension(assembly)}
+        >
+          {isSuspended ? 'Reactiver' : 'Suspendre'}
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-10"
+          disabled={busy}
+          onClick={() => void regeneratePin(assembly)}
+        >
+          Nouveau PIN
+        </Button>
+      </>
+    );
+  };
+
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-6">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 sm:gap-8 sm:p-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-sky-700">
@@ -226,10 +275,12 @@ export default function SuperAdminConsolePage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleCreate} className="grid gap-4 sm:grid-cols-[2fr_2fr_1fr_auto]">
+            {/* Sur telephone, la grille s'empile : un champ par ligne, bouton pleine largeur. */}
             <div className="space-y-2">
               <Label htmlFor="name">Nom de l&apos;assemblee</Label>
               <Input
                 id="name"
+                className="h-12 text-base sm:h-10 sm:text-sm"
                 value={newName}
                 onChange={(event) => setNewName(event.target.value)}
                 placeholder="Ex : Kinshasa Yolo Est"
@@ -242,6 +293,9 @@ export default function SuperAdminConsolePage() {
               <Input
                 id="contact"
                 type="email"
+                className="h-12 text-base sm:h-10 sm:text-sm"
+                inputMode="email"
+                autoCapitalize="none"
                 value={newEmail}
                 onChange={(event) => setNewEmail(event.target.value)}
                 placeholder="ancien@example.org"
@@ -263,7 +317,11 @@ export default function SuperAdminConsolePage() {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button type="submit" disabled={isCreating}>
+              <Button
+                type="submit"
+                className="h-12 w-full text-base sm:h-10 sm:w-auto sm:text-sm"
+                disabled={isCreating}
+              >
                 {isCreating ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -286,100 +344,129 @@ export default function SuperAdminConsolePage() {
               <Loader2 className="h-4 w-4 animate-spin" /> Chargement du registre…
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Assemblee</TableHead>
-                  <TableHead>Identifiant</TableHead>
-                  <TableHead>Formule</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead>Echeance</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Telephone : une carte par assemblee, actions en grille lisible. */}
+              <div className="space-y-3 md:hidden">
                 {assemblies.map((assembly) => {
                   const status = STATUS_STYLES[assembly.state.status] ?? {
                     label: assembly.state.status,
                     variant: 'outline' as const,
                   };
                   const days = assembly.state.daysRemaining;
-                  const busy = busyId === assembly.id;
-
                   return (
-                    <TableRow key={assembly.id}>
-                      <TableCell>
-                        <div className="font-medium">{assembly.name}</div>
-                        {assembly.contactEmail && (
-                          <div className="text-xs text-muted-foreground">
-                            {assembly.contactEmail}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <code className="text-xs">{assembly.id}</code>
-                      </TableCell>
-                      <TableCell>{PLAN_LABELS[assembly.subscription.plan]}</TableCell>
-                      <TableCell>
+                    <div key={assembly.id} className="rounded-lg border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-medium">{assembly.name}</div>
+                          <code className="text-xs text-muted-foreground">{assembly.id}</code>
+                        </div>
                         <Badge variant={status.variant}>{status.label}</Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div>{formatDate(assembly.subscription.expiresAt)}</div>
-                        {days !== null && (
-                          <div
-                            className={`text-xs ${
-                              days < 0
-                                ? 'text-destructive'
-                                : assembly.state.expiringSoon
-                                  ? 'text-amber-600'
-                                  : 'text-muted-foreground'
-                            }`}
-                          >
-                            {days < 0 ? `Expire depuis ${-days} j` : `${days} j restants`}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="space-x-2 text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy}
-                          onClick={() => void renew(assembly, 'monthly')}
-                        >
-                          +1 mois
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busy}
-                          onClick={() => void renew(assembly, 'yearly')}
-                        >
-                          +1 an
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            assembly.subscription.status === 'suspended' ? 'default' : 'destructive'
-                          }
-                          disabled={busy}
-                          onClick={() => void toggleSuspension(assembly)}
-                        >
-                          {assembly.subscription.status === 'suspended' ? 'Reactiver' : 'Suspendre'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          disabled={busy}
-                          onClick={() => void regeneratePin(assembly)}
-                        >
-                          Nouveau PIN
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                      </div>
+
+                      {assembly.contactEmail && (
+                        <div className="mt-2 truncate text-xs text-muted-foreground">
+                          {assembly.contactEmail}
+                        </div>
+                      )}
+
+                      <dl className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
+                        <dt className="text-muted-foreground">Formule</dt>
+                        <dd className="text-right">
+                          {PLAN_LABELS[assembly.subscription.plan]}
+                        </dd>
+                        <dt className="text-muted-foreground">Echeance</dt>
+                        <dd className="text-right">
+                          {formatDate(assembly.subscription.expiresAt)}
+                          {days !== null && (
+                            <span
+                              className={cn(
+                                'ml-2 text-xs',
+                                days < 0
+                                  ? 'text-destructive'
+                                  : assembly.state.expiringSoon
+                                    ? 'text-amber-600'
+                                    : 'text-muted-foreground'
+                              )}
+                            >
+                              {days < 0 ? `${-days} j de retard` : `${days} j restants`}
+                            </span>
+                          )}
+                        </dd>
+                      </dl>
+
+                      <div className="mt-4 grid grid-cols-2 gap-2">
+                        {renderActions(assembly)}
+                      </div>
+                    </div>
                   );
                 })}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Ordinateur : tableau complet. */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Assemblee</TableHead>
+                      <TableHead>Identifiant</TableHead>
+                      <TableHead>Formule</TableHead>
+                      <TableHead>Statut</TableHead>
+                      <TableHead>Echeance</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {assemblies.map((assembly) => {
+                      const status = STATUS_STYLES[assembly.state.status] ?? {
+                        label: assembly.state.status,
+                        variant: 'outline' as const,
+                      };
+                      const days = assembly.state.daysRemaining;
+
+                      return (
+                        <TableRow key={assembly.id}>
+                          <TableCell>
+                            <div className="font-medium">{assembly.name}</div>
+                            {assembly.contactEmail && (
+                              <div className="text-xs text-muted-foreground">
+                                {assembly.contactEmail}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <code className="text-xs">{assembly.id}</code>
+                          </TableCell>
+                          <TableCell>{PLAN_LABELS[assembly.subscription.plan]}</TableCell>
+                          <TableCell>
+                            <Badge variant={status.variant}>{status.label}</Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div>{formatDate(assembly.subscription.expiresAt)}</div>
+                            {days !== null && (
+                              <div
+                                className={cn(
+                                  'text-xs',
+                                  days < 0
+                                    ? 'text-destructive'
+                                    : assembly.state.expiringSoon
+                                      ? 'text-amber-600'
+                                      : 'text-muted-foreground'
+                                )}
+                              >
+                                {days < 0 ? `Expire depuis ${-days} j` : `${days} j restants`}
+                              </div>
+                            )}
+                          </TableCell>
+                          <TableCell className="space-x-2 text-right">
+                            {renderActions(assembly)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

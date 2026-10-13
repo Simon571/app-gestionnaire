@@ -27,15 +27,8 @@ import 'bulletin_board_screen.dart';
 import '../models/vcm_models.dart';
 import '../services/vcm_service.dart';
 import '../services/storage_service.dart';
-import '../config/api_config.dart';
 
 const String _envVcmProgramUrl = String.fromEnvironment('VCM_PROGRAM_URL');
-
-/// Langue du programme demande au serveur : `--dart-define=VCM_LANG=en` pour
-/// l'anglais. Comparaison a la chaine vide plutot que `isEmpty`, qui n'est pas
-/// autorise dans une expression constante.
-const String _envVcmLang = String.fromEnvironment('VCM_LANG');
-const String _vcmLang = _envVcmLang == '' ? 'fr' : _envVcmLang;
 void _openPreachingEntrySheet(BuildContext context) {
   showModalBottomSheet(
     context: context,
@@ -93,13 +86,11 @@ Future<void> _showSendReportSheet(
                         children: [
                           Checkbox(
                             value: didPreach,
-                            onChanged: isSending
-                                ? null
-                                : (value) {
-                                    if (value == null) return;
-                                    notifier.setDidPreach(value);
-                                    setModalState(() => didPreach = value);
-                                  },
+                            onChanged: isSending ? null : (value) {
+                              if (value == null) return;
+                              notifier.setDidPreach(value);
+                              setModalState(() => didPreach = value);
+                            },
                             visualDensity: VisualDensity.compact,
                           ),
                           const Text('A prêché'),
@@ -119,8 +110,7 @@ Future<void> _showSendReportSheet(
                         children: [
                           CircularProgressIndicator(),
                           SizedBox(height: 12),
-                          Text('Envoi en cours...',
-                              style: TextStyle(color: Colors.grey)),
+                          Text('Envoi en cours...', style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     )
@@ -129,74 +119,70 @@ Future<void> _showSendReportSheet(
                       onPressed: () async {
                         // Afficher le chargement
                         setModalState(() => isSending = true);
-
+                        
                         // Envoyer le rapport
                         final success = await notifier.submitCurrentMonth();
-
+                        
                         // Si envoi réussi, rafraîchir la liste des proclamateurs ET marquer le mois comme soumis
                         if (success) {
                           // Marquer le mois courant comme soumis dans le provider
                           final monthKey = totals.monthKey;
                           notifier.markMonthAsSubmitted(monthKey);
-
+                          
                           // Rafraîchir la liste des proclamateurs pour mettre à jour les statuts dans MOI
                           ref.invalidate(peopleProvider);
-                          await Future.delayed(
-                              const Duration(milliseconds: 300));
-
+                          await Future.delayed(const Duration(milliseconds: 300));
+                          
                           // Rafraîchir depuis le serveur pour sync avec le groupe de prédication
                           await notifier.refreshFromServer();
                         }
-
+                        
                         // Fermer le bottom sheet
                         if (sheetContext.mounted) {
                           Navigator.of(sheetContext).pop();
                         }
-
+                        
                         // Vérifier si le widget est toujours monté avant d'afficher le SnackBar
                         if (!context.mounted) return;
-
+                        
                         // Récupérer l'état mis à jour pour vérifier les erreurs
-                        final updatedState =
-                            ref.read(preachingActivityProvider);
-
+                        final updatedState = ref.read(preachingActivityProvider);
+                        
                         if (updatedState.error != null) {
                           // Afficher un message d'avertissement si erreur
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Row(
                                 children: [
-                                  const Icon(Icons.warning_amber,
-                                      color: Colors.orange),
+                                  const Icon(Icons.warning_amber, color: Colors.orange),
                                   const SizedBox(width: 8),
                                   Expanded(child: Text(updatedState.error!)),
                                 ],
                               ),
-                              backgroundColor: Colors.orange.shade800,
-                              duration: const Duration(seconds: 4),
+                            backgroundColor: Colors.orange.shade800,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                      } else {
+                        // Afficher le message de succès
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text('✓ Rapport envoyé au secrétariat avec succès !'),
+                              ],
                             ),
-                          );
-                        } else {
-                          // Afficher le message de succès
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Row(
-                                children: [
-                                  Icon(Icons.check_circle, color: Colors.white),
-                                  SizedBox(width: 8),
-                                  Text(
-                                      '✓ Rapport envoyé au secrétariat avec succès !'),
-                                ],
-                              ),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 3),
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.check),
-                      label: const Text('Confirmer l\'envoi'),
-                    ),
+                            backgroundColor: Colors.green,
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.check),
+                    label: const Text('Confirmer l\'envoi'),
+                  ),
                 ],
               ),
             ),
@@ -206,6 +192,8 @@ Future<void> _showSendReportSheet(
     },
   );
 }
+
+const String _vcmLocale = 'fr';
 
 class _PreachingCardTotals {
   final String monthLabel;
@@ -293,13 +281,8 @@ String _resolveVcmProgramUrl() {
   if (_envVcmProgramUrl.isNotEmpty) {
     return _envVcmProgramUrl;
   }
-  // Passe par la route API, et non par un fichier de `public/` : ce dossier est
-  // exclu du deploiement (`.vercelignore`), donc l'adresse directe repondait 404
-  // et l'application retombait en silence sur le programme figé dans l'APK.
-  // La route sert le programme depose par `npm run vcm:publish`, avec repli sur
-  // le fichier livre — donc les mises a jour arrivent sans reinstaller l'APK.
-  // L'adresse du serveur vient de --dart-define=API_BASE, pas du code.
-  return '$defaultApiBase/api/vcm/program?lang=$_vcmLang';
+  final base = 'https://app-gestionnaire.vercel.app';
+  return '$base/vcm/$_vcmLocale/vcm-program.normalized.json';
 }
 
 // Helper: translate french month name to number
@@ -335,34 +318,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       syncNotifier.syncNow();
       // Démarrer la synchronisation automatique (toutes les 5 minutes)
       syncNotifier.startAutoSync(interval: const Duration(minutes: 5));
-
+      
       // Rafraîchir les données de prédication depuis le serveur au démarrage
       ref.read(preachingActivityProvider.notifier).refreshFromServer();
 
       // Listen for sync updates and show a friendly snack when new jobs are processed.
       // NOTE: In Riverpod, ref.listen() is only allowed in build(); use listenManual() in initState.
       _syncSubscription?.close();
-      _syncSubscription =
-          ref.listenManual<SyncStateData>(syncProvider, (previous, next) {
+      _syncSubscription = ref.listenManual<SyncStateData>(syncProvider, (previous, next) {
         try {
           final prevCount = previous?.recentJobs.length ?? 0;
           final nextCount = next.recentJobs.length;
 
           if (nextCount > 0 && nextCount != prevCount) {
-            final types = next.recentJobs
-                .map((j) => SyncNotifier.getJobTypeLabel(j.type))
-                .toSet()
-                .toList();
-            final label =
-                types.isEmpty ? 'Nouvelles données' : types.take(3).join(', ');
-            final message = nextCount == 1
-                ? '1 mise à jour synchronisée: $label'
-                : '$nextCount mises à jour synchronisées: $label';
+            final types = next.recentJobs.map((j) => SyncNotifier.getJobTypeLabel(j.type)).toSet().toList();
+            final label = types.isEmpty ? 'Nouvelles données' : types.take(3).join(', ');
+            final message = nextCount == 1 ? '1 mise à jour synchronisée: $label' : '$nextCount mises à jour synchronisées: $label';
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(message),
-                    duration: const Duration(seconds: 3)),
+                SnackBar(content: Text(message), duration: const Duration(seconds: 3)),
               );
             }
             // Rafraîchir les données de prédication après chaque synchronisation
@@ -551,9 +525,7 @@ class AssemblyPage extends ConsumerWidget {
                     ),
                   ),
                   FilledButton.icon(
-                    onPressed: syncState.isSyncing
-                        ? null
-                        : () => syncNotifier.syncNow(),
+                    onPressed: syncState.isSyncing ? null : () => syncNotifier.syncNow(),
                     icon: syncState.isSyncing
                         ? const SizedBox(
                             width: 16,
@@ -720,7 +692,8 @@ class AssemblyPage extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
               Text('Prochain',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  style:
+                      TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               SizedBox(height: 12),
               Text('Aucune réunion planifiée pour l’instant.'),
             ],
@@ -805,7 +778,8 @@ class AssemblyPage extends ConsumerWidget {
                               .map((s) => Chip(
                                     visualDensity: VisualDensity.compact,
                                     label: Text(s,
-                                        style: const TextStyle(fontSize: 12)),
+                                        style:
+                                            const TextStyle(fontSize: 12)),
                                   ))
                               .toList(),
                         ),
@@ -864,7 +838,9 @@ class AssemblyPage extends ConsumerWidget {
                   child: Row(
                     children: [
                       Icon(
-                        slot.participates ? Icons.check_circle : Icons.schedule,
+                        slot.participates
+                            ? Icons.check_circle
+                            : Icons.schedule,
                         color: slot.participates
                             ? Colors.green
                             : Colors.orange.shade700,
@@ -894,8 +870,7 @@ class AssemblyPage extends ConsumerWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) =>
-                            PublicWitnessPage(referenceDate: targetDate),
+                        builder: (_) => PublicWitnessPage(referenceDate: targetDate),
                       ),
                     );
                   },
@@ -916,7 +891,7 @@ class AssemblyPage extends ConsumerWidget {
     required bool isLoading,
   }) {
     final widgets = <Widget>[];
-
+    
     for (int i = 0; i < bulletins.length; i++) {
       widgets.add(_buildBulletinBoard(
         context,
@@ -924,25 +899,24 @@ class AssemblyPage extends ConsumerWidget {
         bulletins[i],
         isLoading: isLoading,
       ));
-
+      
       // Ajouter un espacement entre les cartes sauf après la dernière
       if (i < bulletins.length - 1) {
         widgets.add(const SizedBox(height: 16));
       }
     }
-
+    
     return widgets;
   }
 
-  Widget _buildBulletinBoard(
-      BuildContext context, WidgetRef ref, BulletinCounts? counts,
+    Widget _buildBulletinBoard(BuildContext context, WidgetRef ref, BulletinCounts? counts,
       {required bool isLoading}) {
     if (isLoading && counts == null) {
       return _buildLoadingCard("Tableau d'affichage");
     }
 
     final bulletin = counts ?? const BulletinCounts();
-
+    
     // Déterminer le titre selon le type de tableau
     String boardTitle;
     switch (bulletin.boardType) {
@@ -955,7 +929,7 @@ class AssemblyPage extends ConsumerWidget {
       default:
         boardTitle = "Tableau d'affichage assemblée";
     }
-
+    
     final updatedLabel = bulletin.updatedAt != null
         ? 'MàJ ${DateFormat('dd/MM', 'fr_FR').format(bulletin.updatedAt!)}'
         : null;
@@ -985,8 +959,7 @@ class AssemblyPage extends ConsumerWidget {
                 Expanded(
                   child: Text(
                     boardTitle,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
                 if (updatedLabel != null)
@@ -1009,8 +982,7 @@ class AssemblyPage extends ConsumerWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.event,
-                            color: Colors.blue.shade700, size: 20),
+                        Icon(Icons.event, color: Colors.blue.shade700, size: 20),
                         const SizedBox(width: 8),
                         Text(
                           'Visite du responsable de circonscription',
@@ -1026,13 +998,11 @@ class AssemblyPage extends ConsumerWidget {
                       '📅 $coVisitLabel',
                       style: const TextStyle(fontSize: 15),
                     ),
-                    if (bulletin.coVisitTheme != null &&
-                        bulletin.coVisitTheme!.isNotEmpty) ...[
+                    if (bulletin.coVisitTheme != null && bulletin.coVisitTheme!.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
                         '📋 ${bulletin.coVisitTheme}',
-                        style: TextStyle(
-                            fontSize: 14, color: Colors.grey.shade700),
+                        style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
                       ),
                     ],
                   ],
@@ -1040,21 +1010,9 @@ class AssemblyPage extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
             ],
-            _buildBulletinItem(
-                context,
-                ref,
-                '📢 Communications',
-                bulletin.communications,
-                bulletin.boardType,
-                bulletin.unreadCount),
+            _buildBulletinItem(context, ref, '📢 Communications', bulletin.communications, bulletin.boardType, bulletin.unreadCount),
             const SizedBox(height: 8),
-            _buildBulletinItem(
-                context,
-                ref,
-                '📄 Documents et lettres',
-                bulletin.documents,
-                bulletin.boardType,
-                bulletin.unreadDocuments),
+            _buildBulletinItem(context, ref, '📄 Documents et lettres', bulletin.documents, bulletin.boardType, bulletin.unreadDocuments),
             if (isLoading && counts != null) ...[
               const SizedBox(height: 8),
               const LinearProgressIndicator(minHeight: 4),
@@ -1065,8 +1023,7 @@ class AssemblyPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildBulletinItem(BuildContext context, WidgetRef ref, String title,
-      int count, String boardType, int unreadCount) {
+  Widget _buildBulletinItem(BuildContext context, WidgetRef ref, String title, int count, String boardType, int unreadCount) {
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () => _navigateToBulletinBoard(context, boardType),
@@ -1078,8 +1035,7 @@ class AssemblyPage extends ConsumerWidget {
             children: [
               if (count > 0)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(20),
@@ -1093,8 +1049,7 @@ class AssemblyPage extends ConsumerWidget {
               if (unreadCount > 0) ...[
                 const SizedBox(width: 4),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.blue,
                     borderRadius: BorderRadius.circular(12),
@@ -1102,15 +1057,12 @@ class AssemblyPage extends ConsumerWidget {
                   child: Text(
                     '$unreadCount nouveau${unreadCount > 1 ? 'x' : ''}',
                     style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 10),
+                        color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                   ),
                 ),
               ],
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward_ios,
-                  size: 14, color: Colors.grey.shade600),
+              Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey.shade600),
             ],
           ),
         ],
@@ -1130,7 +1082,7 @@ class AssemblyPage extends ConsumerWidget {
       default:
         boardLabel = "Tableau d'affichage assemblée";
     }
-
+    
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1142,49 +1094,38 @@ class AssemblyPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _showBulletinListDialog(BuildContext context, WidgetRef ref,
-      String title, String boardType) async {
+  Future<void> _showBulletinListDialog(BuildContext context, WidgetRef ref, String title, String boardType) async {
     final storage = ref.read(storageServiceProvider);
     final auth = ref.read(authStateProvider);
     final user = auth.user;
     final isDocs = title.contains('Document');
     final data = await storage.getGenericData('communications');
     final allItems = (data?['items'] as List?) ?? [];
-
+    
     // Filtrer par boardType
     final boardItems = allItems.where((item) {
       if (item is! Map<String, dynamic>) return false;
-      final itemBoardType =
-          (item['boardType'] ?? 'assembly').toString().toLowerCase();
+      final itemBoardType = (item['boardType'] ?? 'assembly').toString().toLowerCase();
       return itemBoardType == boardType.toLowerCase();
     }).toList();
-
+    
     final filtered = isDocs
-        ? boardItems.where((e) {
-            final a = (e['attachment'] ?? '').toString();
-            final attachmentsList = e['attachments'] is List &&
-                (e['attachments'] as List).isNotEmpty;
-            final docsList =
-                e['documents'] is List && (e['documents'] as List).isNotEmpty;
-            final link = (e['link'] ?? e['url'] ?? '').toString();
-            return a.isNotEmpty ||
-                attachmentsList ||
-                docsList ||
-                link.isNotEmpty;
-          }).toList()
-        : boardItems;
-
+      ? boardItems.where((e) {
+        final a = (e['attachment'] ?? '').toString();
+        final attachmentsList = e['attachments'] is List && (e['attachments'] as List).isNotEmpty;
+        final docsList = e['documents'] is List && (e['documents'] as List).isNotEmpty;
+        final link = (e['link'] ?? e['url'] ?? '').toString();
+        return a.isNotEmpty || attachmentsList || docsList || link.isNotEmpty;
+        }).toList()
+      : boardItems;
+      
     if (filtered.isEmpty) {
       showDialog(
         context: context,
         builder: (_) => AlertDialog(
           title: Text(title),
           content: const Text('Aucun élément à afficher.'),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Fermer'))
-          ],
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
         ),
       );
       return;
@@ -1201,45 +1142,36 @@ class AssemblyPage extends ConsumerWidget {
             separatorBuilder: (_, __) => const Divider(),
             itemBuilder: (ctx, idx) {
               final item = filtered[idx] as Map<String, dynamic>;
-              final titleText =
-                  (item['title'] ?? item['label'] ?? 'Document').toString();
+              final titleText = (item['title'] ?? item['label'] ?? 'Document').toString();
               // Build sub-entries for attachments/documents/links
-              final attachments =
-                  <Map<String, String>>[]; // {label, file, link}
+              final attachments = <Map<String, String>>[]; // {label, file, link}
               // Single attachment string
               final attachStr = (item['attachment'] ?? '').toString();
               if (attachStr.isNotEmpty) {
-                attachments
-                    .add({'label': titleText, 'file': attachStr, 'link': ''});
+                attachments.add({'label': titleText, 'file': attachStr, 'link': ''});
               }
               // attachments array
               if (item['attachments'] is List) {
                 for (final a in (item['attachments'] as List)) {
-                  attachments.add(
-                      {'label': titleText, 'file': a.toString(), 'link': ''});
+                  attachments.add({'label': titleText, 'file': a.toString(), 'link': ''});
                 }
               }
               // documents array (can contain objects or strings)
               if (item['documents'] is List) {
                 for (final d in (item['documents'] as List)) {
                   if (d is String) {
-                    attachments
-                        .add({'label': titleText, 'file': d, 'link': ''});
+                    attachments.add({'label': titleText, 'file': d, 'link': ''});
                   } else if (d is Map) {
-                    final f = (d['file'] ?? d['attachment'] ?? d['name'] ?? '')
-                        .toString();
+                    final f = (d['file'] ?? d['attachment'] ?? d['name'] ?? '').toString();
                     final l = (d['link'] ?? d['url'] ?? '').toString();
-                    if (f.isNotEmpty || l.isNotEmpty)
-                      attachments
-                          .add({'label': titleText, 'file': f, 'link': l});
+                    if (f.isNotEmpty || l.isNotEmpty) attachments.add({'label': titleText, 'file': f, 'link': l});
                   }
                 }
               }
               // If we have a link directly on the item
               final itemLink = (item['link'] ?? item['url'] ?? '').toString();
               if (itemLink.isNotEmpty) {
-                attachments
-                    .add({'label': titleText, 'file': '', 'link': itemLink});
+                attachments.add({'label': titleText, 'file': '', 'link': itemLink});
               }
 
               // If no attachments found, show at least the item title
@@ -1249,8 +1181,7 @@ class AssemblyPage extends ConsumerWidget {
                   subtitle: (item['content'] ?? '').toString().isNotEmpty
                       ? Text((item['content'] ?? '').toString(), maxLines: 2)
                       : null,
-                  onTap: () =>
-                      _showCommunicationContentDialog(context, ref, item),
+                  onTap: () => _showCommunicationContentDialog(context, ref, item),
                 );
               }
 
@@ -1259,49 +1190,36 @@ class AssemblyPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: () =>
-                        _showCommunicationContentDialog(context, ref, item),
+                    onTap: () => _showCommunicationContentDialog(context, ref, item),
                     child: Padding(
                       padding: const EdgeInsets.only(left: 6.0, bottom: 6.0),
-                      child: Text(titleText,
-                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                      child: Text(titleText, style: const TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ),
                   ...attachments.map((att) {
-                    final label = att['file']?.isNotEmpty == true
-                        ? att['file']!
-                        : att['link'] ?? '';
-                    final isLink = (att['link'] ?? '').isNotEmpty &&
-                        (att['file'] ?? '').isEmpty;
+                    final label = att['file']?.isNotEmpty == true ? att['file']! : att['link'] ?? '';
+                    final isLink = (att['link'] ?? '').isNotEmpty && (att['file'] ?? '').isEmpty;
                     final fileName = (att['file'] ?? '').toString();
                     final link = (att['link'] ?? '').toString();
-                    return ListTile(
-                      dense: true,
-                      title: Text(label),
-                      subtitle: isLink
-                          ? Text(link, style: const TextStyle(fontSize: 12))
-                          : null,
-                      trailing: const Icon(Icons.open_in_new),
-                      onTap: () => _openDocumentOrShowError(
-                          context, ref, fileName, link),
-                    );
+                        return ListTile(
+                          dense: true,
+                          title: Text(label),
+                          subtitle: isLink ? Text(link, style: const TextStyle(fontSize: 12)) : null,
+                          trailing: const Icon(Icons.open_in_new),
+                          onTap: () => _openDocumentOrShowError(context, ref, fileName, link),
+                        );
                   }).toList(),
                 ],
               );
             },
           ),
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fermer'))
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
       ),
     );
   }
 
-  Future<void> _openDocumentOrShowError(
-      BuildContext context, WidgetRef ref, String filename, String link) async {
+  Future<void> _openDocumentOrShowError(BuildContext context, WidgetRef ref, String filename, String link) async {
     // Vérifier si le fichier existe dans assets/data
     final possiblePaths = [
       'assets/data/$filename',
@@ -1339,19 +1257,14 @@ class AssemblyPage extends ConsumerWidget {
       // Sometimes assets are bundled, try to read via rootBundle
       try {
         final bytes = await rootBundle.load('assets/data/$filename');
-        final tmp = await File('${Directory.systemTemp.path}/$filename')
-            .writeAsBytes(bytes.buffer.asUint8List());
+        final tmp = await File('${Directory.systemTemp.path}/$filename').writeAsBytes(bytes.buffer.asUint8List());
         exists = await tmp.exists();
         if (exists) existingPath = tmp.path;
       } catch (_) {}
       // If still not present and link is a remote URL, download it
-      if (!exists &&
-          link.isNotEmpty &&
-          (link.startsWith('http://') || link.startsWith('https://'))) {
+      if (!exists && link.isNotEmpty && (link.startsWith('http://') || link.startsWith('https://'))) {
         try {
-          final resp = await http
-              .get(Uri.parse(link))
-              .timeout(const Duration(seconds: 10));
+          final resp = await http.get(Uri.parse(link)).timeout(const Duration(seconds: 10));
           if (resp.statusCode >= 200 && resp.bodyBytes.isNotEmpty) {
             final tmpDir = Directory.systemTemp.path;
             final tmpFile = File('$tmpDir/$filename');
@@ -1368,70 +1281,52 @@ class AssemblyPage extends ConsumerWidget {
     if (exists) {
       // Choose in-app preview for images and text files
       final lower = filename.toLowerCase();
-      if (lower.endsWith('.png') ||
-          lower.endsWith('.jpg') ||
-          lower.endsWith('.jpeg') ||
-          lower.endsWith('.gif')) {
-        // Show image in dialog
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text(filename),
-            content: Image.file(File(existingPath)),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Fermer'))
-            ],
-          ),
-        );
-        return;
-      } else if (lower.endsWith('.txt') ||
-          lower.endsWith('.md') ||
-          lower.endsWith('.json')) {
-        final content = await File(existingPath).readAsString();
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: Text(filename),
-            content: SizedBox(
-              width: 600,
-              height: 400,
-              child: SingleChildScrollView(child: SelectableText(content)),
+      if (lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.gif')) {
+          // Show image in dialog
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              title: Text(filename),
+              content: Image.file(File(existingPath)),
+              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
             ),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Fermer'))
-            ],
-          ),
-        );
-        return;
-      } else if (lower.endsWith('.pdf')) {
-        try {
-          final controller =
-              PdfController(document: PdfDocument.openFile(existingPath));
+          );
+          return;
+        } else if (lower.endsWith('.txt') || lower.endsWith('.md') || lower.endsWith('.json')) {
+          final content = await File(existingPath).readAsString();
           showDialog(
             context: context,
             builder: (_) => AlertDialog(
               title: Text(filename),
               content: SizedBox(
-                width: 700,
-                height: 800,
-                child: PdfView(controller: controller),
+                width: 600,
+                height: 400,
+                child: SingleChildScrollView(child: SelectableText(content)),
               ),
-              actions: [
-                TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Fermer'))
-              ],
+              actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
             ),
           );
           return;
-        } catch (_) {
-          // fallback to system open
-        }
-      } else {
+        } else if (lower.endsWith('.pdf')) {
+          try {
+            final controller = PdfController(document: PdfDocument.openFile(existingPath));
+            showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                title: Text(filename),
+                content: SizedBox(
+                  width: 700,
+                  height: 800,
+                  child: PdfView(controller: controller),
+                ),
+                actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
+              ),
+            );
+            return;
+          } catch (_) {
+            // fallback to system open
+          }
+        } else {
         // Try open with system default application
         try {
           if (Platform.isWindows) {
@@ -1451,13 +1346,8 @@ class AssemblyPage extends ConsumerWidget {
         context: context,
         builder: (_) => AlertDialog(
           title: const Text('Fichier trouvé'),
-          content: Text(
-              'Le fichier $filename a été ouvert par l’application par défaut.'),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'))
-          ],
+          content: Text('Le fichier $filename a été ouvert par l’application par défaut.'),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
         ),
       );
     } else {
@@ -1467,9 +1357,7 @@ class AssemblyPage extends ConsumerWidget {
           title: const Text('Fichier manquant'),
           content: Text('Le fichier $filename est introuvable localement.'),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Annuler')),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
             TextButton(
               onPressed: () async {
                 Navigator.pop(context);
@@ -1483,11 +1371,7 @@ class AssemblyPage extends ConsumerWidget {
                     builder: (_) => AlertDialog(
                       title: const Text('Erreur'),
                       content: const Text('La synchronisation a échoué.'),
-                      actions: [
-                        TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('OK'))
-                      ],
+                      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
                     ),
                   );
                 } else {
@@ -1515,11 +1399,7 @@ class AssemblyPage extends ConsumerWidget {
                       builder: (_) => AlertDialog(
                         title: const Text('Erreur'),
                         content: Text('Impossible d\'ouvrir le lien : $e'),
-                        actions: [
-                          TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'))
-                        ],
+                        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('OK'))],
                       ),
                     );
                   }
@@ -1532,20 +1412,15 @@ class AssemblyPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _showCommunicationContentDialog(
-      BuildContext context, WidgetRef ref, Map<String, dynamic> item) async {
-    final titleText =
-        (item['title'] ?? item['label'] ?? 'Communication').toString();
-    final content =
-        (item['content'] ?? item['body'] ?? item['text'] ?? '').toString();
+  Future<void> _showCommunicationContentDialog(BuildContext context, WidgetRef ref, Map<String, dynamic> item) async {
+    final titleText = (item['title'] ?? item['label'] ?? 'Communication').toString();
+    final content = (item['content'] ?? item['body'] ?? item['text'] ?? '').toString();
     final attachments = <Map<String, String>>[];
     final attachStr = (item['attachment'] ?? '').toString();
-    if (attachStr.isNotEmpty)
-      attachments.add({'label': attachStr, 'file': attachStr, 'link': ''});
+    if (attachStr.isNotEmpty) attachments.add({'label': attachStr, 'file': attachStr, 'link': ''});
     if (item['attachments'] is List) {
       for (final a in (item['attachments'] as List)) {
-        attachments
-            .add({'label': a.toString(), 'file': a.toString(), 'link': ''});
+        attachments.add({'label': a.toString(), 'file': a.toString(), 'link': ''});
       }
     }
     if (item['documents'] is List) {
@@ -1553,18 +1428,14 @@ class AssemblyPage extends ConsumerWidget {
         if (d is String) {
           attachments.add({'label': d, 'file': d, 'link': ''});
         } else if (d is Map) {
-          final f =
-              (d['file'] ?? d['attachment'] ?? d['name'] ?? '').toString();
+          final f = (d['file'] ?? d['attachment'] ?? d['name'] ?? '').toString();
           final l = (d['link'] ?? d['url'] ?? '').toString();
-          if (f.isNotEmpty || l.isNotEmpty)
-            attachments.add(
-                {'label': f.isNotEmpty ? f : (l ?? ''), 'file': f, 'link': l});
+          if (f.isNotEmpty || l.isNotEmpty) attachments.add({'label': f.isNotEmpty ? f : (l ?? ''), 'file': f, 'link': l});
         }
       }
     }
     final itemLink = (item['link'] ?? item['url'] ?? '').toString();
-    if (itemLink.isNotEmpty)
-      attachments.add({'label': itemLink, 'file': '', 'link': itemLink});
+    if (itemLink.isNotEmpty) attachments.add({'label': itemLink, 'file': '', 'link': itemLink});
 
     await showDialog(
       context: context,
@@ -1586,37 +1457,25 @@ class AssemblyPage extends ConsumerWidget {
                 const SizedBox(height: 12),
                 const Divider(),
                 const SizedBox(height: 6),
-                Text('Pièces jointes',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.grey.shade700)),
+                Text('Pièces jointes', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade700)),
                 const SizedBox(height: 6),
                 ...attachments.map((att) {
                   final fileName = att['file'] ?? '';
                   final link = att['link'] ?? '';
-                  final label =
-                      (att['label'] ?? (fileName.isNotEmpty ? fileName : link))
-                          .toString();
+                  final label = (att['label'] ?? (fileName.isNotEmpty ? fileName : link)).toString();
                   return ListTile(
                     dense: true,
                     title: Text(label),
-                    subtitle: link.isNotEmpty
-                        ? Text(link, style: const TextStyle(fontSize: 12))
-                        : null,
+                    subtitle: link.isNotEmpty ? Text(link, style: const TextStyle(fontSize: 12)) : null,
                     trailing: const Icon(Icons.open_in_new),
-                    onTap: () =>
-                        _openDocumentOrShowError(context, ref, fileName, link),
+                    onTap: () => _openDocumentOrShowError(context, ref, fileName, link),
                   );
                 }).toList(),
               ],
             ],
           ),
         ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Fermer'))
-        ],
+        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Fermer'))],
       ),
     );
   }
@@ -1668,17 +1527,13 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
 
   Future<List<VcmWeek>> _loadWeeksWithFallback() async {
     try {
-      final remoteWeeks = await _vcmService.fetchWeeks();
-      if (remoteWeeks.isNotEmpty) return remoteWeeks;
-      throw Exception('Le serveur a renvoyé un programme vide');
+      return await _vcmService.fetchWeeks();
     } catch (e) {
-      debugPrint(
-          'Programme: échec HTTP (${e.toString()}), bascule sur le fichier local vcm-program.normalized.json');
+      debugPrint('Programme: échec HTTP (${e.toString()}), bascule sur le fichier local vcm-program.json');
       try {
         // IMPORTANT: programme_week.json contient les assignations (sync), pas le programme VCM.
-        // Sur Android/iOS, l'URL distante n'est pas toujours accessible, donc on utilise un asset VCM.
-        final jsonString = await rootBundle
-            .loadString('assets/data/vcm-program.normalized.json');
+        // Sur Android/iOS, l'URL localhost/127.0.0.1 n'est pas accessible, donc on utilise un asset VCM.
+        final jsonString = await rootBundle.loadString('assets/data/vcm-program.json');
         final decoded = jsonDecode(jsonString);
         final rawWeeks = decoded is Map<String, dynamic>
             ? (decoded['weeks'] ?? decoded['semaines'])
@@ -1689,19 +1544,12 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
               .map(VcmWeek.fromJson)
               .toList();
         }
-        throw Exception('Format inattendu dans vcm-program.normalized.json');
+        throw Exception('Format inattendu dans vcm-program.json');
       } catch (fallbackError) {
-        debugPrint(
-            'Programme: échec du fallback local (${fallbackError.toString()})');
+        debugPrint('Programme: échec du fallback local (${fallbackError.toString()})');
         rethrow;
       }
     }
-  }
-
-  void _reloadProgramme() {
-    setState(() {
-      _weeksFuture = _loadWeeksWithFallback();
-    });
   }
 
   @override
@@ -1717,61 +1565,25 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
         if (snapshot.hasError) {
           return Center(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.calendar_month_outlined,
-                      size: 56, color: Colors.grey),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Impossible de charger le programme.\n${snapshot.error}',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: _reloadProgramme,
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Réessayer'),
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.all(16.0),
+              child: Text('Erreur chargement programme : ${snapshot.error}'),
             ),
           );
         }
-
-        final allWeeks = [...?snapshot.data]..sort((a, b) {
-            final sa = a.startAsDate ?? DateTime.fromMillisecondsSinceEpoch(0);
-            final sb = b.startAsDate ?? DateTime.fromMillisecondsSinceEpoch(0);
+        // Ne garder que les semaines à partir d'aujourd'hui, et limiter à 12
+        final allWeeks = snapshot.data ?? [];
+        final now = DateTime.now();
+        final filtered = allWeeks
+            .where((w) => w.endAsDate == null || !w.endAsDate!.isBefore(now))
+            .toList()
+          ..sort((a, b) {
+            final sa = a.startAsDate ?? DateTime.now();
+            final sb = b.startAsDate ?? DateTime.now();
             return sa.compareTo(sb);
           });
-        final now = DateTime.now();
-        final upcomingWeeks = allWeeks
-            .where((w) => w.endAsDate == null || !w.endAsDate!.isBefore(now))
-            .take(12)
-            .toList();
-
-        // Si la source n'a pas encore été actualisée, afficher les dernières
-        // semaines disponibles plutôt qu'une page vide.
-        final isArchive = upcomingWeeks.isEmpty && allWeeks.isNotEmpty;
-        final weeks = isArchive
-            ? allWeeks.reversed.take(12).toList().reversed.toList()
-            : upcomingWeeks;
+        final weeks = filtered.take(12).toList();
         if (weeks.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Aucun programme trouvé'),
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: _reloadProgramme,
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Actualiser'),
-                ),
-              ],
-            ),
-          );
+          return const Center(child: Text('Aucun programme trouvé'));
         }
 
         // Charger les assignations VCM
@@ -1782,116 +1594,86 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
           error: (_, __) => const VcmAssignmentsState(),
         );
 
-        return RefreshIndicator(
-          onRefresh: () async {
-            _reloadProgramme();
-            await _weeksFuture;
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                if (isArchive)
-                  Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    color: Colors.amber.shade50,
-                    child: ListTile(
-                      leading: Icon(Icons.info_outline,
-                          color: Colors.amber.shade900),
-                      title: const Text('Programme en attente de mise à jour'),
-                      subtitle: const Text(
-                          'Les dernières semaines disponibles sont affichées.'),
-                      trailing: IconButton(
-                        tooltip: 'Actualiser',
-                        onPressed: _reloadProgramme,
-                        icon: const Icon(Icons.refresh),
-                      ),
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildProgrammeCard(
-                    title: 'Réunion de semaine',
-                    weeks: weeks,
-                    background: Colors.red.shade50,
-                    accent: Colors.red.shade700,
-                    user: user,
-                    expanded: _expanded[0],
-                    onToggle: () =>
-                        setState(() => _expanded[0] = !_expanded[0]),
-                    vcmAssignments: vcmAssignments,
-                  ),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildProgrammeCard(
+                  title: 'Réunion de semaine',
+                  weeks: weeks,
+                  background: Colors.red.shade50,
+                  accent: Colors.red.shade700,
+                  user: user,
+                  expanded: _expanded[0],
+                  onToggle: () => setState(() => _expanded[0] = !_expanded[0]),
+                  vcmAssignments: vcmAssignments,
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildProgrammeCard(
-                    title: 'Réunion de week-end',
-                    weeks: weeks,
-                    background: Colors.blue.shade50,
-                    accent: Colors.blue.shade700,
-                    user: user,
-                    expanded: _expanded[1],
-                    onToggle: () =>
-                        setState(() => _expanded[1] = !_expanded[1]),
-                    vcmAssignments: vcmAssignments,
-                    destinationBuilder: (week) {
-                      final parsed = week.startAsDate;
-                      if (parsed == null) return null;
-                      final weekendDate = parsed.add(const Duration(days: 5));
-                      return MaterialPageRoute(
-                        builder: (_) =>
-                            WeekendMeetingPage(weekEndDate: weekendDate),
-                      );
-                    },
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildProgrammeCard(
+                  title: 'Réunion de week-end',
+                  weeks: weeks,
+                  background: Colors.blue.shade50,
+                  accent: Colors.blue.shade700,
+                  user: user,
+                  expanded: _expanded[1],
+                  onToggle: () => setState(() => _expanded[1] = !_expanded[1]),
+                  vcmAssignments: vcmAssignments,
+                  destinationBuilder: (week) {
+                    final parsed = week.startAsDate;
+                    if (parsed == null) return null;
+                    final weekendDate = parsed.add(const Duration(days: 5));
+                    return MaterialPageRoute(
+                      builder: (_) =>
+                          WeekendMeetingPage(weekEndDate: weekendDate),
+                    );
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildProgrammeCard(
-                    title: 'Réunion pour la prédication',
-                    weeks: weeks,
-                    background: Colors.orange.shade50,
-                    accent: Colors.orange.shade800,
-                    user: user,
-                    expanded: _expanded[2],
-                    onToggle: () =>
-                        setState(() => _expanded[2] = !_expanded[2]),
-                    vcmAssignments: vcmAssignments,
-                    destinationBuilder: (week) {
-                      final parsed = week.startAsDate;
-                      if (parsed == null) return null;
-                      return MaterialPageRoute(
-                        builder: (_) =>
-                            PreachingMeetingPage(meetingDate: parsed),
-                      );
-                    },
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildProgrammeCard(
+                  title: 'Réunion pour la prédication',
+                  weeks: weeks,
+                  background: Colors.orange.shade50,
+                  accent: Colors.orange.shade800,
+                  user: user,
+                  expanded: _expanded[2],
+                  onToggle: () => setState(() => _expanded[2] = !_expanded[2]),
+                  vcmAssignments: vcmAssignments,
+                  destinationBuilder: (week) {
+                    final parsed = week.startAsDate;
+                    if (parsed == null) return null;
+                    return MaterialPageRoute(
+                      builder: (_) => PreachingMeetingPage(meetingDate: parsed),
+                    );
+                  },
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _buildProgrammeCard(
-                    title: 'Témoignage public',
-                    weeks: weeks,
-                    background: Colors.teal.shade50,
-                    accent: Colors.teal.shade700,
-                    user: user,
-                    expanded: _expanded[3],
-                    onToggle: () =>
-                        setState(() => _expanded[3] = !_expanded[3]),
-                    vcmAssignments: vcmAssignments,
-                    destinationBuilder: (week) {
-                      final parsed = week.startAsDate;
-                      if (parsed == null) return null;
-                      return MaterialPageRoute(
-                        builder: (_) =>
-                            PublicWitnessPage(referenceDate: parsed),
-                      );
-                    },
-                  ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _buildProgrammeCard(
+                  title: 'Témoignage public',
+                  weeks: weeks,
+                  background: Colors.teal.shade50,
+                  accent: Colors.teal.shade700,
+                  user: user,
+                  expanded: _expanded[3],
+                  onToggle: () => setState(() => _expanded[3] = !_expanded[3]),
+                  vcmAssignments: vcmAssignments,
+                  destinationBuilder: (week) {
+                    final parsed = week.startAsDate;
+                    if (parsed == null) return null;
+                    return MaterialPageRoute(
+                      builder: (_) => PublicWitnessPage(referenceDate: parsed),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -1969,11 +1751,10 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
                 }
                 final isoKey = start.toIso8601String().split('T')[0];
                 participates = user?.meetingParticipation[isoKey] == true;
-
+                
                 // Récupérer les participants pour cette semaine
                 if (vcmAssignments != null) {
-                  weekParticipants =
-                      vcmAssignments.getParticipantsForWeek(start);
+                  weekParticipants = vcmAssignments.getParticipantsForWeek(start);
                 }
               } else {
                 displayText = week.weekTitle;
@@ -1987,16 +1768,13 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Icône au-dessus si l'utilisateur participe
-                        if (participates ||
-                            weekParticipants.any((p) =>
-                                p.personId.toLowerCase() ==
-                                    user?.id.toLowerCase() ||
-                                p.personName.toLowerCase() ==
-                                    user?.displayName.toLowerCase()))
+                        if (participates || weekParticipants.any((p) => 
+                            p.personId.toLowerCase() == user?.id.toLowerCase() ||
+                            p.personName.toLowerCase() == user?.displayName.toLowerCase()
+                        ))
                           const Padding(
                             padding: EdgeInsets.only(bottom: 4.0),
-                            child: Icon(Icons.person,
-                                color: Colors.green, size: 20),
+                            child: Icon(Icons.person, color: Colors.green, size: 20),
                           ),
                         // Rendre toute la ligne cliquable
                         Material(
@@ -2018,8 +1796,7 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
                                     }
                                   },
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 8.0, horizontal: 4.0),
+                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -2076,7 +1853,7 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
       if (p.isEmpty) return '';
       return p[0].toUpperCase() + p.substring(1);
     }).join(' ');
-
+    
     // Traductions courantes
     const translations = {
       'Tgw': 'Trésors',
@@ -2094,12 +1871,12 @@ class _ProgrammesPageState extends ConsumerState<ProgrammesPage> {
       'Student': '(Étud.)',
       'Assistant': '(Assist.)',
     };
-
+    
     String result = formatted;
     for (final entry in translations.entries) {
       result = result.replaceAll(entry.key, entry.value);
     }
-
+    
     return result.trim();
   }
 }
@@ -2217,12 +1994,10 @@ class TerritoriesPage extends ConsumerWidget {
         }
 
         // Try to display a simple list of territories (payload format can vary)
-        final items =
-            (data['territories'] as List?) ?? (data['items'] as List?) ?? [];
+        final items = (data['territories'] as List?) ?? (data['items'] as List?) ?? [];
 
         if (items.isEmpty) {
-          return Center(
-              child: Text('Données présentes mais aucun territoire détecté'));
+          return Center(child: Text('Données présentes mais aucun territoire détecté'));
         }
 
         return ListView.builder(
@@ -2230,18 +2005,12 @@ class TerritoriesPage extends ConsumerWidget {
           itemCount: items.length,
           itemBuilder: (context, idx) {
             final item = items[idx];
-            final title = (item['name'] ??
-                    item['label'] ??
-                    item['title'] ??
-                    'Territoire ${idx + 1}')
-                .toString();
-            final description =
-                (item['notes'] ?? item['description'] ?? '').toString();
+            final title = (item['name'] ?? item['label'] ?? item['title'] ?? 'Territoire ${idx + 1}').toString();
+            final description = (item['notes'] ?? item['description'] ?? '').toString();
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: ListTile(
-                leading:
-                    const Icon(Icons.location_on_outlined, color: Colors.green),
+                leading: const Icon(Icons.location_on_outlined, color: Colors.green),
                 title: Text(title),
                 subtitle: description.isNotEmpty ? Text(description) : null,
               ),
@@ -2266,12 +2035,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   final Set<String> _expandedSections = <String>{'Mes coordonnées'};
   final Set<String> _expandedGroupPanels = <String>{};
   // Etendre d'emblée les tuiles contacts d'urgence pour la saisie directe.
-  final Set<String> _expandedContactTiles = <String>{
-    'personal',
-    'emergency-1',
-    'emergency-2',
-    'emergency-3'
-  };
+  final Set<String> _expandedContactTiles = <String>{'personal', 'emergency-1', 'emergency-2', 'emergency-3'};
   static const List<String> _monthNames = <String>[
     'janv.',
     'févr.',
@@ -2286,10 +2050,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     'nov.',
     'déc.'
   ];
-
+  
   // Timer pour rafraîchissement automatique de la liste des proclamateurs
   Timer? _autoRefreshTimer;
-
+  
   @override
   void initState() {
     super.initState();
@@ -2300,7 +2064,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       }
     });
   }
-
+  
   @override
   void dispose() {
     _autoRefreshTimer?.cancel();
@@ -2549,8 +2313,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Column(
                 children: panel.members
-                    .map((member) => _buildGroupMemberRow(member,
-                        currentMonthKey, canSeeReports, currentUser, ref))
+                    .map((member) => _buildGroupMemberRow(member, currentMonthKey, canSeeReports, currentUser, ref))
                     .toList(),
               ),
             ),
@@ -2580,8 +2343,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ),
     );
     final bool sent = activity.participated;
-    final String monthLabel = DateFormat('MMM y', 'fr')
-        .format(DateTime.parse('${currentMonthKey}-01'));
+    final String monthLabel = DateFormat('MMM y', 'fr').format(DateTime.parse('${currentMonthKey}-01'));
     final bool isOwnProfile = person.id == currentUser.id;
 
     return Container(
@@ -2590,24 +2352,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: isOwnProfile ? Colors.green.shade50 : Colors.blue.shade50,
-        border: isOwnProfile
-            ? Border.all(color: Colors.green.shade300, width: 2)
-            : null,
+        border: isOwnProfile ? Border.all(color: Colors.green.shade300, width: 2) : null,
       ),
       child: Row(
         children: [
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(10),
-              onTap: () => _openMemberProfile(
-                  person, monthLabel, activity, canSeeReports, currentUser),
+              onTap: () => _openMemberProfile(person, monthLabel, activity, canSeeReports, currentUser),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 18,
-                    backgroundColor: isOwnProfile
-                        ? Colors.green.shade200
-                        : Colors.blue.shade200,
+                    backgroundColor: isOwnProfile ? Colors.green.shade200 : Colors.blue.shade200,
                     child: Text(
                       person.displayName.isNotEmpty
                           ? person.displayName[0].toUpperCase()
@@ -2625,15 +2382,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             Flexible(
                               child: Text(
                                 person.displayName,
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600),
+                                style: const TextStyle(fontWeight: FontWeight.w600),
                               ),
                             ),
                             if (isOwnProfile) ...[
                               const SizedBox(width: 6),
                               Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
                                   color: Colors.green.shade600,
                                   borderRadius: BorderRadius.circular(4),
@@ -2670,15 +2425,14 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               child: InkWell(
                 borderRadius: BorderRadius.circular(10),
                 onTap: () => _openDelegateReportSheet(
-                  ref,
-                  currentUser,
-                  person,
-                  currentMonthKey,
-                  activity,
-                ),
+                      ref,
+                      currentUser,
+                      person,
+                      currentMonthKey,
+                      activity,
+                    ),
                 child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -2730,14 +2484,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     String prefillNum(num value) => value == 0 ? '' : value.toString();
 
-    final studiesCtrl =
-        TextEditingController(text: prefillNum(draft.bibleStudies));
+    final studiesCtrl = TextEditingController(text: prefillNum(draft.bibleStudies));
     final hoursCtrl = TextEditingController(text: prefillNum(draft.hours));
     final creditCtrl = TextEditingController(text: prefillNum(draft.credit));
     final remarksCtrl = TextEditingController(text: draft.remarks);
     bool isSubmitting = false;
-    final monthLabel =
-        DateFormat('MMMM yyyy', 'fr').format(DateTime.parse('$monthKey-01'));
+    final monthLabel = DateFormat('MMMM yyyy', 'fr').format(DateTime.parse('$monthKey-01'));
 
     await showModalBottomSheet(
       context: context,
@@ -2793,25 +2545,19 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     TextField(
                       controller: studiesCtrl,
                       keyboardType: TextInputType.number,
-                      decoration:
-                          const InputDecoration(labelText: 'Cours bibliques'),
-                      onChanged: (v) =>
-                          draft.bibleStudies = int.tryParse(v) ?? 0,
+                      decoration: const InputDecoration(labelText: 'Cours bibliques'),
+                      onChanged: (v) => draft.bibleStudies = int.tryParse(v) ?? 0,
                     ),
                     TextField(
                       controller: hoursCtrl,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                          labelText: 'Heures (pionniers)'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(labelText: 'Heures (pionniers)'),
                       onChanged: (v) => draft.hours = double.tryParse(v) ?? 0,
                     ),
                     TextField(
                       controller: creditCtrl,
-                      keyboardType:
-                          const TextInputType.numberWithOptions(decimal: true),
-                      decoration:
-                          const InputDecoration(labelText: 'Crédit d\'heures'),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      decoration: const InputDecoration(labelText: 'Crédit d\'heures'),
                       onChanged: (v) => draft.credit = double.tryParse(v) ?? 0,
                     ),
                     TextField(
@@ -2827,13 +2573,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             ? const SizedBox(
                                 height: 16,
                                 width: 16,
-                                child:
-                                    CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(strokeWidth: 2),
                               )
                             : const Icon(Icons.send),
-                        label: Text(isSubmitting
-                            ? 'Envoi en cours...'
-                            : 'Envoyer pour lui'),
+                        label: Text(isSubmitting ? 'Envoi en cours...' : 'Envoyer pour lui'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.pink,
                         ),
@@ -2841,9 +2584,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             ? null
                             : () async {
                                 setModalState(() => isSubmitting = true);
-                                final storage =
-                                    ref.read(storageServiceProvider);
-
+                                final storage = ref.read(storageServiceProvider);
+                                
                                 // Vérifier que le PIN de l'acteur n'est pas vide
                                 if (actor.pin.isEmpty) {
                                   setModalState(() => isSubmitting = false);
@@ -2852,11 +2594,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                     const SnackBar(
                                       content: Row(
                                         children: [
-                                          Icon(Icons.error,
-                                              color: Colors.white),
+                                          Icon(Icons.error, color: Colors.white),
                                           SizedBox(width: 8),
-                                          Text(
-                                              'Ton code PIN est requis. Reconnecte-toi.'),
+                                          Text('Ton code PIN est requis. Reconnecte-toi.'),
                                         ],
                                       ),
                                       backgroundColor: Colors.red,
@@ -2864,9 +2604,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                   );
                                   return;
                                 }
-
-                                final success =
-                                    await storage.sendPreachingReportForUser(
+                                
+                                final success = await storage.sendPreachingReportForUser(
                                   targetUserId: target.id,
                                   month: monthKey,
                                   entries: {
@@ -2891,38 +2630,30 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 if (success) {
                                   // Si l'utilisateur envoie pour lui-même, marquer le mois comme soumis
                                   if (target.id == actor.id) {
-                                    ref
-                                        .read(
-                                            preachingActivityProvider.notifier)
-                                        .markMonthAsSubmitted(monthKey);
+                                    ref.read(preachingActivityProvider.notifier).markMonthAsSubmitted(monthKey);
                                   }
-
+                                  
                                   // Fermer le bottom sheet d'abord
                                   Navigator.of(sheetContext).pop();
-
+                                  
                                   // Petit délai pour laisser le serveur mettre à jour
-                                  await Future.delayed(
-                                      const Duration(milliseconds: 500));
-
+                                  await Future.delayed(const Duration(milliseconds: 500));
+                                  
                                   // Rafraîchir la liste des proclamateurs et attendre le résultat
                                   ref.invalidate(peopleProvider);
                                   await ref.read(peopleProvider.future);
-
+                                  
                                   // Rafraîchir aussi le provider d'activité pour mettre à jour le statut
-                                  ref
-                                      .read(preachingActivityProvider.notifier)
-                                      .refreshFromServer();
-
+                                  ref.read(preachingActivityProvider.notifier).refreshFromServer();
+                                  
                                   if (!context.mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Row(
                                         children: [
-                                          Icon(Icons.check_circle,
-                                              color: Colors.white),
+                                          Icon(Icons.check_circle, color: Colors.white),
                                           SizedBox(width: 8),
-                                          Text(
-                                              '✓ Rapport envoyé pour ce proclamateur.'),
+                                          Text('✓ Rapport envoyé pour ce proclamateur.'),
                                         ],
                                       ),
                                       backgroundColor: Colors.green,
@@ -2935,8 +2666,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                     const SnackBar(
                                       content: Row(
                                         children: [
-                                          Icon(Icons.error,
-                                              color: Colors.white),
+                                          Icon(Icons.error, color: Colors.white),
                                           SizedBox(width: 8),
                                           Text('Échec de l\'envoi, réessaie.'),
                                         ],
@@ -2995,8 +2725,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             (user.spiritual.function ?? '').toLowerCase().contains('serv');
 
     // Vérifie si l'utilisateur est surveillant ou assistant de son groupe de prédication
-    final bool isGroupOverseerOrAssistant =
-        user.spiritual.isGroupOverseerOrAssistant;
+    final bool isGroupOverseerOrAssistant = user.spiritual.isGroupOverseerOrAssistant;
 
     final Map<String, List<Person>> groups = {};
     final Map<String, String> groupLabels = {};
@@ -3036,8 +2765,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ];
     }
 
-    final String currentMonthKey =
-        '${DateTime.now().year.toString().padLeft(4, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}';
+    final String currentMonthKey = '${DateTime.now().year.toString().padLeft(4, '0')}-${DateTime.now().month.toString().padLeft(2, '0')}';
     final String userGroupId = user.spiritual.group ?? 'Groupe non défini';
 
     return Column(
@@ -3073,7 +2801,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           ],
                         ),
                       );
-
+                      
                       if (confirm == true && mounted) {
                         // Afficher un indicateur de chargement
                         showDialog(
@@ -3083,18 +2811,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             child: CircularProgressIndicator(),
                           ),
                         );
-
+                        
                         // Forcer le rechargement depuis les assets
                         final storage = ref.read(storageServiceProvider);
                         await storage.forceReloadFromAssets();
-
+                        
                         // Invalider le provider pour recharger
                         ref.invalidate(peopleProvider);
                         await ref.read(peopleProvider.future);
-
+                        
                         if (mounted) {
-                          Navigator.of(context)
-                              .pop(); // Fermer le dialogue de chargement
+                          Navigator.of(context).pop(); // Fermer le dialogue de chargement
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Row(
@@ -3112,8 +2839,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       }
                     } catch (e) {
                       if (mounted) {
-                        Navigator.of(context)
-                            .pop(); // Fermer le dialogue de chargement
+                        Navigator.of(context).pop(); // Fermer le dialogue de chargement
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Row(
@@ -3149,7 +2875,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           final expanded = _expandedGroupPanels.contains(panelKey);
           // L'utilisateur peut voir les rapports s'il est ancien/assistant ministériel
           // ET (s'il est surveillant/assistant du groupe OU si c'est son propre groupe)
-          final bool canSeeReportsForThisGroup = isElderOrServant &&
+          final bool canSeeReportsForThisGroup = isElderOrServant && 
               (isGroupOverseerOrAssistant || panel.groupId == userGroupId);
           return _buildGroupCard(
             panel,
@@ -3364,9 +3090,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                   ),
                   Icon(
-                    expanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
+                    expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                     color: Colors.blueGrey.shade700,
                   ),
                 ],
@@ -3385,7 +3109,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Widget _buildPreachingActivityContent(PreachingActivityState preachingState) {
     final hasData = preachingState.hasRecordedActivity;
     final isSubmitted = preachingState.isSubmitted;
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -3650,12 +3374,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   ) async {
     if (!mounted) return;
 
-    final groupLabel =
-        (person.spiritual.groupName ?? person.spiritual.group ?? '')
-                .trim()
-                .isNotEmpty
-            ? (person.spiritual.groupName ?? person.spiritual.group)!
-            : 'Groupe non défini';
+    final groupLabel = (person.spiritual.groupName ?? person.spiritual.group ?? '')
+        .trim()
+        .isNotEmpty
+        ? (person.spiritual.groupName ?? person.spiritual.group)!
+        : 'Groupe non défini';
 
     await showModalBottomSheet(
       context: context,
@@ -3735,14 +3458,10 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
     _person = widget.person;
     _email1Controller = TextEditingController(text: widget.person.email1 ?? '');
     _email2Controller = TextEditingController(text: widget.person.email2 ?? '');
-    _mobilePhoneController =
-        TextEditingController(text: widget.person.mobilePhone ?? '');
-    _homePhoneController =
-        TextEditingController(text: widget.person.homePhone ?? '');
-    _workPhoneController =
-        TextEditingController(text: widget.person.workPhone ?? '');
-    _addressController =
-        TextEditingController(text: widget.person.address ?? '');
+    _mobilePhoneController = TextEditingController(text: widget.person.mobilePhone ?? '');
+    _homePhoneController = TextEditingController(text: widget.person.homePhone ?? '');
+    _workPhoneController = TextEditingController(text: widget.person.workPhone ?? '');
+    _addressController = TextEditingController(text: widget.person.address ?? '');
   }
 
   @override
@@ -3761,14 +3480,12 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
     final person = _person;
     final currentUser = widget.currentUser;
     final isOwnProfile = person.id == currentUser.id;
-    final isElder = (currentUser.spiritual.function ?? '')
-            .toLowerCase()
-            .contains('ancien') ||
-        (currentUser.spiritual.function ?? '').toLowerCase().contains('elder');
+    final isElder = (currentUser.spiritual.function ?? '').toLowerCase().contains('ancien') ||
+                    (currentUser.spiritual.function ?? '').toLowerCase().contains('elder');
     // Seuls les anciens peuvent voir les coordonnées des autres utilisateurs
     final canSeeFullContact = isOwnProfile ? true : isElder;
     final canEditContact = isOwnProfile || isElder;
-
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.blue.shade50,
@@ -3802,9 +3519,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    isOwnProfile
-                        ? 'Mes coordonnées'
-                        : 'Coordonnées de ${person.displayName}',
+                    isOwnProfile ? 'Mes coordonnées' : 'Coordonnées de ${person.displayName}',
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -3815,9 +3530,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                 if (canEditContact && !_isEditing)
                   IconButton(
                     icon: const Icon(Icons.edit),
-                    onPressed: _isSaving
-                        ? null
-                        : () => setState(() => _isEditing = true),
+                    onPressed: _isSaving ? null : () => setState(() => _isEditing = true),
                   ),
                 if (canEditContact && _isEditing)
                   IconButton(
@@ -3848,56 +3561,36 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                     borderColor: Colors.amber.shade300,
                     content: Column(
                       children: [
-                        _buildInfoRow(Icons.person, 'Nom complet',
-                            _valueOrDash(person.displayName)),
-                        _buildInfoRow(Icons.badge, 'Fonction',
-                            _valueOrDash(person.spiritual.function)),
-                        _buildInfoRow(
-                            Icons.groups, 'Groupe', widget.groupLabel),
+                        _buildInfoRow(Icons.person, 'Nom complet', _valueOrDash(person.displayName)),
+                        _buildInfoRow(Icons.badge, 'Fonction', _valueOrDash(person.spiritual.function)),
+                        _buildInfoRow(Icons.groups, 'Groupe', widget.groupLabel),
                         if (canSeeFullContact) ...[
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(
-                                Icons.email, 'E-mail', _email1Controller)
+                            _buildEditableRow(Icons.email, 'E-mail', _email1Controller)
                           else
-                            _buildInfoRow(Icons.email, 'E-mail',
-                                _valueOrDash(person.email1)),
+                            _buildInfoRow(Icons.email, 'E-mail', _valueOrDash(person.email1)),
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(Icons.email_outlined,
-                                'E-mail secondaire', _email2Controller)
+                            _buildEditableRow(Icons.email_outlined, 'E-mail secondaire', _email2Controller)
                           else
-                            _buildInfoRow(
-                                Icons.email_outlined,
-                                'E-mail secondaire',
-                                _valueOrDash(person.email2)),
+                            _buildInfoRow(Icons.email_outlined, 'E-mail secondaire', _valueOrDash(person.email2)),
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(Icons.phone_android,
-                                'Téléphone mobile', _mobilePhoneController)
+                            _buildEditableRow(Icons.phone_android, 'Téléphone mobile', _mobilePhoneController)
                           else
-                            _buildInfoRow(
-                                Icons.phone_android,
-                                'Téléphone mobile',
-                                _valueOrDash(person.mobilePhone)),
+                            _buildInfoRow(Icons.phone_android, 'Téléphone mobile', _valueOrDash(person.mobilePhone)),
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(Icons.phone, 'Téléphone fixe',
-                                _homePhoneController)
+                            _buildEditableRow(Icons.phone, 'Téléphone fixe', _homePhoneController)
                           else
-                            _buildInfoRow(Icons.phone, 'Téléphone fixe',
-                                _valueOrDash(person.homePhone)),
+                            _buildInfoRow(Icons.phone, 'Téléphone fixe', _valueOrDash(person.homePhone)),
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(Icons.work, 'Téléphone travail',
-                                _workPhoneController)
+                            _buildEditableRow(Icons.work, 'Téléphone travail', _workPhoneController)
                           else
-                            _buildInfoRow(Icons.work, 'Téléphone travail',
-                                _valueOrDash(person.workPhone)),
+                            _buildInfoRow(Icons.work, 'Téléphone travail', _valueOrDash(person.workPhone)),
                           if (_isEditing && canEditContact)
-                            _buildEditableRow(Icons.location_on, 'Adresse',
-                                _addressController)
+                            _buildEditableRow(Icons.location_on, 'Adresse', _addressController)
                           else
-                            _buildInfoRow(Icons.location_on, 'Adresse',
-                                _valueOrDash(person.address)),
+                            _buildInfoRow(Icons.location_on, 'Adresse', _valueOrDash(person.address)),
                         ] else ...[
-                          _buildInfoRow(
-                              Icons.lock, 'Coordonnées', 'Réservé aux anciens'),
+                          _buildInfoRow(Icons.lock, 'Coordonnées', 'Réservé aux anciens'),
                         ],
                       ],
                     ),
@@ -3916,12 +3609,8 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                       child: Row(
                         children: [
                           Icon(
-                            widget.activity.participated
-                                ? Icons.check_circle
-                                : Icons.pending,
-                            color: widget.activity.participated
-                                ? Colors.green
-                                : Colors.orange,
+                            widget.activity.participated ? Icons.check_circle : Icons.pending,
+                            color: widget.activity.participated ? Colors.green : Colors.orange,
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -3930,16 +3619,13 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                               children: [
                                 Text(
                                   'Rapport ${widget.monthLabel}',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.w600),
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
                                 ),
                                 Text(
-                                  widget.activity.participated
-                                      ? 'Envoyé'
-                                      : 'Non envoyé',
+                                  widget.activity.participated ? 'Envoyé' : 'Non envoyé',
                                   style: TextStyle(
-                                    color: widget.activity.participated
-                                        ? Colors.green.shade700
+                                    color: widget.activity.participated 
+                                        ? Colors.green.shade700 
                                         : Colors.orange.shade700,
                                     fontSize: 13,
                                   ),
@@ -4011,9 +3697,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
                     ),
                   ),
                   Icon(
-                    expanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
+                    expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                     color: Colors.blueGrey.shade700,
                   ),
                 ],
@@ -4058,8 +3742,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
     );
   }
 
-  Widget _buildEditableRow(
-      IconData icon, String label, TextEditingController controller) {
+  Widget _buildEditableRow(IconData icon, String label, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -4084,8 +3767,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
               textAlign: TextAlign.end,
               decoration: InputDecoration(
                 isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide(color: Colors.blue.shade300),
@@ -4106,9 +3788,7 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
     final person = _person;
     final currentUser = widget.currentUser;
     final isOwnProfile = person.id == currentUser.id;
-    final isElder = (currentUser.spiritual.function ?? '')
-            .toLowerCase()
-            .contains('ancien') ||
+    final isElder = (currentUser.spiritual.function ?? '').toLowerCase().contains('ancien') ||
         (currentUser.spiritual.function ?? '').toLowerCase().contains('elder');
     final canEdit = isOwnProfile || isElder;
     if (!canEdit) return;
@@ -4182,12 +3862,9 @@ class _MemberContactSheetState extends State<_MemberContactSheet> {
       SnackBar(
         content: Row(
           children: [
-            Icon(success ? Icons.check_circle : Icons.error,
-                color: Colors.white),
+            Icon(success ? Icons.check_circle : Icons.error, color: Colors.white),
             const SizedBox(width: 8),
-            Text(success
-                ? 'Informations enregistrées'
-                : 'Erreur lors de l\'enregistrement'),
+            Text(success ? 'Informations enregistrées' : 'Erreur lors de l\'enregistrement'),
           ],
         ),
         backgroundColor: success ? Colors.green : Colors.red,
@@ -4260,8 +3937,7 @@ class _GroupPanelData {
   final List<Person> members;
   final String groupId;
 
-  _GroupPanelData(
-      {required this.title, required this.members, required this.groupId});
+  _GroupPanelData({required this.title, required this.members, required this.groupId});
 }
 
 class _DelegateReportDraft {
@@ -4338,12 +4014,10 @@ class _EditableContactSection extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_EditableContactSection> createState() =>
-      _EditableContactSectionState();
+  ConsumerState<_EditableContactSection> createState() => _EditableContactSectionState();
 }
 
-class _EditableContactSectionState
-    extends ConsumerState<_EditableContactSection> {
+class _EditableContactSectionState extends ConsumerState<_EditableContactSection> {
   // Toujours en mode édition pour rendre la saisie immédiate.
   bool _isEditingEmergency = true;
   bool _isSaving = false;
@@ -4369,16 +4043,15 @@ class _EditableContactSectionState
 
   void _initControllers() {
     final user = widget.user;
-
+    
     // Initialiser les contrôleurs des informations personnelles
     _email1Controller = TextEditingController(text: user.email1 ?? '');
     _email2Controller = TextEditingController(text: user.email2 ?? '');
-    _mobilePhoneController =
-        TextEditingController(text: user.mobilePhone ?? '');
+    _mobilePhoneController = TextEditingController(text: user.mobilePhone ?? '');
     _homePhoneController = TextEditingController(text: user.homePhone ?? '');
     _workPhoneController = TextEditingController(text: user.workPhone ?? '');
     _addressController = TextEditingController(text: user.address ?? '');
-
+    
     _emergencyControllers = List.generate(3, (index) {
       final contact = index < user.emergency.contacts.length
           ? user.emergency.contacts[index]
@@ -4386,8 +4059,7 @@ class _EditableContactSectionState
       return _EmergencyContactControllers(
         nameController: TextEditingController(text: contact?.name ?? ''),
         phoneController: TextEditingController(text: contact?.phone ?? ''),
-        relationshipController:
-            TextEditingController(text: contact?.relationship ?? ''),
+        relationshipController: TextEditingController(text: contact?.relationship ?? ''),
         addressController: TextEditingController(text: contact?.address ?? ''),
       );
     });
@@ -4422,9 +4094,7 @@ class _EditableContactSectionState
 
     final storage = ref.read(storageServiceProvider);
     final emergencyContacts = _emergencyControllers
-        .where((ctrl) =>
-            ctrl.nameController.text.isNotEmpty ||
-            ctrl.phoneController.text.isNotEmpty)
+        .where((ctrl) => ctrl.nameController.text.isNotEmpty || ctrl.phoneController.text.isNotEmpty)
         .map((ctrl) => EmergencyContact(
               name: ctrl.nameController.text,
               phone: ctrl.phoneController.text,
@@ -4506,7 +4176,7 @@ class _EditableContactSectionState
   @override
   Widget build(BuildContext context) {
     final user = widget.user;
-
+    
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -4531,12 +4201,10 @@ class _EditableContactSectionState
                   borderRadius: BorderRadius.circular(14),
                   onTap: () => widget.onToggleTile('personal'),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                     child: Row(
                       children: [
-                        Icon(Icons.perm_contact_calendar,
-                            color: Colors.blueGrey.shade700),
+                        Icon(Icons.perm_contact_calendar, color: Colors.blueGrey.shade700),
                         const SizedBox(width: 10),
                         const Expanded(
                           child: Text(
@@ -4562,8 +4230,7 @@ class _EditableContactSectionState
                     padding: const EdgeInsets.fromLTRB(14, 0, 14, 14),
                     child: Column(
                       children: [
-                        _buildInfoRow(Icons.person, 'Nom complet',
-                            _valueOrDash(user.displayName)),
+                        _buildInfoRow(Icons.person, 'Nom complet', _valueOrDash(user.displayName)),
                         _buildEditableField(
                           icon: Icons.email,
                           label: 'E-mail principal',
@@ -4605,30 +4272,24 @@ class _EditableContactSectionState
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             TextButton(
-                              onPressed: _isSavingPersonal
-                                  ? null
-                                  : () {
-                                      _initControllers();
-                                      setState(() {});
-                                    },
+                              onPressed: _isSavingPersonal ? null : () {
+                                _initControllers();
+                                setState(() {});
+                              },
                               child: const Text('Réinitialiser'),
                             ),
                             const SizedBox(width: 8),
                             ElevatedButton.icon(
-                              onPressed:
-                                  _isSavingPersonal ? null : _savePersonalInfo,
+                              onPressed: _isSavingPersonal ? null : _savePersonalInfo,
                               icon: _isSavingPersonal
                                   ? const SizedBox(
                                       height: 14,
                                       width: 14,
-                                      child: CircularProgressIndicator(
-                                          strokeWidth: 2),
+                                      child: CircularProgressIndicator(strokeWidth: 2),
                                     )
                                   : const Icon(Icons.save, size: 16),
                               label: Text(
-                                _isSavingPersonal
-                                    ? 'Enregistrement...'
-                                    : 'Enregistrer',
+                                _isSavingPersonal ? 'Enregistrement...' : 'Enregistrer',
                               ),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
@@ -4663,8 +4324,7 @@ class _EditableContactSectionState
                     TextButton.icon(
                       onPressed: _isSaving ? null : _cancelEditing,
                       icon: const Icon(Icons.close, size: 16),
-                      label: const Text('Réinitialiser',
-                          style: TextStyle(fontSize: 12)),
+                      label: const Text('Réinitialiser', style: TextStyle(fontSize: 12)),
                       style: TextButton.styleFrom(
                         foregroundColor: Colors.grey,
                         padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -4751,9 +4411,7 @@ class _EditableContactSectionState
                     ),
                   ),
                   Icon(
-                    expanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
+                    expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                     color: Colors.blueGrey.shade700,
                   ),
                 ],
@@ -4793,8 +4451,7 @@ class _EditableContactSectionState
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               child: Row(
                 children: [
-                  Icon(Icons.local_hospital_outlined,
-                      color: Colors.blueGrey.shade700),
+                  Icon(Icons.local_hospital_outlined, color: Colors.blueGrey.shade700),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -4806,9 +4463,7 @@ class _EditableContactSectionState
                     ),
                   ),
                   Icon(
-                    expanded
-                        ? Icons.keyboard_arrow_up
-                        : Icons.keyboard_arrow_down,
+                    expanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
                     color: Colors.blueGrey.shade700,
                   ),
                 ],
@@ -4847,14 +4502,10 @@ class _EditableContactSectionState
                     )
                   : Column(
                       children: [
-                        _buildInfoRow(Icons.person, 'Nom',
-                            _valueOrDash(existingContact?.name)),
-                        _buildInfoRow(Icons.phone, 'Téléphone',
-                            _valueOrDash(existingContact?.phone)),
-                        _buildInfoRow(Icons.family_restroom, 'Lien',
-                            _valueOrDash(existingContact?.relationship)),
-                        _buildInfoRow(Icons.location_on, 'Adresse',
-                            _valueOrDash(existingContact?.address)),
+                        _buildInfoRow(Icons.person, 'Nom', _valueOrDash(existingContact?.name)),
+                        _buildInfoRow(Icons.phone, 'Téléphone', _valueOrDash(existingContact?.phone)),
+                        _buildInfoRow(Icons.family_restroom, 'Lien', _valueOrDash(existingContact?.relationship)),
+                        _buildInfoRow(Icons.location_on, 'Adresse', _valueOrDash(existingContact?.address)),
                       ],
                     ),
             ),
@@ -4907,8 +4558,7 @@ class _EditableContactSectionState
               decoration: InputDecoration(
                 labelText: label,
                 isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),

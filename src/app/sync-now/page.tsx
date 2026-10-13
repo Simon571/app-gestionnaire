@@ -1,12 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { getAbsoluteAppUrl } from '@/lib/api-base';
 
-// Adresse absolue du serveur : fonctionne depuis le MSI (export statique) comme
-// depuis le navigateur. Elle vient de l'environnement, pour ne pas rester
-// clouee a l'ancien hebergeur.
-const SERVER_URL = getAbsoluteAppUrl();
+// URL absolue Vercel — fonctionne depuis le MSI (static export) et le navigateur
+const VERCEL_URL = 'https://app-gestionnaire.vercel.app';
 
 export default function SyncNow() {
   const [status, setStatus] = useState<string>('');
@@ -31,7 +28,7 @@ export default function SyncNow() {
 
       setStatus(`📤 Envoi de ${people.length} personnes (assemblyId=${assemblyId})...`);
 
-      const resp = await fetch(`${SERVER_URL}/api/publisher-app/mobile-users`, {
+      const resp = await fetch(`${VERCEL_URL}/api/publisher-app/mobile-users`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ users: people, assemblyId }),
@@ -53,7 +50,7 @@ export default function SyncNow() {
     <div style={{ fontFamily: 'sans-serif', maxWidth: 500, margin: '80px auto', padding: '0 20px' }}>
       <h1 style={{ fontSize: 24, marginBottom: 8 }}>Synchronisation vers le serveur</h1>
       <p style={{ color: '#555', marginBottom: 24 }}>
-        Cliquez sur le bouton pour envoyer la liste des proclamateurs de ce navigateur vers le serveur.
+        Cliquez sur le bouton pour envoyer la liste des proclamateurs de ce navigateur vers le serveur Vercel.
         Flutter pourra ensuite se connecter.
       </p>
       <button

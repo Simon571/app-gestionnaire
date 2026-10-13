@@ -26,6 +26,10 @@ const SUPER_ADMIN_PREFIX = '/api/super-admin';
  */
 const PUBLIC_PATHS = [
   '/api/app/version',
+  // Inscription d'une assemblee depuis l'application : elle n'a, par
+  // definition, aucun identifiant a presenter. La route se protege elle-meme
+  // (debit par IP, un seul essai par nom, aucun reessai gratuit).
+  '/api/assemblies/register',
   '/api/auth/session',
   '/api/auth/super-admin',
   '/api/auth/login',

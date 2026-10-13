@@ -51,14 +51,14 @@ export default function SuperAdminLoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+    <main className="flex min-h-[100dvh] items-center justify-center bg-slate-50 p-4 sm:p-6">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-2">
           <div className="flex items-center gap-2 text-sky-700">
             <ShieldCheck className="h-5 w-5" />
             <span className="text-xs font-semibold uppercase tracking-wide">Plateforme</span>
           </div>
-          <CardTitle>Administration de la plateforme</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">Administration de la plateforme</CardTitle>
           <CardDescription>
             Gestion des assemblees clientes et de leurs abonnements.
           </CardDescription>
@@ -70,7 +70,13 @@ export default function SuperAdminLoginPage() {
               <Input
                 id="email"
                 type="email"
+                // 16px evite le zoom automatique declenche par Safari iOS des
+                // qu'un champ fait moins de 16 px de police.
+                className="h-12 text-base sm:h-10 sm:text-sm"
                 autoComplete="username"
+                inputMode="email"
+                autoCapitalize="none"
+                autoCorrect="off"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
                 required
@@ -81,6 +87,7 @@ export default function SuperAdminLoginPage() {
               <Input
                 id="password"
                 type="password"
+                className="h-12 text-base sm:h-10 sm:text-sm"
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -94,7 +101,7 @@ export default function SuperAdminLoginPage() {
               </Alert>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="h-12 w-full text-base sm:h-10 sm:text-sm" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Se connecter
             </Button>
